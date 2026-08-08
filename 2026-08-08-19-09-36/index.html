@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>家庭食品库存管理</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    [v-cloak] { display: none; }
+    * { -webkit-tap-highlight-color: transparent; }
+    body { overscroll-behavior: none; }
+    #qr-reader video { border-radius: 0.75rem; object-fit: cover; }
+    #qr-reader { border-radius: 0.75rem; overflow: hidden; }
+    .modal-enter-active, .modal-leave-active { transition: opacity 0.2s; }
+    .modal-enter-from, .modal-leave-to { opacity: 0; }
+    .modal-content-enter-active { transition: all 0.25s ease; }
+    .modal-content-enter-from { transform: scale(0.95); opacity: 0; }
+    ::-webkit-scrollbar { width: 0px; }
+    input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
+  </style>
+</head>
+<body class="bg-gray-100">
+<div id="app" v-cloak>
+  <div class="max-w-md mx-auto h-screen flex flex-col bg-gray-50 relative overflow-hidden">
+
+    <!-- ===== Header ===== -->
+    <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0 z-10">
+      <h1 class="text-lg font-bold text-gray-800">{{ pageTitle }}</h1>
+      <div class="flex items-center gap-2">
+        <button v-if="currentPage === 'home'" @click="showExpiryReminder = true"
+          class="relative text-sm px-3 py-1.5 rounded-lg bg-orange-50 text-orange-600 border border-orange-200 flex items-center gap-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          过期提醒
+          <span v-if="expiringProducts.length + expiredProducts.length > 0"
+            class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
+            {{ expiringProducts.length + expiredProducts.length }}
+          </span>
+        </button>
+        <button v-if="currentPage === 'home'" @click="currentPage = 'scan'"
+          class="text-sm px-3 py-1.5 rounded-lg bg-gray-800 text-white flex items-center gap-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          添加
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== Main Content ===== -->
+    <main class="flex-1 overflow-y-auto">
+
+      <!-- ========== Home Page ========== -->
+      <div v-if="currentPage === 'home'" class="p-4 space-y-3">
+        <!-- Search -->
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input v-model="searchQuery" type="text" placeholder="搜索商品名称、条码、位置"
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="flex items-center gap-2">
+          <button v-for="tab in homeTabs" :key="tab.id" @click="homeFilter = tab.id"
+            :class="homeFilter === tab.id ? 'bg-gray-800 text-white' : 'bg-white text-gray-500 border border-gray-200'"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
+            {{ tab.label }}
+            <span v-if="tab.count !== null" :class="homeFilter === tab.id ? 'text-gray-300' : 'text-gray-400'">({{ tab.count }})</span>
+          </button>
+        </div>
+
+        <!-- Date range filter -->
+        <div class="bg-white rounded-xl p-3 border border-gray-200">
+          <div class="flex items-center gap-2">
+            <div class="flex-1">
+              <label class="text-[10px] text-gray-400 block">入库起始</label>
+              <input v-model="homeDateStart" type="date" class="w-full text-sm bg-gray-50 rounded-lg px-2 py-1.5 border border-gray-200 focus:outline-none">
+            </div>
+            <span class="text-gray-300 mt-4">—</span>
+            <div class="flex-1">
+              <label class="text-[10px] text-gray-400 block">入库截止</label>
+              <input v-model="homeDateEnd" type="date" class="w-full text-sm bg-gray-50 rounded-lg px-2 py-1.5 border border-gray-200 focus:outline-none">
+            </div>
+            <button v-if="homeDateStart || homeDateEnd" @click="homeDateStart = ''; homeDateEnd = ''"
+              class="mt-4 text-xs text-gray-500 px-2 py-1.5 rounded-lg bg-gray-100">清除</button>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div v-if="sortedProducts.length === 0" class="flex flex-col items-center justify-center py-20 text-gray-400">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <p class="mt-3 text-sm">{{ searchQuery ? '未找到匹配的商品' : '暂无库存商品' }}</p>
+          <button v-if="!searchQuery" @click="currentPage = 'scan'" class="mt-3 text-sm text-gray-800 underline">去添加商品</button>
+        </div>
+
+        <!-- Product cards -->
+        <div v-for="product in sortedProducts" :key="product.id" class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-gray-800 truncate">{{ product.name }}</h3>
+              <p class="text-xs text-gray-400 mt-0.5">条码: {{ product.barcode || '无' }}</p>
+            </div>
+            <span :class="expiryBadgeClass(product)" class="text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2">
+              {{ expiryLabel(product) }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-gray-500 mb-3">
+            <div class="flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {{ product.location || '未设置' }}
+            </div>
+            <div class="flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              数量: {{ product.quantity }}
+            </div>
+            <div>生产: {{ product.productionDate || '—' }}</div>
+            <div>到期: {{ product.expiryDate || '—' }}</div>
+            <div>入库: {{ product.stockInDate || '—' }}</div>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2">
+            <button @click="incrementStock(product)" class="py-1.5 rounded-lg text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200 active:bg-yellow-100 transition-colors">+1 入库</button>
+            <button @click="decrementStock(product)" :disabled="product.quantity <= 0"
+              class="py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200 active:bg-green-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">-1 吃完</button>
+            <button @click="openEditModal(product)" class="py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 active:bg-blue-100 transition-colors">编辑</button>
+            <button @click="confirmDelete(product)" class="py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200 active:bg-red-100 transition-colors">删除</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== Scan Page ========== -->
+      <div v-if="currentPage === 'scan'" class="p-4 space-y-4">
+        <!-- Camera area -->
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">扫码录入</h3>
+          <div id="qr-reader" class="w-full bg-gray-900" style="min-height: 200px;"></div>
+          <div v-if="!scanning" class="flex items-center justify-center mt-3">
+            <button @click="startScanning" class="px-6 py-2.5 rounded-lg bg-gray-800 text-white text-sm font-medium flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              开启摄像头扫码
+            </button>
+          </div>
+          <div v-if="scanning" class="flex items-center justify-center mt-3">
+            <button @click="stopScanning" class="px-6 py-2.5 rounded-lg bg-red-50 text-red-600 border border-red-200 text-sm font-medium">停止扫码</button>
+          </div>
+        </div>
+
+        <!-- Barcode input -->
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <label class="text-sm font-semibold text-gray-700 mb-2 block">条形码</label>
+          <div class="flex gap-2">
+            <input v-model="scanForm.barcode" type="text" inputmode="numeric" placeholder="输入或扫码获取条形码"
+              class="flex-1 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+            <button @click="lookupBarcode(scanForm.barcode)" :disabled="!scanForm.barcode || apiLoading"
+              class="px-4 py-2.5 rounded-lg bg-gray-800 text-white text-sm font-medium disabled:opacity-40 whitespace-nowrap">
+              {{ apiLoading ? '查询中...' : '查询' }}
+            </button>
+          </div>
+          <p v-if="apiMessage" :class="apiSuccess ? 'text-green-600' : 'text-gray-500'" class="text-xs mt-2">{{ apiMessage }}</p>
+        </div>
+
+        <!-- Product form -->
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-3">
+          <h3 class="text-sm font-semibold text-gray-700">商品信息</h3>
+
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">商品名称 <span class="text-red-500">*</span></label>
+            <input v-model="scanForm.name" type="text" placeholder="请输入商品名称"
+              class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">储存位置</label>
+            <input v-model="scanForm.location" type="text" placeholder="如：冰箱冷藏、橱柜"
+              class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">入库日期</label>
+            <input v-model="scanForm.stockInDate" type="date"
+              class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">生产日期</label>
+            <input v-model="scanForm.productionDate" type="date" @change="onScanDateChange"
+              class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">保质期(天)</label>
+              <input v-model="scanForm.shelfLife" type="number" min="1" placeholder="如：365" @change="onScanShelfLifeChange"
+                class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">到期日期</label>
+              <input v-model="scanForm.expiryDate" type="date" @change="onScanExpiryChange"
+                class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">初始数量 <span class="text-red-500">*</span></label>
+            <input v-model.number="scanForm.quantity" type="number" min="1" placeholder="1"
+              class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+          </div>
+
+          <button @click="submitProduct" :disabled="!scanForm.name.trim()"
+            class="w-full py-3 rounded-xl bg-gray-800 text-white text-sm font-semibold disabled:opacity-40 active:bg-gray-900 transition-colors">
+            提交入库
+          </button>
+        </div>
+      </div>
+
+      <!-- ========== Records Page ========== -->
+      <div v-if="currentPage === 'records'" class="p-4 space-y-3">
+        <!-- Statistics blocks -->
+        <div class="grid grid-cols-4 gap-2">
+          <div class="bg-yellow-50 rounded-xl p-2.5 text-center border border-yellow-100">
+            <div class="text-[10px] text-yellow-600 mb-0.5">采购</div>
+            <div class="text-lg font-bold text-yellow-700">{{ stats.totalIn }}</div>
+          </div>
+          <div class="bg-green-50 rounded-xl p-2.5 text-center border border-green-100">
+            <div class="text-[10px] text-green-600 mb-0.5">吃完</div>
+            <div class="text-lg font-bold text-green-700">{{ stats.totalEat }}</div>
+          </div>
+          <div class="bg-red-50 rounded-xl p-2.5 text-center border border-red-100">
+            <div class="text-[10px] text-red-600 mb-0.5">浪费</div>
+            <div class="text-lg font-bold text-red-700">{{ stats.totalWaste }}</div>
+          </div>
+          <div class="bg-blue-50 rounded-xl p-2.5 text-center border border-blue-100">
+            <div class="text-[10px] text-blue-600 mb-0.5">库存</div>
+            <div class="text-lg font-bold text-blue-700">{{ stats.currentStock }}</div>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input v-model="recordSearchQuery" type="text" placeholder="搜索商品名称、条码"
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+        </div>
+
+        <!-- Time range filter -->
+        <div class="bg-white rounded-xl p-3 border border-gray-200">
+          <div class="flex items-center gap-2">
+            <div class="flex-1">
+              <label class="text-[10px] text-gray-400 block">开始日期</label>
+              <input v-model="dateRangeStart" type="date" class="w-full text-sm bg-gray-50 rounded-lg px-2 py-1.5 border border-gray-200 focus:outline-none">
+            </div>
+            <span class="text-gray-300 mt-4">—</span>
+            <div class="flex-1">
+              <label class="text-[10px] text-gray-400 block">结束日期</label>
+              <input v-model="dateRangeEnd" type="date" class="w-full text-sm bg-gray-50 rounded-lg px-2 py-1.5 border border-gray-200 focus:outline-none">
+            </div>
+            <button v-if="dateRangeStart || dateRangeEnd" @click="dateRangeStart = ''; dateRangeEnd = ''"
+              class="mt-4 text-xs text-gray-500 px-2 py-1.5 rounded-lg bg-gray-100">清除</button>
+          </div>
+        </div>
+
+        <!-- Record count -->
+        <div class="text-xs text-gray-400 px-1">共 {{ filteredRecords.length }} 条记录</div>
+
+        <!-- Empty state -->
+        <div v-if="filteredRecords.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <p class="mt-2 text-sm">暂无操作记录</p>
+        </div>
+
+        <!-- Record list -->
+        <div v-for="record in filteredRecords" :key="record.id" class="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 min-w-0">
+              <span :class="recordBadgeClass(record.type)" class="text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0">
+                {{ recordTypeLabel(record.type) }}
+              </span>
+              <span class="text-sm font-medium text-gray-800 truncate">{{ record.productName }}</span>
+            </div>
+            <span :class="recordNumberClass(record.type)" class="text-sm font-bold flex-shrink-0 ml-2">
+              {{ record.quantity > 0 ? '+' + record.quantity : record.quantity === 0 ? '—' : record.quantity }}
+            </span>
+          </div>
+          <div class="flex items-center justify-between mt-1">
+            <span class="text-[10px] text-gray-400">{{ record.barcode || '无条码' }}</span>
+            <span class="text-[10px] text-gray-400">{{ formatDateTime(record.createdAt) }}</span>
+          </div>
+          <div v-if="record.detail" class="text-[10px] text-gray-500 mt-1">{{ record.detail }}</div>
+        </div>
+      </div>
+
+      <!-- ========== Settings Page ========== -->
+      <div v-if="currentPage === 'settings'" class="p-4 space-y-3">
+        <!-- Expiring days setting -->
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div>
+                <div class="text-sm text-gray-700">即将到期判定</div>
+                <div class="text-[10px] text-gray-400">到期前 {{ settings.expiringDays }} 天内判定为即将过期</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <input v-model.number="settings.expiringDays" type="number" min="1" max="90" @change="saveExpiringDays"
+                class="w-14 text-center px-2 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+              <span class="text-xs text-gray-400">天</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cloud Sync Card -->
+        <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <div class="px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+              </div>
+              <div>
+                <div class="text-sm text-gray-700">云端数据同步</div>
+                <div class="text-[10px] text-gray-400">{{ settings.cloudSyncEnabled ? '已开启' : '未开启' }}{{ settings.cloudLastSync ? ' · 上次同步 ' + formatDateTime(settings.cloudLastSync) : '' }}</div>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" v-model="settings.cloudSyncEnabled" @change="saveCloudSettings" class="sr-only peer">
+              <div class="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-indigo-500 transition-colors"></div>
+              <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+            </label>
+          </div>
+          <div v-if="settings.cloudSyncEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
+            <div>
+              <label class="text-[10px] text-gray-400 block mb-1">API Key (X-Master-Key)</label>
+              <input v-model="settings.cloudApiKey" type="text" placeholder="jsonbin.io API Key"
+                class="w-full px-2.5 py-2 rounded-lg bg-gray-50 border border-gray-200 text-xs focus:outline-none focus:border-gray-400">
+            </div>
+            <div>
+              <label class="text-[10px] text-gray-400 block mb-1">Bin ID</label>
+              <input v-model="settings.cloudBinId" type="text" placeholder="jsonbin.io Bin ID"
+                class="w-full px-2.5 py-2 rounded-lg bg-gray-50 border border-gray-200 text-xs focus:outline-none focus:border-gray-400">
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button @click="saveCloudSettings" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium">保存设置</button>
+              <button @click="cloudSync" :disabled="cloudSyncing" class="flex-1 py-2 rounded-lg bg-indigo-500 text-white text-xs font-medium disabled:opacity-50">
+                {{ cloudSyncing ? '同步中...' : '立即同步' }}
+              </button>
+            </div>
+            <p v-if="cloudSyncStatus" class="text-[10px] text-indigo-500">{{ cloudSyncStatus }}</p>
+            <div class="text-[10px] text-gray-400 leading-relaxed pt-1">
+              使用方法：1. 访问 jsonbin.io 注册免费账号 2. 创建一个 Bin 3. 将 API Key 和 Bin ID 填入上方 4. 开启开关即可自动同步
+            </div>
+          </div>
+        </div>
+
+        <!-- Server Chan Push Card -->
+        <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <div class="px-4 py-3.5 flex items-center gap-3 border-b border-gray-50">
+            <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <div>
+              <div class="text-sm text-gray-700">微信推送（Server酱）</div>
+              <div class="text-[10px] text-gray-400">将临期/过期商品列表推送到微信</div>
+            </div>
+          </div>
+          <div class="px-4 pb-3.5 space-y-2 pt-3">
+            <div>
+              <label class="text-[10px] text-gray-400 block mb-1">SendKey</label>
+              <input v-model="settings.serverChanKey" type="text" placeholder="sct.ftqq.com 获取的 SendKey"
+                class="w-full px-2.5 py-2 rounded-lg bg-gray-50 border border-gray-200 text-xs focus:outline-none focus:border-gray-400">
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button @click="saveServerChanSettings" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium">保存</button>
+              <button @click="serverChanPush" :disabled="serverChanPushing" class="flex-1 py-2 rounded-lg bg-green-500 text-white text-xs font-medium disabled:opacity-50">
+                {{ serverChanPushing ? '推送中...' : '推送临期提醒' }}
+              </button>
+            </div>
+            <div class="text-[10px] text-gray-400 leading-relaxed pt-1">
+              使用方法：1. 访问 sct.ftqq.com 微信扫码登录 2. 复制 SendKey 填入上方 3. 点「推送临期提醒」测试<br>
+              每日自动推送：将本仓库 GitHub Actions 配好 Secrets 后每天早 8 点自动推送
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <button @click="showStatsModal = true" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </div>
+              <span class="text-sm text-gray-700">数据统计</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <div class="border-t border-gray-100"></div>
+          <button @click="exportData" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </div>
+              <span class="text-sm text-gray-700">导出备份</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <div class="border-t border-gray-100"></div>
+          <label class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <span class="text-sm text-gray-700">导入数据</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300"><polyline points="9 18 15 12 9 6"/></svg>
+            <input type="file" accept=".json" @change="importData" class="hidden">
+          </label>
+          <div class="border-t border-gray-100"></div>
+          <button @click="showClearConfirm = true" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </div>
+              <span class="text-sm text-red-600">清空全部数据</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <!-- Version -->
+        <div class="text-center pt-8">
+          <button @click="showChangelog = true" class="text-xs text-gray-400 underline">
+            版本 v{{ settings.version }}
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ===== Bottom Navigation ===== -->
+    <nav class="bg-white border-t border-gray-200 flex flex-shrink-0 z-10">
+      <button v-for="page in pages" :key="page.id" @click="currentPage = page.id"
+        :class="currentPage === page.id ? 'text-gray-800' : 'text-gray-400'"
+        class="flex-1 py-2.5 flex flex-col items-center gap-0.5 transition-colors">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <template v-if="page.id === 'home'"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></template>
+          <template v-if="page.id === 'scan'"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></template>
+          <template v-if="page.id === 'records'"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></template>
+          <template v-if="page.id === 'settings'"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></template>
+        </svg>
+        <span class="text-[10px] font-medium">{{ page.label }}</span>
+      </button>
+    </nav>
+
+    <!-- ===== Modals ===== -->
+
+    <!-- Delete Confirm -->
+    <transition name="modal">
+      <div v-if="showDeleteConfirm" class="fixed inset-0 z-40 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showDeleteConfirm = false">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5">
+          <h3 class="text-base font-semibold text-gray-800 mb-2">确认删除</h3>
+          <p class="text-sm text-gray-500 mb-1">确定要删除「{{ deletingProduct?.name }}」吗？</p>
+          <p class="text-xs text-gray-400 mb-4">剩余数量 {{ deletingProduct?.quantity }} 将记为浪费</p>
+          <div class="flex gap-3">
+            <button @click="showDeleteConfirm = false" class="flex-1 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium">取消</button>
+            <button @click="executeDelete" class="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium">确认删除</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Expiry Reminder -->
+    <transition name="modal">
+      <div v-if="showExpiryReminder" class="fixed inset-0 z-40 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showExpiryReminder = false">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 max-h-[75vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-semibold text-gray-800">过期提醒</h3>
+            <button @click="showExpiryReminder = false" class="text-gray-400">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div v-if="expiredProducts.length === 0 && expiringProducts.length === 0" class="py-8 text-center text-gray-400">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <p class="mt-2 text-sm">暂无过期食品</p>
+          </div>
+
+          <div v-if="expiredProducts.length > 0" class="mb-4">
+            <h4 class="text-xs font-semibold text-red-600 mb-2 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              已过期 ({{ expiredProducts.length }})
+            </h4>
+            <div class="space-y-2">
+              <div v-for="p in expiredProducts" :key="p.id" class="flex items-center justify-between bg-red-50 rounded-lg px-3 py-2">
+                <span class="text-sm text-gray-700">{{ p.name }}</span>
+                <span class="text-xs text-red-500">{{ expiryLabel(p) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="expiringProducts.length > 0">
+            <h4 class="text-xs font-semibold text-yellow-600 mb-2 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+              即将过期 ({{ expiringProducts.length }})
+            </h4>
+            <div class="space-y-2">
+              <div v-for="p in expiringProducts" :key="p.id" class="flex items-center justify-between bg-yellow-50 rounded-lg px-3 py-2">
+                <span class="text-sm text-gray-700">{{ p.name }}</span>
+                <span class="text-xs text-yellow-600">{{ expiryLabel(p) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Edit Modal -->
+    <transition name="modal">
+      <div v-if="showEditModal" class="fixed inset-0 z-40 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showEditModal = false">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 max-h-[80vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-semibold text-gray-800">编辑商品</h3>
+            <button @click="showEditModal = false" class="text-gray-400">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">商品名称</label>
+              <input v-model="editForm.name" type="text"
+                class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">条形码</label>
+              <input v-model="editForm.barcode" type="text"
+                class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">储存位置</label>
+              <input v-model="editForm.location" type="text"
+                class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">入库日期</label>
+              <input v-model="editForm.stockInDate" type="date"
+                class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">生产日期</label>
+              <input v-model="editForm.productionDate" type="date" @change="onEditDateChange"
+                class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">保质期(天)</label>
+                <input v-model="editForm.shelfLife" type="number" min="1" @change="onEditShelfLifeChange"
+                  class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">到期日期</label>
+                <input v-model="editForm.expiryDate" type="date" @change="onEditExpiryChange"
+                  class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-gray-400">
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">库存数量</label>
+              <input :value="editForm.quantity" type="number" disabled
+                class="w-full px-3 py-2.5 rounded-lg bg-gray-100 border border-gray-200 text-sm text-gray-400 cursor-not-allowed">
+              <p class="text-[10px] text-gray-400 mt-1">库存数量不可在此修改，请使用主页 +1/-1 按钮</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-5">
+            <button @click="showEditModal = false" class="flex-1 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium">取消</button>
+            <button @click="saveEdit" class="flex-1 py-2.5 rounded-lg bg-gray-800 text-white text-sm font-medium">保存</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Stats Modal -->
+    <transition name="modal">
+      <div v-if="showStatsModal" class="fixed inset-0 z-40 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showStatsModal = false">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-semibold text-gray-800">数据统计</h3>
+            <button @click="showStatsModal = false" class="text-gray-400">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-yellow-50 rounded-xl p-4 text-center border border-yellow-100">
+              <div class="text-xs text-yellow-600 mb-1">累计采购总量</div>
+              <div class="text-2xl font-bold text-yellow-700">{{ stats.totalIn }}</div>
+            </div>
+            <div class="bg-green-50 rounded-xl p-4 text-center border border-green-100">
+              <div class="text-xs text-green-600 mb-1">正常吃完总量</div>
+              <div class="text-2xl font-bold text-green-700">{{ stats.totalEat }}</div>
+            </div>
+            <div class="bg-red-50 rounded-xl p-4 text-center border border-red-100">
+              <div class="text-xs text-red-600 mb-1">浪费丢弃总量</div>
+              <div class="text-2xl font-bold text-red-700">{{ stats.totalWaste }}</div>
+            </div>
+            <div class="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
+              <div class="text-xs text-blue-600 mb-1">当前剩余库存</div>
+              <div class="text-2xl font-bold text-blue-700">{{ stats.currentStock }}</div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-600">浪费占比</span>
+              <span class="text-sm font-bold text-red-500">{{ stats.wasteRatio.toFixed(1) }}%</span>
+            </div>
+            <div class="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-red-500 rounded-full transition-all duration-500" :style="{ width: Math.min(stats.wasteRatio, 100) + '%' }"></div>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1.5">浪费 {{ stats.totalWaste }} / 采购 {{ stats.totalIn }}</p>
+          </div>
+
+          <button @click="showStatsModal = false" class="w-full mt-4 py-2.5 rounded-lg bg-gray-800 text-white text-sm font-medium">关闭</button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Changelog Modal -->
+    <transition name="modal">
+      <div v-if="showChangelog" class="fixed inset-0 z-40 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showChangelog = false">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 max-h-[70vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-semibold text-gray-800">更新日志</h3>
+            <button @click="showChangelog = false" class="text-gray-400">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div v-for="log in changelog" :key="log.version" class="mb-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-sm font-bold text-gray-800">v{{ log.version }}</span>
+              <span class="text-xs text-gray-400">{{ log.date }}</span>
+            </div>
+            <ul class="space-y-1">
+              <li v-for="item in log.items" :key="item" class="text-xs text-gray-500 flex items-start gap-1.5">
+                <span class="text-gray-300 mt-0.5">·</span>
+                <span>{{ item }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Clear Data Confirm -->
+    <transition name="modal">
+      <div v-if="showClearConfirm" class="fixed inset-0 z-40 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showClearConfirm = false">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5">
+          <h3 class="text-base font-semibold text-gray-800 mb-2">清空全部数据</h3>
+          <p class="text-sm text-gray-500 mb-4">此操作将删除所有库存商品和操作记录，且不可恢复。确定继续吗？</p>
+          <div class="flex gap-3">
+            <button @click="showClearConfirm = false" class="flex-1 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium">取消</button>
+            <button @click="clearAllData" class="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium">确认清空</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Toast -->
+    <transition name="modal">
+      <div v-if="toast.show" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white text-sm px-4 py-2 rounded-lg shadow-lg whitespace-nowrap">
+        {{ toast.message }}
+      </div>
+    </transition>
+
+  </div>
+</div>
+
+<script>
+const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
+
+createApp({
+  setup() {
+    // ===== State =====
+    const currentPage = ref('home');
+    const products = ref([]);
+    const records = ref([]);
+    const settings = reactive({ version: '1.4.0', expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', serverChanKey: '' });
+
+    const searchQuery = ref('');
+    const homeFilter = ref('all');
+    const homeDateStart = ref('');
+    const homeDateEnd = ref('');
+    const recordSearchQuery = ref('');
+    const dateRangeStart = ref('');
+    const dateRangeEnd = ref('');
+
+    const showDeleteConfirm = ref(false);
+    const showExpiryReminder = ref(false);
+    const showEditModal = ref(false);
+    const showStatsModal = ref(false);
+    const showChangelog = ref(false);
+    const showClearConfirm = ref(false);
+    const showCloudSyncModal = ref(false);
+    const cloudSyncing = ref(false);
+    const cloudSyncStatus = ref('');
+    let cloudPushTimer = null;
+    const serverChanPushing = ref(false);
+
+    const deletingProduct = ref(null);
+    const toast = ref({ show: false, message: '' });
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const scanForm = reactive({
+      barcode: '', name: '', location: '',
+      stockInDate: todayStr,
+      productionDate: '', shelfLife: '', expiryDate: '', quantity: 1
+    });
+    const scanning = ref(false);
+    const apiLoading = ref(false);
+    const apiMessage = ref('');
+    const apiSuccess = ref(false);
+
+    const editForm = reactive({
+      id: '', name: '', barcode: '', location: '',
+      stockInDate: '',
+      productionDate: '', shelfLife: '', expiryDate: '', quantity: 0
+    });
+
+    const pages = [
+      { id: 'home', label: '首页' },
+      { id: 'scan', label: '扫码' },
+      { id: 'records', label: '记录' },
+      { id: 'settings', label: '设置' }
+    ];
+
+    const homeTabs = computed(() => [
+      { id: 'all', label: '全部', count: products.value.length },
+      { id: 'expiring', label: '即将过期', count: expiringProducts.value.length },
+      { id: 'expired', label: '已过期', count: expiredProducts.value.length }
+    ]);
+
+    const changelog = [
+      {
+        version: '1.4.0',
+        date: '2026-08-08',
+        items: [
+          '新增：Server酱微信推送功能，手动推送临期/过期商品列表到微信',
+          '新增：设置页 Server酱 SendKey 配置卡片',
+          '新增：GitHub Actions 每日定时自动推送脚本（需配置 Secrets）',
+          '优化：推送内容包含已过期和即将过期商品名称、位置、天数'
+        ]
+      },
+      {
+        version: '1.3.0',
+        date: '2026-08-08',
+        items: [
+          '新增：云端数据同步功能（基于 jsonbin.io 免费服务）',
+          '新增：设置页云端同步配置卡片，支持开关、API Key、Bin ID',
+          '新增：每次数据变化自动防抖推送（2秒延迟）',
+          '新增：页面打开时自动拉取云端最新数据',
+          '新增：手动「立即同步」按钮',
+          '优化：基于时间戳的冲突处理，云端更新则拉取覆盖本地'
+        ]
+      },
+      {
+        version: '1.2.0',
+        date: '2026-08-08',
+        items: [
+          '新增：主页按入库日期范围筛选食品',
+          '优化：食品数量降为0时自动移出库存列表',
+          '优化：吃完最后一件时提示商品已自动移除'
+        ]
+      },
+      {
+        version: '1.1.0',
+        date: '2026-08-08',
+        items: [
+          '新增：扫码页增加入库日期字段，默认当天',
+          '新增：设置页可自定义即将到期判定天数',
+          '优化：主页商品卡片展示入库日期',
+          '优化：编辑弹窗支持修改入库日期'
+        ]
+      },
+      {
+        version: '1.0.0',
+        date: '2026-08-08',
+        items: [
+          '初始版本发布',
+          '商品库存核心管理（手动录入、扫码录入）',
+          '库存操作（入库、吃完、编辑、删除）',
+          '搜索筛选（模糊搜索、过期筛选）',
+          '记录追踪（入库、吃完、调整、浪费）',
+          '数据统计（采购、吃完、浪费、库存、浪费占比）',
+          '过期提醒（自动弹窗、手动触发）',
+          '数据备份与恢复',
+          '本地存储持久化'
+        ]
+      }
+    ];
+
+    // ===== Computed =====
+    const pageTitle = computed(() => {
+      return { home: '食品库存', scan: '扫码录入', records: '操作记录', settings: '设置' }[currentPage.value];
+    });
+
+    const filteredProducts = computed(() => {
+      let result = products.value;
+      if (searchQuery.value) {
+        const q = searchQuery.value.toLowerCase();
+        result = result.filter(p =>
+          (p.name || '').toLowerCase().includes(q) ||
+          (p.barcode || '').toLowerCase().includes(q) ||
+          (p.location || '').toLowerCase().includes(q)
+        );
+      }
+      if (homeFilter.value === 'expiring') result = result.filter(p => getExpiryStatus(p.expiryDate).status === 'expiring');
+      else if (homeFilter.value === 'expired') result = result.filter(p => getExpiryStatus(p.expiryDate).status === 'expired');
+      if (homeDateStart.value) {
+        result = result.filter(p => (p.stockInDate || '') >= homeDateStart.value);
+      }
+      if (homeDateEnd.value) {
+        result = result.filter(p => (p.stockInDate || '') <= homeDateEnd.value);
+      }
+      return result;
+    });
+
+    const sortedProducts = computed(() => {
+      return [...filteredProducts.value].sort((a, b) => {
+        if (!a.expiryDate && !b.expiryDate) return 0;
+        if (!a.expiryDate) return 1;
+        if (!b.expiryDate) return -1;
+        return new Date(a.expiryDate) - new Date(b.expiryDate);
+      });
+    });
+
+    const expiringProducts = computed(() => {
+      return products.value.filter(p => getExpiryStatus(p.expiryDate).status === 'expiring')
+        .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+    });
+
+    const expiredProducts = computed(() => {
+      return products.value.filter(p => getExpiryStatus(p.expiryDate).status === 'expired')
+        .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+    });
+
+    const filteredRecords = computed(() => {
+      let result = records.value;
+      if (recordSearchQuery.value) {
+        const q = recordSearchQuery.value.toLowerCase();
+        result = result.filter(r =>
+          (r.productName || '').toLowerCase().includes(q) ||
+          (r.barcode || '').toLowerCase().includes(q)
+        );
+      }
+      if (dateRangeStart.value) {
+        const s = new Date(dateRangeStart.value); s.setHours(0, 0, 0, 0);
+        result = result.filter(r => new Date(r.createdAt) >= s);
+      }
+      if (dateRangeEnd.value) {
+        const e = new Date(dateRangeEnd.value); e.setHours(23, 59, 59, 999);
+        result = result.filter(r => new Date(r.createdAt) <= e);
+      }
+      return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    });
+
+    const stats = computed(() => {
+      let totalIn = 0, totalEat = 0, totalWaste = 0;
+      records.value.forEach(r => {
+        if (r.type === 'in') totalIn += Math.abs(r.quantity);
+        else if (r.type === 'eat') totalEat += Math.abs(r.quantity);
+        else if (r.type === 'waste') totalWaste += Math.abs(r.quantity);
+      });
+      const currentStock = products.value.reduce((s, p) => s + (p.quantity || 0), 0);
+      const wasteRatio = totalIn > 0 ? (totalWaste / totalIn * 100) : 0;
+      return { totalIn, totalEat, totalWaste, currentStock, wasteRatio };
+    });
+
+    // ===== Utilities =====
+    function generateId() {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    function getExpiryStatus(expiryDate) {
+      if (!expiryDate) return { status: 'unknown', days: null, label: '无到期日', color: 'gray' };
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const exp = new Date(expiryDate); exp.setHours(0, 0, 0, 0);
+      const diff = Math.round((exp - today) / 86400000);
+      if (diff < 0) return { status: 'expired', days: Math.abs(diff), label: `已过期${Math.abs(diff)}天`, color: 'red' };
+      if (diff === 0) return { status: 'expired', days: 0, label: '今天到期', color: 'red' };
+      if (diff <= settings.expiringDays) return { status: 'expiring', days: diff, label: `${diff}天后到期`, color: 'yellow' };
+      return { status: 'fresh', days: diff, label: `${diff}天后到期`, color: 'green' };
+    }
+
+    function calcShelfLife(prod, exp) {
+      if (!prod || !exp) return '';
+      const d = Math.round((new Date(exp) - new Date(prod)) / 86400000);
+      return d > 0 ? String(d) : '';
+    }
+
+    function calcExpiryDate(prod, shelf) {
+      if (!prod || !shelf) return '';
+      const d = new Date(prod);
+      d.setDate(d.getDate() + parseInt(shelf));
+      return d.toISOString().split('T')[0];
+    }
+
+    function formatDateTime(s) {
+      if (!s) return '';
+      const d = new Date(s);
+      const p = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    }
+
+    function showToast(msg) {
+      toast.value = { show: true, message: msg };
+      setTimeout(() => { toast.value.show = false; }, 2000);
+    }
+
+    // ===== Record helpers =====
+    function recordBadgeClass(type) {
+      return { 'in': 'bg-yellow-100 text-yellow-700', 'eat': 'bg-green-100 text-green-700', 'waste': 'bg-red-100 text-red-700', 'adjust': 'bg-blue-100 text-blue-700' }[type] || 'bg-gray-100 text-gray-700';
+    }
+    function recordNumberClass(type) {
+      return { 'in': 'text-yellow-600', 'eat': 'text-green-600', 'waste': 'text-red-600', 'adjust': 'text-blue-600' }[type] || 'text-gray-600';
+    }
+    function recordTypeLabel(type) {
+      return { 'in': '入库', 'eat': '吃完', 'waste': '浪费', 'adjust': '调整' }[type] || type;
+    }
+    function expiryBadgeClass(product) {
+      const s = getExpiryStatus(product.expiryDate);
+      return { 'expired': 'bg-red-100 text-red-600', 'expiring': 'bg-yellow-100 text-yellow-600', 'fresh': 'bg-green-100 text-green-600', 'unknown': 'bg-gray-100 text-gray-500' }[s.status];
+    }
+    function expiryLabel(product) {
+      return getExpiryStatus(product.expiryDate).label;
+    }
+
+    // ===== Data persistence =====
+    function saveData() {
+      try {
+        localStorage.setItem('food_inventory_products', JSON.stringify(products.value));
+        localStorage.setItem('food_inventory_records', JSON.stringify(records.value));
+        localStorage.setItem('food_inventory_settings', JSON.stringify(settings));
+      } catch (e) { console.error('Save failed:', e); }
+      if (settings.cloudSyncEnabled && settings.cloudApiKey && settings.cloudBinId) {
+        if (cloudPushTimer) clearTimeout(cloudPushTimer);
+        cloudPushTimer = setTimeout(() => { cloudPush(); }, 2000);
+      }
+    }
+    function loadData() {
+      try {
+        const p = localStorage.getItem('food_inventory_products');
+        if (p) products.value = JSON.parse(p);
+        const r = localStorage.getItem('food_inventory_records');
+        if (r) records.value = JSON.parse(r);
+        const s = localStorage.getItem('food_inventory_settings');
+        if (s) Object.assign(settings, JSON.parse(s));
+      } catch (e) { console.error('Load failed:', e); }
+    }
+
+    function addRecord(data) {
+      records.value.push({
+        id: generateId(),
+        type: data.type,
+        productId: data.productId || '',
+        productName: data.productName || '',
+        barcode: data.barcode || '',
+        quantity: data.quantity || 0,
+        detail: data.detail || '',
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    // ===== Product operations =====
+    function incrementStock(product) {
+      product.quantity++;
+      product.updatedAt = new Date().toISOString();
+      addRecord({ type: 'in', productId: product.id, productName: product.name, barcode: product.barcode, quantity: 1, detail: '入库 +1' });
+      saveData();
+    }
+
+    function decrementStock(product) {
+      if (product.quantity <= 0) return;
+      product.quantity--;
+      product.updatedAt = new Date().toISOString();
+      addRecord({ type: 'eat', productId: product.id, productName: product.name, barcode: product.barcode, quantity: -1, detail: '正常吃完 -1' });
+      if (product.quantity <= 0) {
+        products.value = products.value.filter(item => item.id !== product.id);
+        showToast('「' + product.name + '」已吃完，自动移出库存');
+      }
+      saveData();
+    }
+
+    function confirmDelete(product) {
+      deletingProduct.value = product;
+      showDeleteConfirm.value = true;
+    }
+
+    function executeDelete() {
+      const p = deletingProduct.value;
+      if (!p) return;
+      if (p.quantity > 0) {
+        addRecord({ type: 'waste', productId: p.id, productName: p.name, barcode: p.barcode, quantity: -p.quantity, detail: `删除商品，浪费 ${p.quantity} 件` });
+      }
+      products.value = products.value.filter(item => item.id !== p.id);
+      saveData();
+      showDeleteConfirm.value = false;
+      deletingProduct.value = null;
+      showToast('已删除「' + p.name + '」');
+    }
+
+    // ===== Edit =====
+    function openEditModal(product) {
+      Object.assign(editForm, {
+        id: product.id, name: product.name, barcode: product.barcode || '',
+        location: product.location || '', stockInDate: product.stockInDate || '',
+        productionDate: product.productionDate || '',
+        shelfLife: product.shelfLife || '', expiryDate: product.expiryDate || '',
+        quantity: product.quantity || 0
+      });
+      showEditModal.value = true;
+    }
+
+    function onEditDateChange() {
+      if (editForm.productionDate && editForm.expiryDate) {
+        editForm.shelfLife = calcShelfLife(editForm.productionDate, editForm.expiryDate);
+      } else if (editForm.productionDate && editForm.shelfLife) {
+        editForm.expiryDate = calcExpiryDate(editForm.productionDate, editForm.shelfLife);
+      }
+    }
+    function onEditExpiryChange() {
+      if (editForm.productionDate && editForm.expiryDate) {
+        editForm.shelfLife = calcShelfLife(editForm.productionDate, editForm.expiryDate);
+      }
+    }
+    function onEditShelfLifeChange() {
+      if (editForm.productionDate && editForm.shelfLife) {
+        editForm.expiryDate = calcExpiryDate(editForm.productionDate, editForm.shelfLife);
+      }
+    }
+
+    function saveEdit() {
+      const product = products.value.find(p => p.id === editForm.id);
+      if (!product) return;
+      const changes = [];
+      if (product.name !== editForm.name) changes.push('名称');
+      if ((product.barcode || '') !== editForm.barcode) changes.push('条码');
+      if ((product.location || '') !== editForm.location) changes.push('储存位置');
+      if ((product.stockInDate || '') !== editForm.stockInDate) changes.push('入库日期');
+      if ((product.productionDate || '') !== editForm.productionDate) changes.push('生产日期');
+      if ((product.expiryDate || '') !== editForm.expiryDate) changes.push('到期日期');
+      if ((product.shelfLife || '') !== editForm.shelfLife) changes.push('保质期');
+
+      if (changes.length > 0) {
+        product.name = editForm.name;
+        product.barcode = editForm.barcode;
+        product.location = editForm.location;
+        product.stockInDate = editForm.stockInDate;
+        product.productionDate = editForm.productionDate;
+        product.expiryDate = editForm.expiryDate;
+        product.shelfLife = editForm.shelfLife;
+        product.updatedAt = new Date().toISOString();
+        addRecord({ type: 'adjust', productId: product.id, productName: product.name, barcode: product.barcode, quantity: 0, detail: '修改了' + changes.join('、') });
+        saveData();
+        showToast('修改成功');
+      }
+      showEditModal.value = false;
+    }
+
+    // ===== Scan form date handlers =====
+    function onScanDateChange() {
+      if (scanForm.productionDate && scanForm.expiryDate) {
+        scanForm.shelfLife = calcShelfLife(scanForm.productionDate, scanForm.expiryDate);
+      } else if (scanForm.productionDate && scanForm.shelfLife) {
+        scanForm.expiryDate = calcExpiryDate(scanForm.productionDate, scanForm.shelfLife);
+      }
+    }
+    function onScanExpiryChange() {
+      if (scanForm.productionDate && scanForm.expiryDate) {
+        scanForm.shelfLife = calcShelfLife(scanForm.productionDate, scanForm.expiryDate);
+      }
+    }
+    function onScanShelfLifeChange() {
+      if (scanForm.productionDate && scanForm.shelfLife) {
+        scanForm.expiryDate = calcExpiryDate(scanForm.productionDate, scanForm.shelfLife);
+      }
+    }
+
+    // ===== Submit product =====
+    function submitProduct() {
+      if (!scanForm.name.trim()) { showToast('请输入商品名称'); return; }
+      if (!scanForm.quantity || scanForm.quantity < 1) { showToast('请输入有效数量'); return; }
+      const product = {
+        id: generateId(),
+        name: scanForm.name.trim(),
+        barcode: scanForm.barcode || '',
+        location: scanForm.location || '',
+        stockInDate: scanForm.stockInDate || todayStr,
+        productionDate: scanForm.productionDate || '',
+        expiryDate: scanForm.expiryDate || '',
+        shelfLife: scanForm.shelfLife || '',
+        quantity: scanForm.quantity,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      products.value.push(product);
+      addRecord({ type: 'in', productId: product.id, productName: product.name, barcode: product.barcode, quantity: product.quantity, detail: '新增入库 +' + product.quantity });
+      saveData();
+      showToast('入库成功：' + product.name);
+      // Reset form
+      Object.assign(scanForm, { barcode: '', name: '', location: '', stockInDate: todayStr, productionDate: '', shelfLife: '', expiryDate: '', quantity: 1 });
+      apiMessage.value = '';
+      apiSuccess.value = false;
+      currentPage.value = 'home';
+    }
+
+    // ===== Barcode scanning =====
+    let html5QrCode = null;
+
+    async function startScanning() {
+      try {
+        html5QrCode = new Html5Qrcode("qr-reader");
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 150 } },
+          (decodedText) => {
+            scanForm.barcode = decodedText;
+            stopScanning();
+            lookupBarcode(decodedText);
+            showToast('扫码成功');
+          },
+          () => {}
+        );
+        scanning.value = true;
+      } catch (error) {
+        showToast('无法访问摄像头，请手动输入');
+        console.error('Camera error:', error);
+      }
+    }
+
+    async function stopScanning() {
+      if (html5QrCode) {
+        try {
+          await html5QrCode.stop();
+          html5QrCode.clear();
+        } catch (e) { console.error(e); }
+        html5QrCode = null;
+      }
+      scanning.value = false;
+    }
+
+    // ===== Barcode API lookup =====
+    async function lookupBarcode(barcode) {
+      if (!barcode) return;
+      apiLoading.value = true;
+      apiMessage.value = '';
+      try {
+        const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+        const data = await res.json();
+        if (data.status === 1 && data.product) {
+          const name = data.product.product_name_zh || data.product.product_name || '';
+          if (name) {
+            scanForm.name = name;
+            apiMessage.value = '已自动填充商品信息';
+            apiSuccess.value = true;
+          } else {
+            apiMessage.value = '未查询到商品名称，请手动填写';
+            apiSuccess.value = false;
+          }
+        } else {
+          apiMessage.value = '未查询到商品信息，请手动填写';
+          apiSuccess.value = false;
+        }
+      } catch (error) {
+        apiMessage.value = '查询失败，请手动填写';
+        apiSuccess.value = false;
+      } finally {
+        apiLoading.value = false;
+      }
+    }
+
+    // ===== Data export/import/clear =====
+    function exportData() {
+      const data = {
+        products: products.value,
+        records: records.value,
+        settings: { ...settings },
+        exportDate: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `food_inventory_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('备份已导出');
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.products) products.value = data.products;
+          if (data.records) records.value = data.records;
+          if (data.settings) Object.assign(settings, data.settings);
+          saveData();
+          showToast('数据导入成功');
+        } catch (err) {
+          showToast('导入失败：文件格式错误');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function clearAllData() {
+      products.value = [];
+      records.value = [];
+      saveData();
+      showClearConfirm.value = false;
+      showToast('数据已清空');
+    }
+
+    function saveExpiringDays() {
+      if (!settings.expiringDays || settings.expiringDays < 1) settings.expiringDays = 7;
+      if (settings.expiringDays > 90) settings.expiringDays = 90;
+      saveData();
+      showToast('已设置临期判定为 ' + settings.expiringDays + ' 天');
+    }
+
+    function saveCloudSettings() {
+      saveData();
+      showToast('云端同步设置已保存');
+    }
+
+    function saveServerChanSettings() {
+      saveData();
+      showToast('Server酱设置已保存');
+    }
+
+    async function serverChanPush() {
+      if (!settings.serverChanKey) { showToast('请先填写 Server酱 SendKey'); return; }
+      serverChanPushing.value = true;
+      try {
+        const expired = expiredProducts.value;
+        const expiring = expiringProducts.value;
+        if (expired.length === 0 && expiring.length === 0) {
+          showToast('当前没有临期或过期商品');
+          serverChanPushing.value = false;
+          return;
+        }
+        let title = '食品库存提醒';
+        let desp = '## 食品过期提醒\n\n';
+        if (expired.length > 0) {
+          desp += '### 已过期（' + expired.length + '件）\n';
+          expired.forEach(p => {
+            const s = getExpiryStatus(p.expiryDate);
+            desp += '- **' + p.name + '**（' + (p.location || '未分类') + '）已过期 ' + Math.abs(s.days) + ' 天\n';
+          });
+          desp += '\n';
+        }
+        if (expiring.length > 0) {
+          desp += '### 即将过期（' + expiring.length + '件）\n';
+          expiring.forEach(p => {
+            const s = getExpiryStatus(p.expiryDate);
+            desp += '- **' + p.name + '**（' + (p.location || '未分类') + '）' + s.days + ' 天后到期\n';
+          });
+        }
+        const res = await fetch('https://sctapi.ftqq.com/' + settings.serverChanKey + '.send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'title=' + encodeURIComponent(title) + '&desp=' + encodeURIComponent(desp)
+        });
+        const data = await res.json();
+        if (data.code === 0) {
+          showToast('已推送临期提醒到微信');
+        } else {
+          showToast('推送失败：' + (data.message || '请检查 SendKey'));
+        }
+      } catch (e) {
+        showToast('推送失败：' + e.message);
+      } finally {
+        serverChanPushing.value = false;
+      }
+    }
+
+    async function cloudPush() {
+      if (!settings.cloudSyncEnabled || !settings.cloudApiKey || !settings.cloudBinId) return;
+      try {
+        const payload = {
+          products: products.value,
+          records: records.value,
+          settings: { version: settings.version, expiringDays: settings.expiringDays },
+          lastModified: new Date().toISOString()
+        };
+        const res = await fetch('https://api.jsonbin.io/v3/b/' + settings.cloudBinId, {
+          method: 'PUT',
+          headers: { 'X-Master-Key': settings.cloudApiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          settings.cloudLastSync = new Date().toISOString();
+          localStorage.setItem('food_inventory_settings', JSON.stringify(settings));
+        }
+      } catch (e) { console.error('Cloud push failed:', e); }
+    }
+
+    async function cloudPull() {
+      if (!settings.cloudApiKey || !settings.cloudBinId) return false;
+      try {
+        const res = await fetch('https://api.jsonbin.io/v3/b/' + settings.cloudBinId + '/latest', {
+          headers: { 'X-Master-Key': settings.cloudApiKey }
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        const record = data.record;
+        if (!record || !record.lastModified) return false;
+        const cloudTime = new Date(record.lastModified).getTime();
+        const localTime = settings.cloudLastSync ? new Date(settings.cloudLastSync).getTime() : 0;
+        if (cloudTime > localTime) {
+          if (record.products) products.value = record.products;
+          if (record.records) records.value = record.records;
+          if (record.settings) {
+            settings.expiringDays = record.settings.expiringDays || settings.expiringDays;
+          }
+          settings.cloudLastSync = record.lastModified;
+          localStorage.setItem('food_inventory_products', JSON.stringify(products.value));
+          localStorage.setItem('food_inventory_records', JSON.stringify(records.value));
+          localStorage.setItem('food_inventory_settings', JSON.stringify(settings));
+          return true;
+        }
+        return false;
+      } catch (e) { console.error('Cloud pull failed:', e); return false; }
+    }
+
+    async function cloudSync() {
+      if (!settings.cloudApiKey || !settings.cloudBinId) { showToast('请先填写 API Key 和 Bin ID'); return; }
+      cloudSyncing.value = true;
+      cloudSyncStatus.value = '正在拉取云端数据...';
+      try {
+        const pulled = await cloudPull();
+        if (pulled) {
+          cloudSyncStatus.value = '已拉取最新数据';
+          showToast('同步成功：已更新为云端最新数据');
+        } else {
+          cloudSyncStatus.value = '本地已是最新，推送当前数据...';
+          await cloudPush();
+          showToast('同步成功：已推送本地数据到云端');
+        }
+      } catch (e) {
+        cloudSyncStatus.value = '同步失败：' + e.message;
+        showToast('同步失败');
+      } finally {
+        cloudSyncing.value = false;
+      }
+    }
+
+    // ===== Watch page changes =====
+    watch(currentPage, (newPage, oldPage) => {
+      if (oldPage === 'scan' && newPage !== 'scan' && scanning.value) {
+        stopScanning();
+      }
+    });
+
+    // ===== Lifecycle =====
+    onMounted(() => {
+      loadData();
+      if (settings.cloudSyncEnabled && settings.cloudApiKey && settings.cloudBinId) {
+        cloudPull().then(pulled => {
+          if (pulled) showToast('已从云端同步最新数据');
+        });
+      }
+      if (!sessionStorage.getItem('expiryReminderShown')) {
+        if (expiredProducts.value.length > 0 || expiringProducts.value.length > 0) {
+          showExpiryReminder.value = true;
+        }
+        sessionStorage.setItem('expiryReminderShown', 'true');
+      }
+    });
+
+    return {
+      currentPage, products, records, settings,
+      searchQuery, homeFilter, homeDateStart, homeDateEnd, recordSearchQuery, dateRangeStart, dateRangeEnd,
+      showDeleteConfirm, showExpiryReminder, showEditModal, showStatsModal, showChangelog, showClearConfirm, showCloudSyncModal,
+      cloudSyncing, cloudSyncStatus, serverChanPushing,
+      deletingProduct, toast,
+      scanForm, scanning, apiLoading, apiMessage, apiSuccess,
+      editForm,
+      pages, homeTabs, changelog,
+      pageTitle, sortedProducts, expiringProducts, expiredProducts, filteredRecords, stats,
+      recordBadgeClass, recordNumberClass, recordTypeLabel, expiryBadgeClass, expiryLabel, formatDateTime,
+      incrementStock, decrementStock, confirmDelete, executeDelete,
+      openEditModal, onEditDateChange, onEditExpiryChange, onEditShelfLifeChange, saveEdit,
+      onScanDateChange, onScanExpiryChange, onScanShelfLifeChange, submitProduct,
+      startScanning, stopScanning, lookupBarcode,
+      exportData, importData, clearAllData, saveExpiringDays,
+      saveCloudSettings, cloudPush, cloudPull, cloudSync,
+      saveServerChanSettings, serverChanPush
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
