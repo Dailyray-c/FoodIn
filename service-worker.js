@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-inventory-v56';   // v2.21.3（UI 修正：条形码融入基础信息卡；版本号未变，缓存号递增保证更新可见）
+const CACHE_NAME = 'food-inventory-v57';   // v2.21.4（扫码页备注字段补回 + 与批量页对齐；缓存号递增保证更新可见）
 
 // 仅预缓存同域静态资源（GitHub Pages 加载快、体积小；不再阻塞等待慢速第三方 CDN）
 const PRECACHE_ASSETS = [

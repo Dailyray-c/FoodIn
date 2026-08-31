@@ -599,6 +599,10 @@
               <label class="text-[11px] text-gray-400 block mb-1.5">入库日期<span class="text-gray-300">·自动记录</span></label>
               <input v-model="scanForm.stockInDate" type="date" disabled class="input input-sm">
             </div>
+            <div>
+              <label class="text-[11px] text-gray-400 block mb-1.5">备注</label>
+              <input v-model="scanForm.note" type="text" placeholder="可选，如：临期特价" class="input input-sm">
+            </div>
           </div>
         </div>
 
@@ -2358,7 +2362,7 @@ createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.3';   // 当前代码版本号（v2.21.3：批量录入扫码图标/底部 tab 高亮修正 + UI 彻底统一到单条录入 + 净含量字段归位 + 桌面浏览器拍摄小票；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
+    const CURRENT_VERSION = '2.21.4';   // 当前代码版本号（v2.21.4：单个录入页「更多信息」补回备注字段，与批量录入完全对齐；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });
 
     const searchQuery = ref('');
@@ -2581,7 +2585,7 @@ createApp({
       barcode: '', name: '', location: [], category: [],   // v2.15.1：分类/位置改为复选（数组形式存入提交时 join）
       stockInDate: todayStr,
       productionDate: '', shelfLife: '', shelfLifeUnit: 'month', expiryDate: '', quantity: 1,
-      brand: '', spec: '', netContent: '', manufacturer: '', price: '', imageUrl: ''   // 更多信息（全部可选）
+      brand: '', spec: '', netContent: '', manufacturer: '', price: '', imageUrl: '', note: ''   // 更多信息（全部可选；v2.21.4 补回 note 字段，与批量录入对齐）
     });
     const showMoreFields = ref(false);   // 录入页"更多信息"折叠面板
     const cachedMode = ref(false);       // 查询按钮状态：true=已读缓存（显示"更新"，点击强制走API）
@@ -2694,6 +2698,15 @@ createApp({
     };
 
     const changelog = [
+      {
+        version: '2.21.4',
+        date: '2026-08-31',
+        items: [
+          '新增（单个录入页备注）：单条扫码录入页「更多信息」折叠区补回「备注」输入框（label 风格 text-[11px] text-gray-400，placeholder「可选，如：临期特价」），与批量录入页备注字段完全一致——录入后随商品一起持久化（submitProduct 已同步写入 note）',
+          '对齐：扫码页与批量页「更多信息」字段顺序、字号、占位文案保持一致（品牌 → 生产厂家 → 商品图片 → 入库日期[锁定] → 备注）',
+          '版本 2.21.3 → 2.21.4；SW 缓存 v56 → v57'
+        ]
+      },
       {
         version: '2.21.3',
         date: '2026-08-31',
@@ -4629,6 +4642,7 @@ createApp({
         manufacturer: scanForm.manufacturer.trim() || '',
         price: scanForm.price === '' ? '' : Number(scanForm.price),
         imageUrl: scanForm.imageUrl.trim() || '',
+        note: scanForm.note.trim() || '',   // v2.21.4：单个录入页补回备注字段，与批量录入对齐
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -4641,7 +4655,7 @@ createApp({
       saveData();
       showToast('入库成功：' + product.name);
       // Reset form but stay on scan page
-      Object.assign(scanForm, { barcode: '', name: '', location: [], category: [], stockInDate: getTodayStr(), productionDate: '', shelfLife: '', shelfLifeUnit: 'month', expiryDate: '', quantity: 1, brand: '', spec: '', netContent: '', manufacturer: '', price: '', imageUrl: '' });
+      Object.assign(scanForm, { barcode: '', name: '', location: [], category: [], stockInDate: getTodayStr(), productionDate: '', shelfLife: '', shelfLifeUnit: 'month', expiryDate: '', quantity: 1, brand: '', spec: '', netContent: '', manufacturer: '', price: '', imageUrl: '', note: '' });   // v2.21.4：重置时一并清空备注
       apiMessage.value = '';
       apiSuccess.value = false;
     }
