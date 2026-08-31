@@ -1,0 +1,6 @@
+cd C:\Users\Administrator\WorkBuddy\2026-08-08-19-09-36
+git fetch origin
+git status                  # 若 behind 先 git pull --rebase origin master
+git add index.html service-worker.js（改什么推什么）
+git commit -m "v2.18.4: 更新日志补充（微信推送去重修复记录）"（这里自己改）
+git push origin master

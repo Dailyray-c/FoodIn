@@ -1,0 +1,51 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 只保留一个部署任务，避免并发冲突
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 准备静态文件
+        run: |
+          mkdir -p _site
+          # 只拷贝前端需要部署的静态资源（保留结构）
+          cp index.html _site/
+          cp styles.css _site/
+          cp service-worker.js _site/
+          cp manifest.json _site/
+          cp icon-180.png _site/
+          cp icon-192.png _site/
+          cp icon-512.png _site/
+          # 若以后有 build 产物目录再补充拷贝
+
+      - name: 上传构建产物
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+

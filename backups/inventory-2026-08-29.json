@@ -1,0 +1,257 @@
+{
+  "products": [
+    {
+      "id": "8677158f-18f0-4243-b470-7c2783468d40",
+      "name": "络膳洛神花茶",
+      "barcode": "",
+      "location": "餐边柜",
+      "category": "茶叶咖啡",
+      "stockInDate": "2026-08-28",
+      "productionDate": "",
+      "shelfLife": "",
+      "expiryDate": "",
+      "quantity": 1,
+      "price": "",
+      "netContent": "",
+      "brand": "",
+      "spec": "",
+      "manufacturer": "",
+      "imageUrl": "",
+      "createdAt": "2026-08-28T13:56:21.499Z",
+      "updatedAt": "2026-08-28T14:09:41.127Z"
+    },
+    {
+      "id": "d443db45-b3ec-49f6-86d3-e21dcb33ae68",
+      "name": "络膳雏菊茶",
+      "barcode": "",
+      "location": "餐边柜",
+      "category": "茶叶咖啡",
+      "stockInDate": "2026-08-28",
+      "productionDate": "",
+      "shelfLife": "",
+      "expiryDate": "",
+      "quantity": 1,
+      "price": "",
+      "netContent": "",
+      "brand": "",
+      "spec": "",
+      "manufacturer": "",
+      "imageUrl": "",
+      "createdAt": "2026-08-28T13:56:31.399Z",
+      "updatedAt": "2026-08-28T14:09:48.811Z"
+    }
+  ],
+  "records": [
+    {
+      "id": "a3f2ac6c-f8c3-4659-89a2-3b6ff161cd54",
+      "type": "eat",
+      "productId": "d443db45-b3ec-49f6-86d3-e21dcb33ae68",
+      "productName": "络膳雏菊茶",
+      "barcode": "",
+      "quantity": -1,
+      "detail": "正常吃完 -1",
+      "unitPrice": 0,
+      "netContent": "",
+      "createdAt": "2026-08-28T10:01:59.725Z"
+    },
+    {
+      "id": "55336af4-6e00-4e9a-abbe-c9fec92d5172",
+      "type": "eat",
+      "productId": "8677158f-18f0-4243-b470-7c2783468d40",
+      "productName": "络膳洛神花茶",
+      "barcode": "",
+      "quantity": -1,
+      "detail": "正常吃完 -1",
+      "unitPrice": 0,
+      "netContent": "",
+      "createdAt": "2026-08-28T11:21:17.221Z"
+    },
+    {
+      "id": "90ebcce1-d4a0-436e-8282-7e35c0a29bde",
+      "type": "eat",
+      "productId": "item-1785307418345-vx9ytg",
+      "productName": "盒马 全麦烟熏三文鱼",
+      "barcode": "6959540386935",
+      "quantity": -1,
+      "detail": "正常吃完 -1",
+      "unitPrice": 0,
+      "netContent": "",
+      "createdAt": "2026-08-28T11:22:26.239Z"
+    },
+    {
+      "id": "d02f3a95-81c3-430d-91a2-75e6dbc1aab9",
+      "type": "eat",
+      "productId": "7bef6f34-d8df-4c8d-81d1-a17ec64aab7a",
+      "productName": "黑藜麦熟成黑鳕鱼扒",
+      "barcode": "6959540386942",
+      "quantity": -1,
+      "detail": "正常吃完 -1",
+      "unitPrice": 0,
+      "netContent": "160g",
+      "createdAt": "2026-08-28T11:22:34.591Z"
+    },
+    {
+      "id": "52f5c6bd-0c83-4b20-b816-18a9e6bc9ebf",
+      "type": "adjust",
+      "productId": "8677158f-18f0-4243-b470-7c2783468d40",
+      "productName": "络膳洛神花茶",
+      "barcode": "",
+      "quantity": 0,
+      "detail": "储存位置： → 餐边柜 · 分类： → 茶叶咖啡 · 入库日期：（空） → 2026-08-28",
+      "unitPrice": 0,
+      "netContent": "",
+      "createdAt": "2026-08-28T14:09:41.127Z"
+    },
+    {
+      "id": "e980e273-03d3-40bc-af25-798bde1de669",
+      "type": "adjust",
+      "productId": "d443db45-b3ec-49f6-86d3-e21dcb33ae68",
+      "productName": "络膳雏菊茶",
+      "barcode": "",
+      "quantity": 0,
+      "detail": "储存位置： → 餐边柜 · 分类： → 茶叶咖啡 · 入库日期：（空） → 2026-08-28",
+      "unitPrice": 0,
+      "netContent": "",
+      "createdAt": "2026-08-28T14:09:48.812Z"
+    }
+  ],
+  "settings": {
+    "version": "2.16.9",
+    "expiringDays": 7,
+    "locations": [
+      "餐边柜",
+      "咖啡柜",
+      "餐桌",
+      "厨房",
+      "冰箱冷藏",
+      "冰箱冷冻",
+      "餐厅阳台"
+    ],
+    "categories": [
+      "饮料",
+      "零食",
+      "乳品蛋类",
+      "半成品菜",
+      "粮油米面",
+      "生鲜果蔬",
+      "调味品"
+    ]
+  },
+  "barcodeCache": {
+    "6971516513626": {
+      "name": "贵茶欧标抹茶4#45克（1.5克×30）",
+      "shelfLife": "364",
+      "category": "零食饮料",
+      "updatedAt": "2026-08-24T02:57:23.464Z"
+    },
+    "6921168599905": {
+      "name": "东方树叶 乌龙茶原味茶饮料 900ml",
+      "shelfLife": "",
+      "brand": "农夫山泉",
+      "spec": "900毫升",
+      "netContent": "900毫升",
+      "manufacturer": "农夫山泉股份有限公司",
+      "imageUrl": "https://oss.gds.org.cn/userfile1/uploadb/gra/sj231106090631579396/06921168599905/06921168599905.1.jpg",
+      "updatedAt": "2026-08-26T01:29:40.945Z"
+    },
+    "6921168598427": {
+      "name": "东方树叶茉莉花茶原味茶饮料900ml",
+      "shelfLife": "9个月",
+      "category": "零食饮料",
+      "updatedAt": "2026-08-24T03:11:21.320Z"
+    },
+    "6921734901682": {
+      "name": "得力7156纯优彩色记事贴76*76mm100张(混)(袋)（7156） 100张",
+      "shelfLife": "",
+      "category": "",
+      "brand": "得力",
+      "spec": "7156",
+      "netContent": "100张",
+      "manufacturer": "得力集团有限公司",
+      "imageUrl": "https://oss.gds.org.cn/userfile/uploada/gra/sj190711204045072176/06921734901682/06921734901682.1.jpg",
+      "updatedAt": "2026-08-25T23:46:47.502Z"
+    },
+    "6921734975348": {
+      "name": "得力7534橡皮擦（黄）（块）",
+      "shelfLife": "",
+      "category": "",
+      "brand": "得力",
+      "spec": "7534",
+      "netContent": "7534",
+      "manufacturer": "得力集团有限公司",
+      "imageUrl": "https://oss.gds.org.cn/userfile/uploada/gra/1612235470/06921734975348/06921734975348.1.jpg",
+      "updatedAt": "2026-08-25T23:58:04.475Z"
+    },
+    "6931791905288": {
+      "name": "湾仔岛韩式泡菜拉面炒年糕397克397克",
+      "shelfLife": "",
+      "brand": "湾仔岛",
+      "spec": "397克",
+      "netContent": "397克",
+      "manufacturer": "深圳市嘉牛士食品有限公司",
+      "imageUrl": "",
+      "updatedAt": "2026-08-26T01:27:30.231Z"
+    },
+    "6977333840761": {
+      "name": "日式双拼甘蓝沙拉菜丝",
+      "shelfLife": "",
+      "brand": "盒马工坊",
+      "spec": "397克",
+      "netContent": "397克",
+      "manufacturer": "上海纽亚国际贸易有限公司",
+      "imageUrl": "",
+      "updatedAt": "2026-08-26T01:27:48.781Z"
+    },
+    "6976081379554": {
+      "name": "抹茶椰椰高钾水",
+      "shelfLife": "167天",
+      "brand": "盒马",
+      "spec": "500ml×4",
+      "netContent": "500ml",
+      "manufacturer": "江苏统业食品科技有限公司",
+      "imageUrl": "",
+      "updatedAt": "2026-08-27T07:02:38.044Z"
+    },
+    "9826507340826015": {
+      "name": "盒马 低脂蔓越莓贝果",
+      "shelfLife": "1天",
+      "brand": "盒马",
+      "spec": "4个",
+      "netContent": "440g",
+      "manufacturer": "",
+      "imageUrl": "",
+      "updatedAt": "2026-08-27T07:05:04.073Z"
+    },
+    "6975920210751": {
+      "name": "珍宝柔卫生湿巾",
+      "shelfLife": "",
+      "brand": "珍宝柔",
+      "spec": "60片；180*150mm",
+      "netContent": "60片；180*150mm",
+      "manufacturer": "郑州顶端实业发展有限公司",
+      "imageUrl": "https://www.gds.org.cn/userfile1/Product/20250618/20250618170918112.jpeg",
+      "updatedAt": "2026-08-27T10:15:39.449Z"
+    },
+    "6959657013045": {
+      "name": "耶加雪菲美式咖啡",
+      "shelfLife": "364天",
+      "brand": "盒马",
+      "spec": "950mL",
+      "netContent": "950mL",
+      "manufacturer": "佛山市烁可力食品有限公司",
+      "imageUrl": "https://oss.gds.org.cn/userfile2/Product/Images/20250910160936668.png",
+      "updatedAt": "2026-08-28T04:51:17.996Z"
+    },
+    "6937335503989": {
+      "name": "酸梅汤 植物饮料 900mL",
+      "shelfLife": "",
+      "brand": "盒马",
+      "spec": "900毫升",
+      "netContent": "900毫升",
+      "manufacturer": "杭州乐源饮料有限公司",
+      "imageUrl": "",
+      "updatedAt": "2026-08-28T04:54:25.165Z"
+    }
+  },
+  "lastModified": "2026-08-28T14:49:30.721Z"
+}

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodIn 统计页规划稿 v3</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#f3f4f6;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:#374151;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page { max-width:430px; margin:0 auto; background:#f9fafb; min-height:100vh; padding:12px 16px 78px; position:relative; }
+  .dashed-note { background:#fff; border:1px dashed #d1d5db; border-radius:10px; padding:8px 10px; font-size:11px; color:#6b7280; margin-bottom:10px; line-height:1.7; }
+  .dashed-note b { color:#374151; font-weight:600; }
+  .dashed-note ol { padding-left:18px; margin-top:2px; }
+  .dashed-note li { margin:1px 0; }
+
+  .range-block { margin-bottom:10px; }
+  .range { display:flex; gap:6px; align-items:center; overflow-x:auto; padding-bottom:2px; }
+  .range-btn { flex-shrink:0; padding:6px 12px; border-radius:9999px; border:1px solid #e5e7eb; background:#fff; color:#4b5563; font-size:12px; font-weight:500; white-space:nowrap; }
+  .range-btn.active { background:#1f2937; border-color:#1f2937; color:#fff; }
+  .range-sep { flex-shrink:0; width:1px; height:16px; background:#e5e7eb; margin:0 2px; }
+  .range-label { flex-shrink:0; font-size:11px; color:#9ca3af; }
+  .range-date { flex-shrink:0; padding:4px 8px; border-radius:8px; border:1px solid #e5e7eb; font-size:12px; color:#4b5563; background:#fff; }
+  .range-clear { flex-shrink:0; padding:4px 8px; border-radius:8px; background:#f3f4f6; color:#6b7280; font-size:12px; border:none; }
+
+  .card { background:#fff; border:1px solid #f3f4f6; border-radius:12px; padding:12px; margin-bottom:10px; }
+  .card-hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .card-title { font-size:11px; color:#9ca3af; }
+  .card-title.red { font-size:12px; font-weight:500; color:#dc2626; }
+  .badge { font-size:10px; color:#9ca3af; background:#f9fafb; border:1px solid #f3f4f6; border-radius:4px; padding:1px 5px; flex-shrink:0; white-space:nowrap; }
+
+  /* a · 浪费临期红卡 */
+  .waste-card { background:#fef2f2; border:1px solid #fee2e2; border-radius:12px; padding:12px; margin-bottom:10px; }
+  .waste-card .hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .waste-card .hd .t { font-size:12px; font-weight:500; color:#dc2626; }
+  .waste-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .waste-item .k { font-size:11px; color:#ef4444; opacity:.8; }
+  .waste-item .v { font-size:16px; font-weight:700; color:#dc2626; margin-top:2px; }
+  .waste-item .v small { font-size:11px; font-weight:400; opacity:.7; margin-left:2px; }
+
+  .bar-summary { display:flex; gap:12px; font-size:11px; color:#6b7280; margin-bottom:6px; flex-wrap:wrap; }
+  .bar-summary b { color:#374151; font-weight:700; }
+  .chart { display:flex; align-items:flex-end; gap:6px; height:96px; }
+  .chart-col { flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; }
+  .bar-val { font-size:9px; color:#9ca3af; line-height:1; margin-bottom:2px; height:10px; }
+  .bar-group { display:flex; align-items:flex-end; gap:2px; }
+  .bar { width:6px; border-radius:2px 2px 0 0; }
+  .chart-x { display:flex; gap:6px; margin-top:6px; }
+  .chart-x span { flex:1; text-align:center; font-size:11px; color:#9ca3af; line-height:1; }
+  .legend { display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; }
+  .legend span { font-size:11px; display:flex; align-items:center; gap:4px; }
+  .dot { width:8px; height:8px; border-radius:2px; display:inline-block; }
+
+  .money-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .money-box { border-radius:12px; padding:12px; }
+  .money-label { font-size:11px; }
+  .money-val { font-size:30px; font-weight:700; margin-top:4px; line-height:1; letter-spacing:-0.5px; }
+  .money-sub { font-size:11px; color:#9ca3af; margin-top:6px; }
+  .net-row { display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:10px; border-top:1px solid #f3f4f6; }
+  .net-row .lbl { font-size:11px; color:#9ca3af; }
+  .net-row .val { font-size:14px; font-weight:700; }
+  .qty-row { display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
+  .qty-row .lbl { font-size:11px; color:#9ca3af; }
+  .qty-row .val { font-size:11px; color:#6b7280; }
+
+  /* d · 库存状态（一体化） */
+  .d-card { background:#fff; border:1px solid #f3f4f6; border-radius:12px; padding:14px 12px; margin-bottom:10px; }
+  .d-body { display:flex; align-items:center; gap:16px; }
+  .d-big { width:132px; height:132px; border-radius:9999px; position:relative; flex-shrink:0; }
+  .d-big .donut-hole { position:absolute; inset:18px; border-radius:9999px; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .d-big .donut-hole .big { font-size:22px; font-weight:700; color:#1f2937; line-height:1.1; }
+  .d-big .donut-hole .small { font-size:10px; color:#9ca3af; margin-top:2px; text-align:center; line-height:1.4; }
+  .d-tags { flex:1; display:flex; flex-direction:column; gap:6px; }
+  .d-tag { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .d-tag:active { background:#f9fafb; }
+  .d-tag .color-dot { width:10px; height:10px; border-radius:9999px; flex-shrink:0; }
+  .d-tag .name { font-size:12px; color:#374151; font-weight:600; white-space:nowrap; }
+  .d-tag .pct { font-size:10px; color:#9ca3af; margin-left:2px; font-weight:400; }
+  .d-tag .qty { font-size:12px; color:#6b7280; margin-left:auto; flex-shrink:0; }
+  .d-tag .qty b { color:#1f2937; font-weight:700; }
+  .d-tag .arrow { width:12px; height:12px; color:#d1d5db; flex-shrink:0; }
+
+  /* e · 分类/位置甜甜圈 */
+  .e-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+  .donut-card { background:#fff; border:1px solid #f3f4f6; border-radius:12px; padding:12px; }
+  .donut-card .hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .donut-card .center { display:flex; justify-content:center; margin-bottom:8px; }
+  .donut-sm { width:96px; height:96px; border-radius:9999px; position:relative; }
+  .donut-sm .donut-hole { position:absolute; inset:13px; border-radius:9999px; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .donut-sm .donut-hole .big { font-size:16px; font-weight:700; color:#1f2937; line-height:1.1; }
+  .donut-sm .donut-hole .small { font-size:9px; color:#9ca3af; margin-top:2px; text-align:center; line-height:1.3; }
+  .legend-rows .lg-row { display:flex; align-items:center; gap:4px; padding:3px 4px; margin:0 -4px; font-size:10px; cursor:pointer; border-radius:6px; -webkit-tap-highlight-color:transparent; }
+  .legend-rows .lg-row:active { background:#f9fafb; }
+  .lg-name { display:flex; align-items:center; gap:5px; color:#6b7280; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0; }
+  .lg-dot { width:7px; height:7px; border-radius:9999px; flex-shrink:0; }
+  .lg-val { color:#9ca3af; flex-shrink:0; }
+  .lg-val b { color:#374151; font-weight:700; }
+  .lg-arrow { width:10px; height:10px; color:#d1d5db; flex-shrink:0; }
+
+  .f-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .f-row .card { margin-bottom:0; }
+  .kv p { font-size:12px; color:#374151; padding:2px 0; }
+  .kv p b { font-weight:700; }
+  .kv .sub { font-size:11px; color:#ef4444; }
+  .dq-row { display:flex; justify-content:space-between; align-items:center; padding:2px 0; font-size:12px; color:#374151; cursor:pointer; }
+  .dq-row .cnt { font-weight:700; color:#f97316; margin-left:4px; }
+  .dq-row .arrow { width:12px; height:12px; color:#d1d5db; flex-shrink:0; }
+  .dq-row:active { opacity:0.6; }
+
+  .plan-note { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin-top:10px; }
+  .plan-note .t { font-size:11px; color:#9ca3af; margin-bottom:6px; }
+  .plan-note p { font-size:11px; color:#4b5563; line-height:1.7; }
+  .plan-note p b { color:#374151; }
+  .plan-note ol { padding-left:18px; margin-top:2px; }
+  .plan-note li { font-size:11px; color:#4b5563; line-height:1.7; }
+
+  .nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:#fff; border-top:1px solid #f3f4f6; display:flex; padding:6px 0 calc(6px + env(safe-area-inset-bottom)); }
+  .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; color:#9ca3af; }
+  .nav-item svg { width:20px; height:20px; }
+  .nav-item.active { color:#1f2937; font-weight:600; }
+  .nav-item.active svg { stroke:#1f2937; stroke-width:2.2; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="dashed-note">
+    <b>方案展示稿 v3</b> · 统计页布局规划（候选 v2.21.0，未写入主代码，版本号未变更）。<br>
+    <b>最新 5 条调整落实：</b>
+    <ol>
+      <li>① 日期筛选去掉"保存/已保存预设"，仅保留预设（今天/一周/一月/今年）+ 自定义</li>
+      <li>② 恢复"浪费 · 临期"红卡板块</li>
+      <li>③ 库存状态甜甜圈：图放大（132px）与右侧标签融为一体（同一卡片、无分隔）</li>
+      <li>④ 分类 / 位置分布的图例标签可点击（点击筛选对应商品）</li>
+      <li>⑤ 其余区块（柱状图 3 柱 / C 金额 / F 同行 / 移除 TOP·商品分析）保持不变</li>
+    </ol>
+  </div>
+
+  <!-- 顶部筛选：仅预设 + 自定义，无保留功能 -->
+  <div class="range-block">
+    <div class="range">
+      <button class="range-btn">今天</button>
+      <button class="range-btn">一周</button>
+      <button class="range-btn">一月</button>
+      <button class="range-btn">今年</button>
+      <span class="range-sep"></span>
+      <span class="range-label">自定义</span>
+      <input class="range-date" type="date" value="2026-08-01">
+      <span style="font-size:12px;color:#d1d5db;flex-shrink:0;">—</span>
+      <input class="range-date" type="date" value="2026-08-30">
+      <button class="range-clear">清除</button>
+    </div>
+  </div>
+
+  <!-- a · 浪费 · 临期（恢复） -->
+  <div class="waste-card">
+    <div class="hd">
+      <span class="t">浪费 · 临期</span>
+      <span class="badge" style="background:#fee2e2;border-color:#fecaca;color:#dc2626;">a · 已恢复</span>
+    </div>
+    <div class="waste-grid">
+      <div class="waste-item"><div class="k">浪费率（件）</div><div class="v">6.0%</div></div>
+      <div class="waste-item"><div class="k">临期金额</div><div class="v">¥86.5</div></div>
+      <div class="waste-item"><div class="k">浪费金额</div><div class="v">¥58.0</div></div>
+      <div class="waste-item"><div class="k">浪费净含量</div><div class="v">1.2 kg</div></div>
+    </div>
+  </div>
+
+  <!-- b · 柱状图（3 柱 + 恢复高度） -->
+  <div class="card">
+    <div class="card-hd">
+      <span class="card-title">近 6 个月采购 vs 消耗 vs 浪费（件）</span>
+      <span class="badge">b · 3 柱 + 柱顶数字</span>
+    </div>
+    <div class="bar-summary">
+      <span>采购 <b>99</b></span><span>消耗 <b>86</b></span><span>浪费 <b>15</b></span><span>净增 <b style="color:#1d4ed8">+13</b></span>
+    </div>
+    <div class="chart">
+      <div class="chart-col"><div class="bar-val">17</div><div class="bar-group"><div class="bar" style="height:51px;background:#EF9F27"></div><div class="bar" style="height:33px;background:#97C459"></div><div class="bar" style="height:6px;background:#E24B4A"></div></div></div>
+      <div class="chart-col"><div class="bar-val">25</div><div class="bar-group"><div class="bar" style="height:75px;background:#EF9F27"></div><div class="bar" style="height:42px;background:#97C459"></div><div class="bar" style="height:3px;background:#E24B4A"></div></div></div>
+      <div class="chart-col"><div class="bar-val">33</div><div class="bar-group"><div class="bar" style="height:75px;background:#EF9F27"></div><div class="bar" style="height:57px;background:#97C459"></div><div class="bar" style="height:15px;background:#E24B4A"></div></div></div>
+      <div class="chart-col"><div class="bar-val">11</div><div class="bar-group"><div class="bar" style="height:33px;background:#EF9F27"></div><div class="bar" style="height:24px;background:#97C459"></div><div class="bar" style="height:6px;background:#E24B4A"></div></div></div>
+      <div class="chart-col"><div class="bar-val">7</div><div class="bar-group"><div class="bar" style="height:21px;background:#EF9F27"></div><div class="bar" style="height:18px;background:#97C459"></div><div class="bar" style="height:3px;background:#E24B4A"></div></div></div>
+      <div class="chart-col"><div class="bar-val">6</div><div class="bar-group"><div class="bar" style="height:18px;background:#EF9F27"></div><div class="bar" style="height:15px;background:#97C459"></div><div class="bar" style="height:3px;background:#E24B4A"></div></div></div>
+    </div>
+    <div class="chart-x"><span>3月</span><span>4月</span><span>5月</span><span>6月</span><span>7月</span><span>8月</span></div>
+    <div class="legend">
+      <span style="color:#d97706;"><span class="dot" style="background:#fbbf24"></span>采购</span>
+      <span style="color:#16a34a;"><span class="dot" style="background:#4ade80"></span>消耗</span>
+      <span style="color:#dc2626;"><span class="dot" style="background:#ef4444"></span>浪费</span>
+    </div>
+  </div>
+
+  <!-- c · 核心金额区（不变） -->
+  <div class="card">
+    <div class="card-hd">
+      <span class="card-title">当期金额</span>
+      <span class="badge">c · 不变</span>
+    </div>
+    <div class="money-grid">
+      <div class="money-box" style="background:#fffbeb;">
+        <div class="money-label" style="color:#d97706;">采购金额</div>
+        <div class="money-val" style="color:#b45309;">¥1,286.5</div>
+        <div class="money-sub">日均 ¥42.9 · 共 99 件</div>
+      </div>
+      <div class="money-box" style="background:#f0fdf4;">
+        <div class="money-label" style="color:#16a34a;">消耗金额</div>
+        <div class="money-val" style="color:#15803d;">¥968.0</div>
+        <div class="money-sub">日均 ¥32.3 · 共 83 件</div>
+      </div>
+    </div>
+    <div class="net-row">
+      <span class="lbl">净支出（采购 − 消耗）</span>
+      <span class="val" style="color:#1d4ed8;">+¥318.5</span>
+    </div>
+    <div class="qty-row">
+      <span class="lbl">件数</span>
+      <span class="val">采购 99 · 消耗 83 · 浪费 5 · 净增 +16 件</span>
+    </div>
+  </div>
+
+  <!-- d · 库存状态（一体化：图大 + 标签融为一体） -->
+  <div class="d-card">
+    <div class="card-hd">
+      <span class="card-title">库存状态</span>
+      <span class="badge">d · 一体化</span>
+    </div>
+    <div class="d-body">
+      <div class="d-big" style="background:conic-gradient(#97C459 0 79.2%, #EF9F27 79.2% 94.3%, #E24B4A 94.3% 100%);">
+        <div class="donut-hole">
+          <div class="big">53</div>
+          <div class="small">件<br>临期 20.8%</div>
+        </div>
+      </div>
+      <div class="d-tags">
+        <div class="d-tag" title="点击筛选">
+          <span class="color-dot" style="background:#97C459;"></span>
+          <span class="name">正常<span class="pct">79.2%</span></span>
+          <span class="qty"><b>42</b> 件</span>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="d-tag" title="点击筛选">
+          <span class="color-dot" style="background:#EF9F27;"></span>
+          <span class="name">临期<span class="pct">15.1%</span></span>
+          <span class="qty"><b>8</b> 件</span>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="d-tag" title="点击筛选">
+          <span class="color-dot" style="background:#E24B4A;"></span>
+          <span class="name">过期<span class="pct">5.7%</span></span>
+          <span class="qty"><b>3</b> 件</span>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- e · 分类 / 位置甜甜圈（图例可点击） -->
+  <div class="e-row">
+    <div class="donut-card">
+      <div class="hd">
+        <span class="card-title">分类分布</span>
+        <span class="badge">e · 可点击</span>
+      </div>
+      <div class="center">
+        <div class="donut-sm" style="background:conic-gradient(#97C459 0 28.3%, #5B8DEF 28.3% 50.9%, #EF9F27 50.9% 66.0%, #E24B4A 66.0% 77.4%, #9B6BD4 77.4% 86.8%, #14B8A6 86.8% 94.3%, #9CA3AF 94.3% 100%);">
+          <div class="donut-hole">
+            <div class="big">6</div>
+            <div class="small">类<br>+1 未设</div>
+          </div>
+        </div>
+      </div>
+      <div class="legend-rows">
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#97C459;"></span>乳品蛋类</span><span class="lg-val"><b>15</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#5B8DEF;"></span>蔬菜水果</span><span class="lg-val"><b>12</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#EF9F27;"></span>肉禽水产</span><span class="lg-val"><b>8</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#E24B4A;"></span>零食</span><span class="lg-val"><b>6</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#9B6BD4;"></span>米面粮油</span><span class="lg-val"><b>5</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#14B8A6;"></span>饮料</span><span class="lg-val"><b>4</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#9CA3AF;"></span>未设置</span><span class="lg-val"><b>3</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+    <div class="donut-card">
+      <div class="hd">
+        <span class="card-title">位置分布</span>
+        <span class="badge">e · 可点击</span>
+      </div>
+      <div class="center">
+        <div class="donut-sm" style="background:conic-gradient(#5B8DEF 0 45.3%, #97C459 45.3% 73.6%, #14B8A6 73.6% 90.6%, #F59E0B 90.6% 96.3%, #9CA3AF 96.3% 100%);">
+          <div class="donut-hole">
+            <div class="big">4</div>
+            <div class="small">处<br>+1 未设</div>
+          </div>
+        </div>
+      </div>
+      <div class="legend-rows">
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#5B8DEF;"></span>冰箱冷藏</span><span class="lg-val"><b>24</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#97C459;"></span>常温柜</span><span class="lg-val"><b>15</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#14B8A6;"></span>冷冻室</span><span class="lg-val"><b>9</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#F59E0B;"></span>零食柜</span><span class="lg-val"><b>3</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div class="lg-row"><span class="lg-name"><span class="lg-dot" style="background:#9CA3AF;"></span>未设置</span><span class="lg-val"><b>2</b></span><svg class="lg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- f · 库存经济 + 数据质量（同行） -->
+  <div class="f-row">
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title">库存经济</span>
+        <span class="badge">f · 同行</span>
+      </div>
+      <div class="kv">
+        <p>库存货值 <b>¥1,742.0</b></p>
+        <p>可吃天数 <b>12 天</b></p>
+        <p class="sub">已过期 ¥36.5</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title">数据质量</span>
+        <span class="badge">f · 同行</span>
+      </div>
+      <div class="dq-row"><span>未填价格<span class="cnt">5</span></span><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+      <div class="dq-row"><span>未填净含量<span class="cnt">8</span></span><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+      <div class="dq-row"><span>标签待设置<span class="cnt">4</span></span><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+      <div class="dq-row"><span>位置待设置<span class="cnt">2</span></span><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+  </div>
+
+  <div class="plan-note">
+    <div class="t">本方案变更点（基于你最新 5 条要求）</div>
+    <ol>
+      <li><b>顶部筛选</b>：仅保留预设「今天 / 一周 / 一月 / 今年」+ 自定义日期 + 清除；<b>移除</b>保存当前按钮与已保存预设行。</li>
+      <li><b>恢复浪费 · 临期红卡</b>（a）：置顶于柱状图之前，内容 = 浪费率 / 临期金额 / 浪费金额 / 浪费净含量。</li>
+      <li><b>D 库存状态一体化</b>：甜甜圈放大至 132px，与右侧 3 个状态标签放在同一白色卡片内（无左右分隔边框），中心显示总件数 + 临期占比；点击标签筛选对应状态商品（?status=fresh/expiring/expired）。</li>
+      <li><b>E 分类 / 位置</b>：两个甜甜圈并排共占一行；每条图例（含"未设置"）均可点击，跳主页按该分类 / 位置筛选（#标签 / @位置），行尾新增浅灰箭头。</li>
+      <li><b>保持不变</b>：柱状图 3 柱 + 柱顶数字、C 核心金额区、F 库存经济 + 数据质量同行、移除 TOP 消耗 / 浪费 TOP / 商品分析。</li>
+    </ol>
+  </div>
+
+  <div class="nav">
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      首页
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 12h10"/><path d="M12 7v10"/></svg>
+      扫码
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      记录
+    </div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      统计
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      设置
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

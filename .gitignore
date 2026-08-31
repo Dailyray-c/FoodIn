@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# 敏感/本地数据，不应提交到仓库
+库存备份_*.json
+
+# 本地开发说明（WorkBuddy/CloudStudio 各自的工作记录，不进仓库）
+.workbuddy/
+
+# Node 构建依赖（styles.css 是编译产物，需保留并提交）
+node_modules/
+

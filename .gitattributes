@@ -1,0 +1,9 @@
+# 统一使用 LF 换行，避免 Windows 下 CRLF 污染脚本/前端文件
+* text=auto eol=lf
+
+*.js text eol=lf
+*.html text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
