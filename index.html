@@ -638,11 +638,14 @@
           </div>
           <div v-if="ocr.processing" class="mt-3">
             <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5">
-              <span>识别中（首次需下载识别库）…</span><span>{{ ocr.progress }}%</span>
+              <span>{{ ocr.progress < 15 ? '正在下载识别模型（约 16MB,首次 10-60s）…' : '正在识别…' }}</span>
+              <span>{{ ocr.progress }}%</span>
             </div>
             <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div class="h-full bg-orange-500 rounded-full transition-all" :style="{ width: ocr.progress + '%' }"></div>
             </div>
+            <button v-if="ocr.progress < 50 && settings.ocrEngine !== 'tesseract'" @click="cancelPaddleOcr"
+              class="mt-2 w-full py-1.5 text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg active:bg-gray-100">取消并切 Tesseract 识别（更快）</button>
           </div>
           <div v-if="ocr.barcodes.length" class="mt-3">
             <div class="text-[11px] text-gray-400 mb-1.5">识别到条码（点击填入商品条码）</div>
@@ -2302,11 +2305,14 @@
           class="mx-4 mb-2 bg-white rounded-2xl overflow-hidden text-left flex-shrink-0 shadow-2xl">
           <div v-if="ocr.processing" class="p-4">
             <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
-              <span>正在识别文字（首次需下载识别库）…</span><span>{{ ocr.progress }}%</span>
+              <span>{{ ocr.progress < 15 ? '正在下载识别模型（约 16MB,首次 10-60s）…' : '正在识别文字…' }}</span>
+              <span>{{ ocr.progress }}%</span>
             </div>
             <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div class="h-full bg-orange-500 rounded-full transition-all" :style="{ width: ocr.progress + '%' }"></div>
             </div>
+            <button v-if="ocr.progress < 50 && settings.ocrEngine !== 'tesseract'" @click="cancelPaddleOcr"
+              class="mt-2 w-full py-1.5 text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg active:bg-gray-100">取消并切 Tesseract 识别（更快）</button>
           </div>
           <template v-else>
             <div v-if="ocr.barcodes.length" class="px-4 pt-3 pb-2">
@@ -2748,6 +2754,7 @@ createApp({
           '新增（设置页·文字识别卡片）：识别引擎切换（Paddle 本地[推荐] / Tesseract[兼容]）+ 百度云票据识别入口预留（API Key / Secret Key 输入框，标注「后续版本开放」）',
           '识别结果面板标注实际引擎：批量录入与扫码弹层识别结果旁显示「· Paddle 本地 / · Tesseract」小字，便于确认走了哪个引擎',
           '优化（识别源下载加速）：OCR 库与 Tesseract 组件改为多 CDN 自动回退（jsDelivr 主站 → fastly → gcore，按可达性自动选择，同一会话内复用选中节点）；Tesseract 语言包从默认的国外 tessdata.projectnaptha.com 换成 jsDelivr 国内节点上的 @tesseract.js-data 镜像（chi_sim/eng 各约 11MB，下载速度大幅提升）；中文识别为主语言（chi_sim），条码数字识别仍单独用 eng',
+          '紧急止血（Paddle 下载卡死可中断）：首次使用 Paddle 时模型下载（bcebos CDN，约 16MB）最坏情况可能 1 分钟以上，应用 UI 之前一直卡在 12% 不可控。现加 30s 超时——超时自动放弃 Paddle 切 Tesseract；进度条下方新增「取消并切 Tesseract 识别（更快）」按钮（仅 Paddle 模式且下载阶段可见），点击立即放弃 Paddle 走 Tesseract。POC 入口：控制台执行 `await __foodin.preloadPaddleModel()` 可手动预下载（不超时，下载完才返回），便于先评估 Paddle 准确率再决定是否镜像权重到自托管 CDN',
           '版本 2.21.4 → 2.21.5；SW 缓存 v57 → v59'
         ]
       },
@@ -4931,6 +4938,9 @@ createApp({
     let tesseractHost = '';   // 当前选中的 CDN host——worker/core/语言包与库同源，保证回退一致
     let paddleOcrPromise = null;
     let paddleOcrReady = false;   // 模型是否已初始化（首次 init 需从百度 bcebos CDN 下载 det/rec 模型，国内直连最快）
+    let paddleOcrInitPromise = null;   // v2.21.5+：init 同一时间只跑一次（避免用户反复触发重复下载）
+    const PADDLE_INIT_TIMEOUT_MS = 30000;   // 首次下载模型 30s 超时——超时回退 Tesseract，避免用户长时间干等
+    let paddleAborted = false;   // v2.21.5+：用户主动取消的标志（true 时 tryPaddleOcr 立即返回 false 走 Tesseract 回退）
 
     function loadTesseract() {
       if (window.Tesseract) return Promise.resolve(tesseractHost);
@@ -4952,6 +4962,7 @@ createApp({
     }
 
     // v2.21.5：Paddle 本地识别——成功且有结果返回 true；任何环节失败或结果为空返回 false（由调用方交给 Tesseract 回退）
+    // v2.21.5+：加 30s 超时（首次模型下载可能 10-60s）+ 支持 paddleAborted 标志（用户在进度条点取消）
     async function tryPaddleOcr(canvas) {
       try {
         ocr.progress = Math.max(ocr.progress, 8);
@@ -4960,9 +4971,36 @@ createApp({
         if (!ocrApi) throw new Error('paddle ocr unavailable');
         if (!paddleOcrReady) {
           ocr.progress = Math.max(ocr.progress, 12);
-          // 首次初始化：下载 det/rec 模型（ch_PP-OCRv2，百度 CDN，国内网络约 10-30s），后续复用
-          await ocrApi.init();
-          paddleOcrReady = true;
+          // 首次初始化：下载 det/rec 模型（ch_PP-OCRv2，约 16MB）。库内部不报进度，用 setInterval 推动 12→45 的「下载中」动画 + 监测 paddleAborted 实现可中断
+          let tick;
+          const abortPromise = new Promise((_, rej) => {
+            const check = () => {
+              if (paddleAborted) { rej(new Error('paddle init aborted by user')); return; }
+            };
+            check();   // 立刻检查一次（用户在 init 启动前就点取消的情况）
+            tick = setInterval(() => {
+              if (ocr.progress < 45) ocr.progress = Math.min(45, ocr.progress + 1);
+              check();
+            }, 500);
+          });
+          try {
+            if (!paddleOcrInitPromise) {
+              paddleOcrInitPromise = Promise.race([
+                ocrApi.init(),
+                new Promise((_, rej) => setTimeout(() => rej(new Error('paddle init timeout (30s) — 模型下载过慢，已自动切 Tesseract')), PADDLE_INIT_TIMEOUT_MS)),
+                abortPromise
+              ]);
+            }
+            await paddleOcrInitPromise;
+            paddleOcrReady = true;
+          } finally {
+            clearInterval(tick);
+          }
+          if (paddleAborted) {
+            paddleOcrReady = false;
+            paddleOcrInitPromise = null;   // 允许下次重新 init（用户后续如果想再试）
+            return false;
+          }
         }
         ocr.progress = Math.max(ocr.progress, 55);
         const img = new Image();
@@ -4980,9 +5018,63 @@ createApp({
         ocr.engine = 'paddle';
         return true;
       } catch (e) {
-        console.error('Paddle OCR failed, fallback to Tesseract:', e);
+        console.warn('Paddle OCR failed, fallback to Tesseract:', e && e.message || e);
         paddleOcrReady = false;   // 失败后允许下次重新 init
         return false;
+      }
+    }
+
+    // v2.21.5+：POC 入口——手动预下载 Paddle 模型（不超时、用户可控），用于先评估准确率再做镜像决策
+    // 用法：控制台执行 await __foodin.preloadPaddleModel()  →  等几秒/几十秒  →  控制台日志输出 "Paddle 已就绪"
+    async function preloadPaddleModel() {
+      try {
+        console.log('[FoodIn] 开始预下载 Paddle 模型（约 16MB，首次 10-60s）…');
+        await loadPaddleOcr();
+        const ocrApi = window.paddlejs && window.paddlejs.ocr;
+        if (!ocrApi) { console.error('[FoodIn] paddlejs 未加载'); return false; }
+        if (paddleOcrReady) { console.log('[FoodIn] Paddle 模型已就绪'); return true; }
+        if (!paddleOcrInitPromise) {
+          paddleOcrInitPromise = ocrApi.init();
+        }
+        await paddleOcrInitPromise;
+        paddleOcrReady = true;
+        console.log('[FoodIn] ✅ Paddle 模型下载完成，后续识别秒开。测试：__foodin.testPaddle(imgUrl)');
+        return true;
+      } catch (e) {
+        console.error('[FoodIn] ❌ Paddle 模型下载失败:', e);
+        paddleOcrReady = false;
+        paddleOcrInitPromise = null;
+        return false;
+      }
+    }
+
+    // v2.21.5+：POC 入口——用 Paddle 直接识别一张图（图片 URL 或 dataURL），返回识别文字
+    async function testPaddle(imgSource) {
+      try {
+        const ocrApi = window.paddlejs && window.paddlejs.ocr;
+        if (!ocrApi) { console.error('[FoodIn] paddlejs 未加载'); return null; }
+        if (!paddleOcrReady) { console.warn('[FoodIn] 模型未就绪，请先 __foodin.preloadPaddleModel()'); return null; }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        if (/^data:/.test(imgSource) || /^blob:/.test(imgSource)) {
+          img.src = imgSource;
+        } else {
+          // URL：先 fetch 拿 blob 再 createObjectURL（避免跨域 canvas tainted）
+          const r = await fetch(imgSource);
+          const blob = await r.blob();
+          img.src = URL.createObjectURL(blob);
+        }
+        await new Promise((r, j) => { img.onload = r; img.onerror = j; });
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        const res = await ocrApi.recognize(canvas);
+        console.log('[FoodIn] Paddle 识别结果（' + (res.text || []).length + ' 行）:');
+        (res.text || []).forEach((t, i) => console.log('  ' + (i + 1) + '. ' + t));
+        return res;
+      } catch (e) {
+        console.error('[FoodIn] Paddle 识别失败:', e);
+        return null;
       }
     }
 
@@ -5134,22 +5226,31 @@ createApp({
     }
 
     // v2.21.5：OCR 入口——按设置选择引擎；Paddle 优先，失败/空结果自动回退 Tesseract
+    // v2.21.5+：用户在进度条上点「取消并切 Tesseract」会置 paddleAborted=true，tryPaddleOcr 立刻返回 false
     async function runOcr(canvas) {
       resetOcrState();
       ocr.processing = true;
+      paddleAborted = false;
       try {
         const engine = settings.ocrEngine || 'paddle';
         if (engine === 'paddle') {
           const ok = await tryPaddleOcr(canvas);
           if (ok) return;
-          // Paddle 加载失败 / 识别为空 → 自动回退 Tesseract，保证旧行为不丢
+          // Paddle 加载失败 / 识别为空 / 用户取消 → 自动回退 Tesseract，保证旧行为不丢
           await tryTesseractOcr(canvas);
         } else {
           await tryTesseractOcr(canvas);
         }
       } finally {
         ocr.processing = false;
+        paddleAborted = false;
       }
+    }
+
+    // v2.21.5+：用户主动取消 Paddle 加载（进度条上的「取消并切 Tesseract」按钮）
+    function cancelPaddleOcr() {
+      paddleAborted = true;
+      showToast('已取消 Paddle 加载，自动切换 Tesseract 识别…');
     }
 
     // v2.21.0：点击识别到的条码 → 填入条码框（批量录入填当前条目，其他填单条表单）
@@ -6365,7 +6466,7 @@ createApp({
     });
 
     // 调试/自动化测试钩子（不影响正常运行）
-    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, tesseractHost: () => tesseractHost };
+    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, runOcr };   // v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策
 
     return {
       currentPage, products, records, settings, barcodeCache,
@@ -6397,6 +6498,7 @@ createApp({
       saveServerChanSettings, serverChanPush,
       saveBarcodeSettings,
       saveOcrSettings,   // v2.21.5：OCR 引擎设置保存（之前漏在 return 外导致设置页保存按钮失效）
+      cancelPaddleOcr,   // v2.21.5+：Paddle 加载期间用户主动取消（进度条上「取消并切 Tesseract」）
     };
   }
 }).mount('#app');
