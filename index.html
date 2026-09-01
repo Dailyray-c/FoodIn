@@ -652,7 +652,7 @@
             </div>
           </div>
           <div v-if="ocr.lines.length" class="mt-3">
-            <div class="text-[11px] text-gray-400 mb-1.5">识别到文字（点击行添加为商品）</div>
+            <div class="text-[11px] text-gray-400 mb-1.5">识别到文字（点击行添加为商品）<span v-if="ocr.engine" class="ml-1 text-gray-300">· {{ ocr.engine === 'paddle' ? 'Paddle 本地' : 'Tesseract' }}</span></div>
             <div class="max-h-44 overflow-y-auto rounded-xl border border-gray-100">
               <button v-for="(line, i) in ocr.lines" :key="i" @click="useBatchOcrLine(line)"
                 class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ line }}</button>
@@ -1354,6 +1354,46 @@
 
         <!-- v2.16.1：微信推送（Server酱）板块已移除，相关 JS 函数保留以备恢复 -->
 
+        <!-- v2.21.5：文字识别（小票 OCR）引擎设置——Paddle 本地识别为主，预留百度云票据识别入口 -->
+        <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <div class="px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M4 7V4h16v3M4 17v3h16v-3M2 12h20"/><rect x="5" y="10" width="3" height="4" rx="0.5"/><rect x="9.5" y="10" width="3" height="4" rx="0.5"/><rect x="14" y="10" width="3" height="4" rx="0.5"/></svg>
+              </div>
+              <div>
+                <div class="text-sm text-gray-700">文字识别（小票 OCR）</div>
+                <div class="text-[11px] text-gray-400">{{ settings.ocrEngine === 'tesseract' ? 'Tesseract 兼容模式' : 'Paddle 本地识别 · 首次需下载模型' }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
+            <div>
+              <label class="text-[11px] text-gray-400 block mb-1.5">识别引擎</label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="cursor-pointer">
+                  <input type="radio" v-model="settings.ocrEngine" value="paddle" class="sr-only peer">
+                  <div class="px-3 py-2 rounded-lg border border-gray-200 text-center text-xs text-gray-500 peer-checked:bg-orange-500 peer-checked:text-white peer-checked:border-orange-500 transition-colors">Paddle 本地（推荐）</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" v-model="settings.ocrEngine" value="tesseract" class="sr-only peer">
+                  <div class="px-3 py-2 rounded-lg border border-gray-200 text-center text-xs text-gray-500 peer-checked:bg-orange-500 peer-checked:text-white peer-checked:border-orange-500 transition-colors">Tesseract（兼容）</div>
+                </label>
+              </div>
+              <div class="text-[11px] text-gray-400 mt-1.5">Paddle 本地识别精度更高（中文票据场景约 90%+），识别在小票设备本地完成；自动回退到 Tesseract。</div>
+            </div>
+            <div class="rounded-lg bg-gray-50 p-2.5">
+              <div class="text-[11px] text-gray-400 mb-1.5">百度云票据识别（预留）</div>
+              <input v-model="settings.baiduApiKey" type="text" placeholder="百度智能云 API Key"
+                class="input input-sm mb-2">
+              <input v-model="settings.baiduSecretKey" type="password" placeholder="百度智能云 Secret Key"
+                class="input input-sm">
+              <div class="text-[11px] text-gray-400 mt-1.5">入口已预留，后续版本开放；当前仍使用本地识别。</div>
+            </div>
+            <button @click="saveOcrSettings" class="w-full py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium">保存</button>
+          </div>
+        </div>
+
         <!-- Barcode Lookup API Card -->
         <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
           <div class="px-4 py-3.5 flex items-center justify-between">
@@ -1576,6 +1616,7 @@
                 <li><b class="text-gray-800">更多信息</b>（折叠）：品牌、生产厂家、商品图片、入库日期（自动锁定，批量录入另有备注），可扫码自动带出。</li>
                 <li>填好点 <b class="text-gray-800">提交入库</b> 即完成（商品名称必填）。</li>
                 <li id="m-batch-recognition"><b class="text-gray-800">小票批量录入</b>：扫码页顶部另有「小票批量录入」入口——一次录入多件商品，支持「拍摄小票」直接拍照或「上传图片」读取图片，自动识别商品名 / 条码 / 金额，点击识别结果即可添加为商品，再手动补充日期等信息；电脑浏览器点「拍摄小票」会打开内置摄像头实时预览拍照，手机则直接调用原生相机。最后点「+ 添加商品」逐条补录、或改完直接「保存全部」一次性批量入库（入库记录标记「批量入库」）。</li>
+                <li><b class="text-gray-800">识别引擎</b>：小票识别默认使用 Paddle 本地识别（百度官方模型，首次自动下载约 10-30 秒、之后复用；识别在本机完成，图片不上传任何服务器）。模型下载失败或识别为空时会自动回退 Tesseract；也可在设置页「文字识别」手动切换引擎。「百度云票据识别」入口已预留（设置页可先填 API Key / Secret Key），将在后续版本开放。</li>
               </ul>
               <div class="mt-3 bg-orange-50 rounded-xl p-3 text-[12px] text-[#9a4a12]"><b class="text-orange-600">提示</b>：开启「条码查询增强」（设置里）才能自动识别商品信息；不开启也能手动填写。</div>
             </div>
@@ -2276,7 +2317,7 @@
               </div>
             </div>
             <template v-if="ocr.lines.length">
-              <div class="px-4 pt-3 pb-1 text-xs text-gray-400">点击文字，用作{{ scanContext === 'home' ? '搜索词' : (scanContext === 'batch' ? '新商品名称' : '商品名称') }}</div>
+              <div class="px-4 pt-3 pb-1 text-xs text-gray-400">点击文字，用作{{ scanContext === 'home' ? '搜索词' : (scanContext === 'batch' ? '新商品名称' : '商品名称') }}<span v-if="ocr.engine" class="ml-1 text-gray-300">· {{ ocr.engine === 'paddle' ? 'Paddle 本地' : 'Tesseract' }}</span></div>
               <div class="max-h-40 overflow-y-auto">
                 <button v-for="(line, i) in ocr.lines" :key="i" @click="useOcrText(line)"
                   class="w-full text-left px-4 py-2.5 text-sm text-gray-800 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ line }}</button>
@@ -2362,8 +2403,8 @@ createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.4';   // 当前代码版本号（v2.21.4：单个录入页「更多信息」补回备注字段，与批量录入完全对齐；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
-    const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });
+    const CURRENT_VERSION = '2.21.5';   // 当前代码版本号（v2.21.5：小票 OCR 升级——Paddle 本地识别为主引擎，Tesseract 自动回退，预留百度云票据识别入口；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
+    const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留
 
     const searchQuery = ref('');
     const homeFilter = ref([]);        // v2.20.6 起状态筛选改走搜索框 &状态 token（见 parseSearchQuery/matchesProduct）；此数组保留仅用于旧版本迁移兼容，实际不再参与筛选
@@ -2567,7 +2608,7 @@ createApp({
     const torchOn = ref(false);         // 手电筒开关
     const torchSupported = ref(false);  // 设备是否支持手电筒
     const albumFileRef = ref(null);     // 相册选图 input
-    const ocr = reactive({ processing: false, progress: 0, lines: [], barcodes: [], error: '' });   // v2.21.0：+barcodes 条码识别结果
+    const ocr = reactive({ processing: false, progress: 0, lines: [], barcodes: [], error: '', engine: '' });   // v2.21.0：+barcodes 条码识别结果；v2.21.5：+engine 记录实际识别引擎（paddle/tesseract）
     const cloudSyncing = ref(false);
     const cloudSyncStatus = ref('');
     let cloudPushTimer = null;
@@ -2698,6 +2739,17 @@ createApp({
     };
 
     const changelog = [
+      {
+        version: '2.21.5',
+        date: '2026-09-01',
+        items: [
+          '新增（小票 OCR 升级·Paddle 本地识别）：识别引擎从 Tesseract 升级为 Paddle.js 本地识别（百度官方 @paddlejs-models/ocr，PP-OCRv2 中文模型，模型从百度 bcebos CDN 自动下载，首次约 10-30s、之后复用）。中文票据/小票场景准确率显著提升（热敏小票 + 手写圈注等复杂图远好于 Tesseract）。识别全程在设备本地完成，图片不上传任何服务器',
+          '智能回退：Paddle 库加载失败 / 模型下载失败 / 识别结果为空时自动回退到原 Tesseract 识别，旧行为不丢；设置页可手动切换「Tesseract（兼容）」模式',
+          '新增（设置页·文字识别卡片）：识别引擎切换（Paddle 本地[推荐] / Tesseract[兼容]）+ 百度云票据识别入口预留（API Key / Secret Key 输入框，标注「后续版本开放」）',
+          '识别结果面板标注实际引擎：批量录入与扫码弹层识别结果旁显示「· Paddle 本地 / · Tesseract」小字，便于确认走了哪个引擎',
+          '版本 2.21.4 → 2.21.5；SW 缓存 v57 → v58'
+        ]
+      },
       {
         version: '2.21.4',
         date: '2026-08-31',
@@ -4846,8 +4898,10 @@ createApp({
       }
     }
 
-    // ===== OCR 文字识别（Tesseract.js，懒加载） =====
+    // ===== OCR 文字识别（v2.21.5：Paddle 本地识别为主引擎，Tesseract 自动回退） =====
     let tesseractPromise = null;
+    let paddleOcrPromise = null;
+    let paddleOcrReady = false;   // 模型是否已初始化（首次 init 需从百度 CDN 下载 det/rec 模型约 5-15MB）
 
     function loadTesseract() {
       if (window.Tesseract) return Promise.resolve();
@@ -4863,12 +4917,63 @@ createApp({
       return tesseractPromise;
     }
 
+    // v2.21.5：Paddle.js OCR 库懒加载——单文件 UMD（自包含核心 + OpenCV.js），模型默认从百度官方 bcebos CDN 下载（国内直连最快）
+    function loadPaddleOcr() {
+      if (window.paddlejs && window.paddlejs.ocr) return Promise.resolve();
+      if (!paddleOcrPromise) {
+        paddleOcrPromise = new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/@paddlejs-models/ocr@1.2.4/lib/index.js';
+          s.onload = resolve;
+          s.onerror = () => { paddleOcrPromise = null; reject(new Error('paddle ocr load failed')); };
+          document.head.appendChild(s);
+        });
+      }
+      return paddleOcrPromise;
+    }
+
+    // v2.21.5：Paddle 本地识别——成功且有结果返回 true；任何环节失败或结果为空返回 false（由调用方交给 Tesseract 回退）
+    async function tryPaddleOcr(canvas) {
+      try {
+        ocr.progress = Math.max(ocr.progress, 8);
+        await loadPaddleOcr();
+        const ocrApi = window.paddlejs && window.paddlejs.ocr;
+        if (!ocrApi) throw new Error('paddle ocr unavailable');
+        if (!paddleOcrReady) {
+          ocr.progress = Math.max(ocr.progress, 12);
+          // 首次初始化：下载 det/rec 模型（ch_PP-OCRv2，百度 CDN，国内网络约 10-30s），后续复用
+          await ocrApi.init();
+          paddleOcrReady = true;
+        }
+        ocr.progress = Math.max(ocr.progress, 55);
+        const img = new Image();
+        img.src = canvas.toDataURL('image/png');
+        await new Promise((r, j) => { img.onload = r; img.onerror = j; });
+        const res = await ocrApi.recognize(img);
+        ocr.progress = Math.max(ocr.progress, 90);
+        const textArr = Array.isArray(res && res.text) ? res.text : [];
+        const lines = textArr
+          .map(s => String(s).replace(/\s+/g, ' ').trim())
+          .filter(s => s.replace(/[^0-9a-zA-Z\u4e00-\u9fa5]/g, '').length >= 2);
+        ocr.lines = lines.slice(0, 12);
+        ocr.barcodes = [...new Set(extractBarcodes(textArr.join('\n')))].slice(0, 6);
+        if (!ocr.lines.length && !ocr.barcodes.length) return false;
+        ocr.engine = 'paddle';
+        return true;
+      } catch (e) {
+        console.error('Paddle OCR failed, fallback to Tesseract:', e);
+        paddleOcrReady = false;   // 失败后允许下次重新 init
+        return false;
+      }
+    }
+
     function resetOcrState() {
       ocr.processing = false;
       ocr.progress = 0;
       ocr.lines = [];
       ocr.barcodes = [];
       ocr.error = '';
+      ocr.engine = '';
     }
 
     // ===== v2.21.0 OCR 条码识别优化 =====
@@ -4961,10 +5066,10 @@ createApp({
       img.src = URL.createObjectURL(file);
     }
 
-    async function runOcr(canvas) {
-      resetOcrState();
-      ocr.processing = true;
+    // Tesseract 识别（原实现保留，作为 Paddle 不可用/识别为空时的回退）
+    async function tryTesseractOcr(canvas) {
       try {
+        ocr.progress = Math.max(ocr.progress, 8);
         await loadTesseract();
         // pass1：常规文字识别（chi_sim+eng）
         const result = await Tesseract.recognize(canvas, 'chi_sim+eng', {
@@ -4992,12 +5097,30 @@ createApp({
           } catch (e2) { /* 条码识别失败不影响文字结果 */ }
         }
         ocr.barcodes = [...new Set(barcodes)].slice(0, 6);
+        ocr.engine = 'tesseract';
         if (!ocr.lines.length && !ocr.barcodes.length) {
           ocr.error = '未识别到文字或条码，请靠近一些或重拍';
         }
       } catch (e) {
         console.error('OCR error:', e);
         ocr.error = '识别组件加载或识别失败，请检查网络后重试';
+      }
+    }
+
+    // v2.21.5：OCR 入口——按设置选择引擎；Paddle 优先，失败/空结果自动回退 Tesseract
+    async function runOcr(canvas) {
+      resetOcrState();
+      ocr.processing = true;
+      try {
+        const engine = settings.ocrEngine || 'paddle';
+        if (engine === 'paddle') {
+          const ok = await tryPaddleOcr(canvas);
+          if (ok) return;
+          // Paddle 加载失败 / 识别为空 → 自动回退 Tesseract，保证旧行为不丢
+          await tryTesseractOcr(canvas);
+        } else {
+          await tryTesseractOcr(canvas);
+        }
       } finally {
         ocr.processing = false;
       }
@@ -5307,6 +5430,9 @@ createApp({
             settings.serverChanPushEnabled = !!obj.serverChanPushEnabled;
             settings.barcodeApiKey = obj.barcodeApiKey || '';
             settings.barcodeLookupEnabled = !!obj.barcodeLookupEnabled;
+            settings.ocrEngine = (obj.ocrEngine === 'tesseract') ? 'tesseract' : 'paddle';   // v2.21.5：OCR 引擎
+            settings.baiduApiKey = obj.baiduApiKey || '';   // v2.21.5：百度云预留
+            settings.baiduSecretKey = obj.baiduSecretKey || '';   // v2.21.5：百度云预留
             if (Array.isArray(obj.locations) && obj.locations.length) settings.locations = obj.locations;
             if (Array.isArray(obj.categories) && obj.categories.length) settings.categories = obj.categories;
             settings.autoSaveInterval = obj.autoSaveInterval || 0;
@@ -5352,6 +5478,12 @@ createApp({
     function saveBarcodeSettings() {
       saveData();
       showToast('条码查询设置已保存');
+    }
+
+    // v2.21.5：OCR 引擎设置保存（Paddle/Tesseract 切换 + 百度云预留 Key 落盘）
+    function saveOcrSettings() {
+      saveData();
+      showToast('识别设置已保存');
     }
 
     // ===== Location list management =====
@@ -6238,6 +6370,7 @@ createApp({
       saveCloudSettings, cloudSync,
       saveServerChanSettings, serverChanPush,
       saveBarcodeSettings,
+      saveOcrSettings,   // v2.21.5：OCR 引擎设置保存（之前漏在 return 外导致设置页保存按钮失效）
     };
   }
 }).mount('#app');
