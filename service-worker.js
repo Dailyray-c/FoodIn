@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-inventory-v58';   // v2.21.5（小票 OCR 升级：Paddle 本地识别为主引擎 + Tesseract 回退 + 百度云入口预留；缓存号递增保证更新可见）
+const CACHE_NAME = 'food-inventory-v59';   // v2.21.5（小票 OCR 升级：Paddle 本地识别为主引擎 + Tesseract 回退 + 百度云入口预留 + 识别源多 CDN 下载加速；缓存号递增保证更新可见）
 
 // 仅预缓存同域静态资源（GitHub Pages 加载快、体积小；不再阻塞等待慢速第三方 CDN）
 const PRECACHE_ASSETS = [

@@ -2747,7 +2747,8 @@ createApp({
           '智能回退：Paddle 库加载失败 / 模型下载失败 / 识别结果为空时自动回退到原 Tesseract 识别，旧行为不丢；设置页可手动切换「Tesseract（兼容）」模式',
           '新增（设置页·文字识别卡片）：识别引擎切换（Paddle 本地[推荐] / Tesseract[兼容]）+ 百度云票据识别入口预留（API Key / Secret Key 输入框，标注「后续版本开放」）',
           '识别结果面板标注实际引擎：批量录入与扫码弹层识别结果旁显示「· Paddle 本地 / · Tesseract」小字，便于确认走了哪个引擎',
-          '版本 2.21.4 → 2.21.5；SW 缓存 v57 → v58'
+          '优化（识别源下载加速）：OCR 库与 Tesseract 组件改为多 CDN 自动回退（jsDelivr 主站 → fastly → gcore，按可达性自动选择，同一会话内复用选中节点）；Tesseract 语言包从默认的国外 tessdata.projectnaptha.com 换成 jsDelivr 国内节点上的 @tesseract.js-data 镜像（chi_sim/eng 各约 11MB，下载速度大幅提升）；中文识别为主语言（chi_sim），条码数字识别仍单独用 eng',
+          '版本 2.21.4 → 2.21.5；SW 缓存 v57 → v59'
         ]
       },
       {
@@ -4899,35 +4900,53 @@ createApp({
     }
 
     // ===== OCR 文字识别（v2.21.5：Paddle 本地识别为主引擎，Tesseract 自动回退） =====
+    // v2.21.5：CDN 多源回退——jsDelivr 主站国内时快时慢，按序尝试 cdn → fastly → gcore，选中最快可达的
+    const OCR_CDN_HOSTS = ['https://cdn.jsdelivr.net', 'https://fastly.jsdelivr.net', 'https://gcore.jsdelivr.net'];
+    let ocrCdnIdx = 0;   // 记住上次成功的 host，同会话后续请求优先复用（更利于命中 HTTP 缓存）
+    function loadScriptOnce(url) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = url;
+        s.onload = () => resolve();
+        s.onerror = () => { s.remove(); reject(new Error('load failed: ' + url)); };
+        document.head.appendChild(s);
+      });
+    }
+    // 按序尝试各 CDN host 加载 path，成功返回该 host 前缀；全部失败抛错
+    async function pickCdnHost(path) {
+      for (let i = 0; i < OCR_CDN_HOSTS.length; i++) {
+        const idx = (ocrCdnIdx + i) % OCR_CDN_HOSTS.length;
+        const host = OCR_CDN_HOSTS[idx];
+        try {
+          await loadScriptOnce(host + path);
+          ocrCdnIdx = idx;
+          return host;
+        } catch (e) { /* 该 host 不可达，换下一个 */ }
+      }
+      throw new Error('OCR CDN 全部不可达');
+    }
+    const TESS_CDN_PATH = '/npm/tesseract.js@5.1.1/dist/tesseract.min.js';      // 库（v5 稳定版，显式锁版本防 tag 漂移）
+    const PADDLE_CDN_PATH = '/npm/@paddlejs-models/ocr@1.2.4/lib/index.js';      // Paddle.js UMD 单文件（自包含核心 + OpenCV.js）
     let tesseractPromise = null;
+    let tesseractHost = '';   // 当前选中的 CDN host——worker/core/语言包与库同源，保证回退一致
     let paddleOcrPromise = null;
-    let paddleOcrReady = false;   // 模型是否已初始化（首次 init 需从百度 CDN 下载 det/rec 模型约 5-15MB）
+    let paddleOcrReady = false;   // 模型是否已初始化（首次 init 需从百度 bcebos CDN 下载 det/rec 模型，国内直连最快）
 
     function loadTesseract() {
-      if (window.Tesseract) return Promise.resolve();
+      if (window.Tesseract) return Promise.resolve(tesseractHost);
       if (!tesseractPromise) {
-        tesseractPromise = new Promise((resolve, reject) => {
-          const s = document.createElement('script');
-          s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-          s.onload = resolve;
-          s.onerror = () => { tesseractPromise = null; reject(new Error('tesseract load failed')); };
-          document.head.appendChild(s);
-        });
+        tesseractPromise = pickCdnHost(TESS_CDN_PATH)
+          .then(h => { tesseractHost = h; return h; })
+          .catch(e => { tesseractPromise = null; throw e; });
       }
       return tesseractPromise;
     }
 
-    // v2.21.5：Paddle.js OCR 库懒加载——单文件 UMD（自包含核心 + OpenCV.js），模型默认从百度官方 bcebos CDN 下载（国内直连最快）
+    // v2.21.5：Paddle.js OCR 库懒加载——多 CDN 回退；模型默认从百度官方 bcebos CDN 下载（国内直连最快）
     function loadPaddleOcr() {
       if (window.paddlejs && window.paddlejs.ocr) return Promise.resolve();
       if (!paddleOcrPromise) {
-        paddleOcrPromise = new Promise((resolve, reject) => {
-          const s = document.createElement('script');
-          s.src = 'https://cdn.jsdelivr.net/npm/@paddlejs-models/ocr@1.2.4/lib/index.js';
-          s.onload = resolve;
-          s.onerror = () => { paddleOcrPromise = null; reject(new Error('paddle ocr load failed')); };
-          document.head.appendChild(s);
-        });
+        paddleOcrPromise = pickCdnHost(PADDLE_CDN_PATH).catch(e => { paddleOcrPromise = null; throw e; });
       }
       return paddleOcrPromise;
     }
@@ -5067,17 +5086,22 @@ createApp({
     }
 
     // Tesseract 识别（原实现保留，作为 Paddle 不可用/识别为空时的回退）
+    // v2.21.5：下载加速——显式指定 worker/core/语言包 URL（与库同 CDN 多源回退）；语言包从默认的国外 tessdata.projectnaptha.com 换成 jsDelivr 上的 @tesseract.js-data 镜像（国内节点，chi_sim 约 11MB、eng 约 11MB 下载速度大幅提升）
     async function tryTesseractOcr(canvas) {
       try {
         ocr.progress = Math.max(ocr.progress, 8);
-        await loadTesseract();
-        // pass1：常规文字识别（chi_sim+eng）
-        const result = await Tesseract.recognize(canvas, 'chi_sim+eng', {
+        const host = await loadTesseract();
+        const tessOpts = {
+          workerPath: host + '/npm/tesseract.js@5.1.1/dist/worker.min.js',
+          corePath: host + '/npm/tesseract.js-core@5.1.1',
+          langPath: host + '/npm/@tesseract.js-data/chi_sim@1.0.0/4.0.0',
           logger: (m) => {
             if (m.status === 'recognizing text') ocr.progress = Math.max(ocr.progress, Math.round(m.progress * 100));
             else if (m.status === 'loading language traineddata') ocr.progress = Math.min(ocr.progress || 5, 5);
           }
-        });
+        };
+        // pass1：常规文字识别（chi_sim 中文为主，数字/字母由 chi_sim 自带字符集覆盖；条码数字由 pass2 单独识别）
+        const result = await Tesseract.recognize(canvas, 'chi_sim', tessOpts);
         const lines = (result.data.text || '')
           .split('\n')
           .map(s => s.replace(/\s+/g, ' ').trim())
@@ -5090,6 +5114,8 @@ createApp({
             ocr.progress = Math.max(ocr.progress, 85);
             const prep = preprocessForBarcode(canvas);
             const res2 = await Tesseract.recognize(prep, 'eng', {
+              ...tessOpts,
+              langPath: host + '/npm/@tesseract.js-data/eng@1.0.0/4.0.0',
               tessedit_char_whitelist: '0123456789',
               tessedit_pageseg_mode: 6
             });
@@ -6339,7 +6365,7 @@ createApp({
     });
 
     // 调试/自动化测试钩子（不影响正常运行）
-    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData };
+    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, tesseractHost: () => tesseractHost };
 
     return {
       currentPage, products, records, settings, barcodeCache,
