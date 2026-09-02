@@ -14,3 +14,8 @@ node_modules/
 
 # Paddle 本地模型（可从 bcebos 重新下载，不入库）
 _paddle_models/
+
+# 测试图（不进入仓库；testimage.jpg 是仓库原有的 OCR 测试样本，testimage2/3 是用户临时上传）
+_test_imgs/
+testimage2.jpg
+testimage3.jpg

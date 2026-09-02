@@ -103,7 +103,7 @@ async function enterBatch(page) {
       const hit = btns.find(b => /版本\s*v?\s*2\.21\.\d/.test(b.textContent || ''));
       return hit ? hit.textContent.trim() : null;
     });
-    log('E1 设置页版本号 v2.21.7', /v2\.21\.7/.test(verText || ''), `ver="${verText}"`);
+    log('E1 设置页版本号 v2.21.8', /v2\.21\.8/.test(verText || ''), `ver="${verText}"`);
     await ctx.close();
   }
 
@@ -131,6 +131,8 @@ async function enterBatch(page) {
     await enterBatch(page);
     await page.locator('input[type=file][accept="image/*"]:not([capture])').setInputFiles({ name: 't.png', mimeType: 'image/png', buffer: PNG_BUF });
     await page.waitForSelector('div.text-\\[11px\\].text-gray-400:has-text("识别到文字")', { timeout: 15000 });
+    // v2.21.8+：等 v-if="ocr.engine" span 渲染完再读 textContent（Vue 异步更新，先出现 div 后渲染 span）
+    await page.waitForSelector('div.text-\\[11px\\].text-gray-400:has-text("识别到文字") span:has-text("Tesseract")', { timeout: 5000 }).catch(() => {});
     const labelD = await page.locator('div.text-\\[11px\\].text-gray-400:has-text("识别到文字")').first().textContent();
     const linesD = await page.locator('div.max-h-44 button').allTextContents();
     log('D1 回退路径：识别结果来自 Tesseract mock', linesD.length >= 1 && linesD[0].includes('回退识别文字'), linesD[0]);
