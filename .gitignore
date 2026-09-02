@@ -11,3 +11,6 @@ __pycache__/
 # Node 构建依赖（styles.css 是编译产物，需保留并提交）
 node_modules/
 
+
+# Paddle 本地模型（可从 bcebos 重新下载，不入库）
+_paddle_models/
