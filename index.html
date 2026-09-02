@@ -2409,7 +2409,7 @@ createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.8';   // 当前代码版本号（v2.21.8：去掉 ocr.lines.slice(0,12) 硬截断（小票识别 ~21 行只展示前 12 行的 bug）+ 识别前自动缩图至长边 1280（paddle/Tesseract 双引擎，加速 2-3x，对识别质量无影响）+ ocr.linesTotal 字段记录总行数供 UI 按需展示；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
+    const CURRENT_VERSION = '2.21.9';   // 当前代码版本号（v2.21.9：Paddle 本地模型「自动探测 + 持久化 + 静默预加载」——自定义模型地址存 localStorage 刷新不丢；页面跑在 http://127.0.0.1 等本机/内网服务时自动发现站内 _paddle_models 目录并指向本地模型、后台预下载，识别不再静默回退 Tesseract；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留
 
     const searchQuery = ref('');
@@ -2745,6 +2745,16 @@ createApp({
     };
 
     const changelog = [
+      {
+        version: '2.21.9',
+        date: '2026-09-02',
+        items: [
+          '修复「又只剩 Tesseract」：本地/自托管 Paddle 模型地址现在**自动持久化**（存 localStorage，刷新页面、重开应用不再丢失，无需每次手敲 `__foodin.setPaddleModelUrls`）',
+          '新增「本地模型自动探测」：当应用由本机/内网 http 服务打开（如 `start_paddle_host.bat` 启动的 http://127.0.0.1:8765）且站点内存在 `_paddle_models` 目录时，自动把 Paddle 模型指向本地并后台预下载——双击 bat + 打开网页即用，Paddle 识别秒开、不再静默切回 Tesseract（云端/外网链接不受影响，仍走默认源）',
+          '后台静默预加载：模型地址已指向本地时，应用启动 0.6s 后自动后台下载模型（不阻塞页面）；已手动切到 Tesseract 的用户跳过',
+          '版本 2.21.8 → 2.21.9；SW 缓存 v64 → v65'
+        ]
+      },
       {
         version: '2.21.8',
         date: '2026-09-02',
@@ -5009,11 +5019,68 @@ createApp({
       paddleInitRunning = false;
       paddleLastError = '';
     }
-    function setPaddleModelUrls(detUrl, recUrl) {   // 手动引入本地/自托管模型：传两个 model.json 完整 URL，空串=回库默认（bcebos）
+    // v2.21.9：自定义模型地址持久化——独立 localStorage key（不进 settings，避免云端同步把 127.0.0.1 这类本机地址带到其他设备）
+    const PADDLE_MODEL_URLS_KEY = 'food_inventory_paddle_models_v1';
+    function persistPaddleModelUrls() {
+      try {
+        if (paddleDetUrl || paddleRecUrl) localStorage.setItem(PADDLE_MODEL_URLS_KEY, JSON.stringify({ detUrl: paddleDetUrl, recUrl: paddleRecUrl }));
+        else localStorage.removeItem(PADDLE_MODEL_URLS_KEY);
+      } catch (e) { console.warn('[FoodIn][Paddle] 模型地址持久化失败:', e); }
+    }
+    function loadPaddleModelUrls() {   // 启动时从 localStorage 恢复（刷新/重开应用自动生效，不再需要每次手敲控制台）
+      try {
+        const raw = localStorage.getItem(PADDLE_MODEL_URLS_KEY);
+        if (!raw) return false;
+        const o = JSON.parse(raw);
+        paddleDetUrl = ((o && o.detUrl) || '').trim();
+        paddleRecUrl = ((o && o.recUrl) || '').trim();
+        return !!(paddleDetUrl || paddleRecUrl);
+      } catch (e) { console.warn('[FoodIn][Paddle] 恢复模型地址失败:', e); return false; }
+    }
+    function isPrivateHost() {   // 页面是否跑在本机/内网 http 服务上（此时才值得探测站内 _paddle_models 目录）
+      const h = location.hostname;
+      return h === 'localhost' || h === '127.0.0.1' || h === '::1'
+        || /^192\.168\./.test(h) || /^10\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h);
+    }
+    async function autoDetectLocalModels() {   // v2.21.9：本地模型自动探测——页面跑在 http://127.0.0.1:8765 这类服务时，若站内存在 _paddle_models（start_paddle_host.bat 启动），自动把 Paddle 指向本地模型并持久化，无需手敲控制台
+      if (window.__foodinDisableAutoPaddle) return 'skipped-test';   // E2E/自动化测试禁用钩子（保持 mock init 计数确定性）
+      try {
+        if (loadPaddleModelUrls()) return 'restored';   // 已有保存的自定义地址，直接沿用
+        if (location.protocol !== 'http:' && location.protocol !== 'https:') return 'skipped-non-http';   // file:// 跳过（无同源概念）
+        if (!isPrivateHost()) return 'skipped-remote';   // 云端链接不探测（云端不该有本地模型目录）
+        const detUrl = location.origin + '/_paddle_models/det/model.json';
+        const r = await fetch(detUrl, { method: 'HEAD' });   // 同源 HEAD 探测（python http.server 支持）
+        if (!r.ok) { console.log('[FoodIn][Paddle] 站内未发现 _paddle_models（HTTP ' + r.status + '），使用默认源'); return 'not-found'; }
+        paddleDetUrl = detUrl;
+        paddleRecUrl = location.origin + '/_paddle_models/rec/model.json';
+        resetPaddleState();
+        persistPaddleModelUrls();
+        console.log('[FoodIn][Paddle] 🎯 自动探测到本地模型 → ' + paddleDetUrl);
+        return 'detected';
+      } catch (e) {
+        console.warn('[FoodIn][Paddle] 本地模型探测失败:', (e && e.message) || e);
+        return 'probe-error';
+      }
+    }
+    async function ensurePaddleReady() {   // v2.21.9：启动静默预加载——本地模型已指向时后台把模型下载好，识别秒开（不阻塞页面；已切 Tesseract 的用户跳过）
+      try {
+        if (window.__foodinDisableAutoPaddle) return false;   // E2E/自动化测试禁用钩子
+        if (settings.ocrEngine !== 'paddle') return false;
+        if (paddleOcrReady || !(paddleDetUrl || paddleRecUrl)) return false;
+        await loadPaddleOcr();
+        const ocrApi = window.paddlejs && window.paddlejs.ocr;
+        if (!ocrApi) return false;
+        startPaddleInit(ocrApi);
+        await paddleOcrInitPromise;
+        return paddleOcrReady;
+      } catch (e) { return false; }
+    }
+    function setPaddleModelUrls(detUrl, recUrl) {   // 手动引入本地/自托管模型：传两个 model.json 完整 URL，空串=回库默认（bcebos）。v2.21.9：自动持久化，刷新/重开无需再设
       paddleDetUrl = (detUrl || '').trim();
       paddleRecUrl = (recUrl || '').trim();
       resetPaddleState();
-      console.log('[FoodIn][Paddle] 模型地址已设：det=' + (paddleDetUrl || '默认 bcebos') + '，rec=' + (paddleRecUrl || '默认 bcebos') + '；执行 await __foodin.preloadPaddleModel() 立即下载验证');
+      persistPaddleModelUrls();
+      console.log('[FoodIn][Paddle] 模型地址已设并保存：det=' + (paddleDetUrl || '默认 bcebos') + '，rec=' + (paddleRecUrl || '默认 bcebos') + '；刷新页面自动生效，或执行 await __foodin.preloadPaddleModel() 立即下载验证');
     }
     function paddleStatus() {
       return {
@@ -6573,6 +6640,12 @@ createApp({
     onMounted(() => {
       migrateFilterArrays();   // 兼容旧版本：homeFilter 等可能是字符串，统一为数组
       loadData();
+      // v2.21.9：Paddle 本地模型自动探测 + 静默预加载——页面由 start_paddle_host.bat 的 http://127.0.0.1:8765 服务打开时，
+      // 自动把模型指向站内 _paddle_models 并后台下载（此前的 console setPaddleModelUrls 刷新即丢，本地服务重启/刷新后又会静默回退 Tesseract）
+      setTimeout(async () => {
+        const mode = await autoDetectLocalModels();
+        if (mode === 'detected' || mode === 'restored') await ensurePaddleReady();
+      }, 600);
       // 强制同步 settings.version 为当前代码版本：修复 SW 缓存旧 HTML/旧 localStorage/旧导入导致版本号不更新的 bug
       if (settings.version !== CURRENT_VERSION) settings.version = CURRENT_VERSION;
       // v2.16.2：新设备（无数据）首次进入自动打开使用指南——以后还想看，进入「设置」页面查看

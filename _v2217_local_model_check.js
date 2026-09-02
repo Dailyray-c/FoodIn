@@ -45,7 +45,7 @@ const { chromium } = require('playwright');
     };
   });
   const allApis = v217Apis.hasPaddleStatus && v217Apis.hasSetPaddleUrls && v217Apis.hasResetPaddle && v217Apis.hasPreload && v217Apis.hasCancel;
-  log('L2 v2.21.7 新增 API 全部存在且 settings.version 正确', allApis && v217Apis.currentVer === '2.21.7', JSON.stringify(v217Apis));
+  log('L2 v2.21.7 新增 API 全部存在且 settings.version 正确', allApis && v217Apis.currentVer === '2.21.9', JSON.stringify(v217Apis));
 
   // 3) 同源 fetch 模型（验证 CORS 不再拦截）
   const fetchResults = await page.evaluate(async () => {
