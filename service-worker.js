@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-inventory-v62';   // v2.21.6（批量 OCR 四联修复收敛：单 chi_sim worker 复用条码 pass2 / 进度分区单调 / Paddle init 单例统一，E2E 自测通过；缓存号递增保证更新可见）
+const CACHE_NAME = 'food-inventory-v63';   // v2.21.7（Paddle 诊断增强：init 错误日志不静默 + paddleStatus/setPaddleModelUrls 控制台入口；缓存号递增保证更新可见）
 
 // 仅预缓存同域静态资源（GitHub Pages 加载快、体积小；不再阻塞等待慢速第三方 CDN）
 const PRECACHE_ASSETS = [

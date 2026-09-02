@@ -2409,7 +2409,7 @@ createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.6';   // 当前代码版本号（v2.21.6：批量 OCR 四联修复收敛——单 chi_sim worker 复用条码 pass2、进度分区单调、Paddle init 单例统一，E2E 自测通过；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
+    const CURRENT_VERSION = '2.21.7';   // 当前代码版本号（v2.21.7：Paddle 诊断增强——init 错误不再静默吞掉（日志+原因区分 超时/失败/取消）、新增 paddleStatus/setPaddleModelUrls/resetPaddleState 控制台入口，用于排查「45% 卡住后切 Tesseract」并支持手动引入本地模型；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留
 
     const searchQuery = ref('');
@@ -2745,6 +2745,14 @@ createApp({
     };
 
     const changelog = [
+      {
+        version: '2.21.7',
+        date: '2026-09-02',
+        items: [
+          '诊断增强（排查「Paddle 下载正常但进度卡 45% 后自动切 Tesseract」）：① Paddle init 错误不再静默吞掉——控制台现在会明确打印「init 失败原因」或「超时 N s」或「已取消」三种日志，并标注实际耗时；② 新增 `__foodin.paddleStatus()` 查看引擎/就绪状态/耗时/最近错误；③ 支持手动引入本地或自托管模型：`__foodin.setPaddleModelUrls(det 的 model.json URL, rec 的 model.json URL)` 后执行 `await __foodin.preloadPaddleModel()` 即可验证（模型目录需 HTTP 服务且允许跨域，model.json 与 chunk_*.dat 权重文件必须同目录）。注意：自动回退 Tesseract 时设置页仍显示 Paddle 属预期行为（只有点「取消并切 Tesseract」按钮才永久切换），此时 Paddle 用不了是因为模型加载未完成/失败，与设置无关',
+          '版本 2.21.6 → 2.21.7；SW 缓存 v62 → v63'
+        ]
+      },
       {
         version: '2.21.6',
         date: '2026-09-02',
@@ -4951,16 +4959,63 @@ createApp({
     const PADDLE_INIT_TIMEOUT_MS = 30000;   // 首次下载模型 30s 超时——超时回退 Tesseract，避免用户长时间干等
     let paddleAborted = false;   // v2.21.5+：用户主动取消的标志（true 时 tryPaddleOcr 立即返回 false 走 Tesseract 回退）
     let paddleInitStartedAt = 0;   // v2.21.5+：init 首次启动时间戳——30s 超时窗口从首次 init 起算，避免后续每张图都干等 30s（超窗后秒回退 Tesseract，后台下载完成仍会自动就绪）
+    let paddleInitRunning = false;   // v2.21.7：init 是否进行中（诊断用）
+    let paddleLastError = '';   // v2.21.7：最近一次 init 失败原因——此前 init 错误被静默吞掉，用户永远看不到「45% 后为什么切 Tesseract」
+    let paddleDetUrl = '';   // v2.21.7：自定义 det 模型地址（model.json 的完整 URL，空 = 库默认 bcebos）
+    let paddleRecUrl = '';   // v2.21.7：自定义 rec 模型地址（同上）
 
     // v2.21.6：Paddle init 单例启动器——tryPaddleOcr / preloadPaddleModel 共用同一份 init Promise 链：
     // init 成败由链自维护（成功 paddleOcrReady=true；失败 ready=false 且 initPromise=null 允许下次重试），
     // 该 Promise 本身永不 reject——外层只做「轮询等待 + 超时/取消检查」，绝不把底层下载掐死（取消后后台下载完成模型仍自动就绪）
+    // v2.21.7：+ 完整日志（开始/耗时/成功/失败原因）——init 错误此前被静默吞掉，导致无法排查；+ 支持自定义模型地址
     function startPaddleInit(ocrApi) {
       if (paddleOcrReady || paddleOcrInitPromise) return;
       paddleInitStartedAt = Date.now();
-      paddleOcrInitPromise = ocrApi.init()
-        .then(() => { paddleOcrReady = true; })
-        .catch(() => { paddleOcrReady = false; paddleOcrInitPromise = null; });
+      paddleInitRunning = true;
+      console.log('[FoodIn][Paddle] init 开始（det=' + (paddleDetUrl || '默认 bcebos') + '，rec=' + (paddleRecUrl || '默认 bcebos') + '）…');
+      const p = ocrApi.init(paddleDetUrl || undefined, paddleRecUrl || undefined)
+        .then(() => {
+          paddleOcrReady = true;
+          paddleLastError = '';
+          console.log('[FoodIn][Paddle] ✅ init 成功，耗时 ' + ((Date.now() - paddleInitStartedAt) / 1000).toFixed(1) + 's，后续识别秒开');
+        })
+        .catch((e) => {
+          paddleOcrReady = false;
+          paddleLastError = (e && e.message) ? String(e.message) : String(e);
+          console.error('[FoodIn][Paddle] ❌ init 失败（耗时 ' + ((Date.now() - paddleInitStartedAt) / 1000).toFixed(1) + 's）:', e);
+        })
+        .finally(() => {
+          paddleInitRunning = false;
+          if (!paddleOcrReady && paddleOcrInitPromise === p) paddleOcrInitPromise = null;   // 失败后允许下次重试
+        });
+      paddleOcrInitPromise = p;
+    }
+
+    // v2.21.7：Paddle 诊断辅助——控制台排查「45% 卡住后切 Tesseract」用
+    function resetPaddleState() {   // 清空就绪/进行中状态（切换自定义模型地址后调用，强制下次 init 用新地址重新下载）
+      paddleOcrReady = false;
+      paddleOcrInitPromise = null;
+      paddleInitStartedAt = 0;
+      paddleInitRunning = false;
+      paddleLastError = '';
+    }
+    function setPaddleModelUrls(detUrl, recUrl) {   // 手动引入本地/自托管模型：传两个 model.json 完整 URL，空串=回库默认（bcebos）
+      paddleDetUrl = (detUrl || '').trim();
+      paddleRecUrl = (recUrl || '').trim();
+      resetPaddleState();
+      console.log('[FoodIn][Paddle] 模型地址已设：det=' + (paddleDetUrl || '默认 bcebos') + '，rec=' + (paddleRecUrl || '默认 bcebos') + '；执行 await __foodin.preloadPaddleModel() 立即下载验证');
+    }
+    function paddleStatus() {
+      return {
+        engine: settings.ocrEngine,
+        ready: paddleOcrReady,
+        initRunning: paddleInitRunning,
+        initElapsedSec: paddleInitStartedAt ? +((Date.now() - paddleInitStartedAt) / 1000).toFixed(1) : 0,
+        timeoutSec: PADDLE_INIT_TIMEOUT_MS / 1000,
+        lastError: paddleLastError || null,
+        detUrl: paddleDetUrl || '(默认 bcebos)',
+        recUrl: paddleRecUrl || '(默认 bcebos)'
+      };
     }
 
     function loadTesseract() {
@@ -4998,9 +5053,9 @@ createApp({
           // + 检查超时窗口 / 用户取消 / init 完成；init 由 startPaddleInit 单例启动，后台下载不因取消而中断
           startPaddleInit(ocrApi);
           // 等待 init：超时窗口从首次 init 起算；init 完成立即结束等待；paddleAborted 一拍内响应
-          await new Promise((resolve) => {
+          const waitReason = await new Promise((resolve) => {
             const remaining = Math.max(0, PADDLE_INIT_TIMEOUT_MS - (Date.now() - paddleInitStartedAt));
-            if (remaining <= 0) { resolve(); return; }
+            if (remaining <= 0) { resolve('timeout'); return; }
             let done = false;
             const finish = (r) => { if (!done) { done = true; clearInterval(iv); resolve(r); } };
             const iv = setInterval(() => {
@@ -5010,7 +5065,18 @@ createApp({
             }, 250);
             paddleOcrInitPromise.then(() => finish('settled'), () => finish('settled'));   // init 链永不 reject，成败看 paddleOcrReady
           });
-          if (!paddleOcrReady) return false;   // 超时 / 取消 / 下载失败 → 交给 Tesseract 回退（后台下载若完成下次自动就绪）
+          if (!paddleOcrReady) {   // 超时 / 取消 / 下载失败 → 交给 Tesseract 回退（后台下载若完成下次自动就绪）
+            // v2.21.7：把失败原因打出来——此前静默吞掉，用户不知道 45% 后为什么切 Tesseract
+            const elapsed = Math.round((Date.now() - paddleInitStartedAt) / 1000);
+            if (waitReason === 'aborted') {
+              console.warn('[FoodIn][Paddle] 已取消（' + elapsed + 's），本单切 Tesseract；模型仍在后台下载，完成后自动就绪');
+            } else if (paddleLastError) {
+              console.warn('[FoodIn][Paddle] init 失败（' + elapsed + 's）→ 切 Tesseract。失败原因：' + paddleLastError);
+            } else {
+              console.warn('[FoodIn][Paddle] init ' + elapsed + 's 仍未完成（超过 ' + (PADDLE_INIT_TIMEOUT_MS / 1000) + 's 窗口）→ 本单切 Tesseract；模型仍在后台下载，完成后自动就绪。若你确认下载很快，请把控制台完整日志发开发者排查');
+            }
+            return false;
+          }
           if (paddleAborted) return false;     // init 与取消几乎同时完成：尊重用户选择，本轮仍走 Tesseract
         }
         ocr.phase = 'paddle-run';
@@ -5051,7 +5117,7 @@ createApp({
         console.log('[FoodIn] ✅ Paddle 模型下载完成，后续识别秒开。测试：__foodin.testPaddle(imgUrl)');
         return true;
       } catch (e) {
-        console.error('[FoodIn] ❌ Paddle 模型下载失败:', e);
+        console.error('[FoodIn] ❌ Paddle 模型下载/加载失败' + (paddleLastError ? '（原因：' + paddleLastError + '）' : '') + ':', e);
         paddleOcrReady = false;
         paddleOcrInitPromise = null;
         return false;
@@ -6523,7 +6589,7 @@ createApp({
     });
 
     // 调试/自动化测试钩子（不影响正常运行）
-    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, runOcr };   // v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策
+    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr };   // v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与手动引入本地模型
 
     return {
       currentPage, products, records, settings, barcodeCache,
