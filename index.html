@@ -638,13 +638,13 @@
           </div>
           <div v-if="ocr.processing" class="mt-3">
             <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5">
-              <span>{{ ocr.progress < 15 ? '正在下载识别模型（约 16MB,首次 10-60s）…' : '正在识别…' }}</span>
+              <span>{{ ocr.phase === 'paddle-dl' ? '正在下载识别模型（约 16MB,首次 10-60s）…' : (ocr.phase === 'tess-load' ? '正在加载识别组件（首次需下载,之后秒开）…' : '正在识别…') }}</span>
               <span>{{ ocr.progress }}%</span>
             </div>
             <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div class="h-full bg-orange-500 rounded-full transition-all" :style="{ width: ocr.progress + '%' }"></div>
             </div>
-            <button v-if="ocr.progress < 50 && settings.ocrEngine !== 'tesseract'" @click="cancelPaddleOcr"
+            <button v-if="ocr.phase === 'paddle-dl' && settings.ocrEngine === 'paddle'" @click="cancelPaddleOcr"
               class="mt-2 w-full py-1.5 text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg active:bg-gray-100">取消并切 Tesseract 识别（更快）</button>
           </div>
           <div v-if="ocr.barcodes.length" class="mt-3">
@@ -2305,13 +2305,13 @@
           class="mx-4 mb-2 bg-white rounded-2xl overflow-hidden text-left flex-shrink-0 shadow-2xl">
           <div v-if="ocr.processing" class="p-4">
             <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
-              <span>{{ ocr.progress < 15 ? '正在下载识别模型（约 16MB,首次 10-60s）…' : '正在识别文字…' }}</span>
+              <span>{{ ocr.phase === 'paddle-dl' ? '正在下载识别模型（约 16MB,首次 10-60s）…' : (ocr.phase === 'tess-load' ? '正在加载识别组件（首次需下载,之后秒开）…' : '正在识别文字…') }}</span>
               <span>{{ ocr.progress }}%</span>
             </div>
             <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div class="h-full bg-orange-500 rounded-full transition-all" :style="{ width: ocr.progress + '%' }"></div>
             </div>
-            <button v-if="ocr.progress < 50 && settings.ocrEngine !== 'tesseract'" @click="cancelPaddleOcr"
+            <button v-if="ocr.phase === 'paddle-dl' && settings.ocrEngine === 'paddle'" @click="cancelPaddleOcr"
               class="mt-2 w-full py-1.5 text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg active:bg-gray-100">取消并切 Tesseract 识别（更快）</button>
           </div>
           <template v-else>
@@ -2409,7 +2409,7 @@ createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.5';   // 当前代码版本号（v2.21.5：小票 OCR 升级——Paddle 本地识别为主引擎，Tesseract 自动回退，预留百度云票据识别入口；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
+    const CURRENT_VERSION = '2.21.6';   // 当前代码版本号（v2.21.6：批量 OCR 四联修复收敛——单 chi_sim worker 复用条码 pass2、进度分区单调、Paddle init 单例统一，E2E 自测通过；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留
 
     const searchQuery = ref('');
@@ -2614,7 +2614,7 @@ createApp({
     const torchOn = ref(false);         // 手电筒开关
     const torchSupported = ref(false);  // 设备是否支持手电筒
     const albumFileRef = ref(null);     // 相册选图 input
-    const ocr = reactive({ processing: false, progress: 0, lines: [], barcodes: [], error: '', engine: '' });   // v2.21.0：+barcodes 条码识别结果；v2.21.5：+engine 记录实际识别引擎（paddle/tesseract）
+    const ocr = reactive({ processing: false, progress: 0, lines: [], barcodes: [], error: '', engine: '', phase: '' });   // v2.21.0：+barcodes 条码识别结果；v2.21.5：+engine 记录实际识别引擎（paddle/tesseract）；v2.21.5+：+phase 识别阶段（paddle-dl 下载模型 / paddle-run / tess-load 加载组件 / tess-run 识别），驱动进度文案与取消按钮显隐
     const cloudSyncing = ref(false);
     const cloudSyncStatus = ref('');
     let cloudPushTimer = null;
@@ -2746,6 +2746,14 @@ createApp({
 
     const changelog = [
       {
+        version: '2.21.6',
+        date: '2026-09-02',
+        items: [
+          '修复（批量 OCR 四联修复·收敛并自测通过）：① 点「取消并切 Tesseract」现在真正永久切换引擎——settings 持久化 + 设置页单选同步高亮；Paddle 底层 init 改为单例链自维护（失败自动重置可重试，取消只中断等待、后台下载完成切回秒用），不再出现切走后 Paddle 永久不可用。② 进度条不再「100% 出结果后又从 0 涨一轮」——条码 pass2 收敛为复用同一 chi_sim worker（数字白名单 + 版面模式，识别后复位），语言包只下载一次（1.6MB），不再另建 eng worker（省 1.7MB 下载 + 双份内存），进度分区单调推进（pass1 封顶 90% → 条码阶段 92→100），真正结束才显示 100%。③ Paddle 下载中点取消，进度条不再静止——取消立即切 Tesseract 从 50% 起加载动画可见。④ 「Tesseract 加载慢」根因确认并修复：语言包目录此前误用 4.0.0（float，单语言 20MB）应为 4.0.0_best_int（int 量化 1.7MB，LSTM 官方默认），一次回退下载从 40MB 降至约 5MB；语言包走 IndexedDB 缓存 + worker 复用，二次识别秒开',
+          '版本 2.21.5 → 2.21.6；SW 缓存 v61 → v62'
+        ]
+      },
+      {
         version: '2.21.5',
         date: '2026-09-01',
         items: [
@@ -2755,7 +2763,8 @@ createApp({
           '识别结果面板标注实际引擎：批量录入与扫码弹层识别结果旁显示「· Paddle 本地 / · Tesseract」小字，便于确认走了哪个引擎',
           '优化（识别源下载加速）：OCR 库与 Tesseract 组件改为多 CDN 自动回退（jsDelivr 主站 → fastly → gcore，按可达性自动选择，同一会话内复用选中节点）；Tesseract 语言包从默认的国外 tessdata.projectnaptha.com 换成 jsDelivr 国内节点上的 @tesseract.js-data 镜像（chi_sim/eng 各约 11MB，下载速度大幅提升）；中文识别为主语言（chi_sim），条码数字识别仍单独用 eng',
           '紧急止血（Paddle 下载卡死可中断）：首次使用 Paddle 时模型下载（bcebos CDN，约 16MB）最坏情况可能 1 分钟以上，应用 UI 之前一直卡在 12% 不可控。现加 30s 超时——超时自动放弃 Paddle 切 Tesseract；进度条下方新增「取消并切 Tesseract 识别（更快）」按钮（仅 Paddle 模式且下载阶段可见），点击立即放弃 Paddle 走 Tesseract。POC 入口：控制台执行 `await __foodin.preloadPaddleModel()` 可手动预下载（不超时，下载完才返回），便于先评估 Paddle 准确率再决定是否镜像权重到自托管 CDN',
-          '版本 2.21.4 → 2.21.5；SW 缓存 v57 → v59'
+          '修复（批量录入 OCR 四联问题）：① 点「取消并切 Tesseract」后识别引擎现在真正切换——settings 持久化为 Tesseract，设置页单选按钮同步高亮，不再出现按钮不变、且之后 Paddle 永远不可用（原 init 失败后的 rejected Promise 残留导致，现 init 失败可自动重试；取消只中断等待、后台下载完成模型仍自动就绪，切回 Paddle 即秒用）；② 进度条不再 100% 后又从 0 涨一轮——根因是条码 pass2 用便捷 API 每次全新建 worker 重新初始化 + logger 把进度压回 5%，现改为 chi_sim/eng 双 worker 池全局复用（仅首次下载语言包，之后识别秒开），进度全程单调不回退；③ Paddle 下载中点取消后进度条不再静止——取消即切 Tesseract 并以 50% 起走组件加载动画；④ 「Tesseract 加载慢」根因：语言包目录误用 4.0.0（float，chi_sim/eng 各 20MB）应为 4.0.0_best_int（int 量化，各 1.7MB，LSTM 官方默认）——一次回退从下 40MB 降至约 7MB，并隔离旧缓存强制换新；重复识别语言包走 IndexedDB 缓存 + worker 复用，秒开',
+          '版本 2.21.4 → 2.21.5；SW 缓存 v57 → v61'
         ]
       },
       {
@@ -4941,6 +4950,18 @@ createApp({
     let paddleOcrInitPromise = null;   // v2.21.5+：init 同一时间只跑一次（避免用户反复触发重复下载）
     const PADDLE_INIT_TIMEOUT_MS = 30000;   // 首次下载模型 30s 超时——超时回退 Tesseract，避免用户长时间干等
     let paddleAborted = false;   // v2.21.5+：用户主动取消的标志（true 时 tryPaddleOcr 立即返回 false 走 Tesseract 回退）
+    let paddleInitStartedAt = 0;   // v2.21.5+：init 首次启动时间戳——30s 超时窗口从首次 init 起算，避免后续每张图都干等 30s（超窗后秒回退 Tesseract，后台下载完成仍会自动就绪）
+
+    // v2.21.6：Paddle init 单例启动器——tryPaddleOcr / preloadPaddleModel 共用同一份 init Promise 链：
+    // init 成败由链自维护（成功 paddleOcrReady=true；失败 ready=false 且 initPromise=null 允许下次重试），
+    // 该 Promise 本身永不 reject——外层只做「轮询等待 + 超时/取消检查」，绝不把底层下载掐死（取消后后台下载完成模型仍自动就绪）
+    function startPaddleInit(ocrApi) {
+      if (paddleOcrReady || paddleOcrInitPromise) return;
+      paddleInitStartedAt = Date.now();
+      paddleOcrInitPromise = ocrApi.init()
+        .then(() => { paddleOcrReady = true; })
+        .catch(() => { paddleOcrReady = false; paddleOcrInitPromise = null; });
+    }
 
     function loadTesseract() {
       if (window.Tesseract) return Promise.resolve(tesseractHost);
@@ -4965,43 +4986,34 @@ createApp({
     // v2.21.5+：加 30s 超时（首次模型下载可能 10-60s）+ 支持 paddleAborted 标志（用户在进度条点取消）
     async function tryPaddleOcr(canvas) {
       try {
+        ocr.phase = 'paddle-dl';
         ocr.progress = Math.max(ocr.progress, 8);
         await loadPaddleOcr();
         const ocrApi = window.paddlejs && window.paddlejs.ocr;
         if (!ocrApi) throw new Error('paddle ocr unavailable');
         if (!paddleOcrReady) {
+          ocr.phase = 'paddle-dl';
           ocr.progress = Math.max(ocr.progress, 12);
-          // 首次初始化：下载 det/rec 模型（ch_PP-OCRv2，约 16MB）。库内部不报进度，用 setInterval 推动 12→45 的「下载中」动画 + 监测 paddleAborted 实现可中断
-          let tick;
-          const abortPromise = new Promise((_, rej) => {
-            const check = () => {
-              if (paddleAborted) { rej(new Error('paddle init aborted by user')); return; }
-            };
-            check();   // 立刻检查一次（用户在 init 启动前就点取消的情况）
-            tick = setInterval(() => {
+          // 首次初始化：下载 det/rec 模型（ch_PP-OCRv2，约 16MB）。库内部不报进度，用 250ms 一拍推动 12→45 动画
+          // + 检查超时窗口 / 用户取消 / init 完成；init 由 startPaddleInit 单例启动，后台下载不因取消而中断
+          startPaddleInit(ocrApi);
+          // 等待 init：超时窗口从首次 init 起算；init 完成立即结束等待；paddleAborted 一拍内响应
+          await new Promise((resolve) => {
+            const remaining = Math.max(0, PADDLE_INIT_TIMEOUT_MS - (Date.now() - paddleInitStartedAt));
+            if (remaining <= 0) { resolve(); return; }
+            let done = false;
+            const finish = (r) => { if (!done) { done = true; clearInterval(iv); resolve(r); } };
+            const iv = setInterval(() => {
+              if (paddleAborted) return finish('aborted');
+              if (Date.now() - paddleInitStartedAt > PADDLE_INIT_TIMEOUT_MS) return finish('timeout');
               if (ocr.progress < 45) ocr.progress = Math.min(45, ocr.progress + 1);
-              check();
-            }, 500);
+            }, 250);
+            paddleOcrInitPromise.then(() => finish('settled'), () => finish('settled'));   // init 链永不 reject，成败看 paddleOcrReady
           });
-          try {
-            if (!paddleOcrInitPromise) {
-              paddleOcrInitPromise = Promise.race([
-                ocrApi.init(),
-                new Promise((_, rej) => setTimeout(() => rej(new Error('paddle init timeout (30s) — 模型下载过慢，已自动切 Tesseract')), PADDLE_INIT_TIMEOUT_MS)),
-                abortPromise
-              ]);
-            }
-            await paddleOcrInitPromise;
-            paddleOcrReady = true;
-          } finally {
-            clearInterval(tick);
-          }
-          if (paddleAborted) {
-            paddleOcrReady = false;
-            paddleOcrInitPromise = null;   // 允许下次重新 init（用户后续如果想再试）
-            return false;
-          }
+          if (!paddleOcrReady) return false;   // 超时 / 取消 / 下载失败 → 交给 Tesseract 回退（后台下载若完成下次自动就绪）
+          if (paddleAborted) return false;     // init 与取消几乎同时完成：尊重用户选择，本轮仍走 Tesseract
         }
+        ocr.phase = 'paddle-run';
         ocr.progress = Math.max(ocr.progress, 55);
         const img = new Image();
         img.src = canvas.toDataURL('image/png');
@@ -5019,8 +5031,7 @@ createApp({
         return true;
       } catch (e) {
         console.warn('Paddle OCR failed, fallback to Tesseract:', e && e.message || e);
-        paddleOcrReady = false;   // 失败后允许下次重新 init
-        return false;
+        return false;   // paddleOcrReady/initPromise 状态由 init 链自维护，此处不重置（模型若已就绪后续仍可复用）
       }
     }
 
@@ -5033,11 +5044,10 @@ createApp({
         const ocrApi = window.paddlejs && window.paddlejs.ocr;
         if (!ocrApi) { console.error('[FoodIn] paddlejs 未加载'); return false; }
         if (paddleOcrReady) { console.log('[FoodIn] Paddle 模型已就绪'); return true; }
-        if (!paddleOcrInitPromise) {
-          paddleOcrInitPromise = ocrApi.init();
-        }
+        // v2.21.6：与 tryPaddleOcr 共用 startPaddleInit 单例——避免裸 init promise（失败 reject 残留）与识别路径状态不一致
+        startPaddleInit(ocrApi);
         await paddleOcrInitPromise;
-        paddleOcrReady = true;
+        if (!paddleOcrReady) throw new Error('paddle init failed');
         console.log('[FoodIn] ✅ Paddle 模型下载完成，后续识别秒开。测试：__foodin.testPaddle(imgUrl)');
         return true;
       } catch (e) {
@@ -5085,6 +5095,7 @@ createApp({
       ocr.barcodes = [];
       ocr.error = '';
       ocr.engine = '';
+      ocr.phase = '';
     }
 
     // ===== v2.21.0 OCR 条码识别优化 =====
@@ -5177,45 +5188,78 @@ createApp({
       img.src = URL.createObjectURL(file);
     }
 
-    // Tesseract 识别（原实现保留，作为 Paddle 不可用/识别为空时的回退）
-    // v2.21.5：下载加速——显式指定 worker/core/语言包 URL（与库同 CDN 多源回退）；语言包从默认的国外 tessdata.projectnaptha.com 换成 jsDelivr 上的 @tesseract.js-data 镜像（国内节点，chi_sim 约 11MB、eng 约 11MB 下载速度大幅提升）
-    async function tryTesseractOcr(canvas) {
-      try {
-        ocr.progress = Math.max(ocr.progress, 8);
+    // Tesseract 识别（Paddle 不可用 / 识别为空 / 用户取消时的回退）
+    // v2.21.5+ 重构（语言包 best_int / worker 复用 / 进度单调 / 取消同步切引擎），v2.21.6 收敛：
+    //  · 单 chi_sim worker：条码 pass2 复用同一 worker（setParameters 数字白名单 + psm6，识别后复位），不再另建 eng worker——
+    //    语言包只下 1.6MB、内存仅一份 core、pass2 秒级完成（彻底消除「进度 100% 出结果后又卡一轮」与双 worker 内存翻倍）
+    //  · 进度分区：pass1 识别封顶 90%（tessPhaseCap），需要条码 pass2 时 92→100 平滑衔接——全程单调不回退、真正结束才 100%
+    //  · 语言包路径 4.0.0_best_int（int 量化 1.7MB，LSTM 官方默认）而非 4.0.0（float 20MB）——「Tesseract 加载慢」根因
+    const TESS_DATA_DIR = '/npm/@tesseract.js-data';   // host + 该目录 + /{lang}@1.0.0/4.0.0_best_int/{lang}.traineddata.gz
+    let tessWorkerPromise = null;   // chi_sim worker 全局单例（识别完不 terminate，语言包只下载一次）
+    // 当前识别子阶段进度映射区间（logger 回调中读取；OCR 流程串行——ocr.processing 锁 + 顺序 await，无并发串扰）
+    let tessPhaseBase = 70, tessPhaseCap = 90;
+    function tessLogger(m) {
+      if (m.status === 'loading tesseract core') ocr.progress = Math.max(ocr.progress, Math.min(tessPhaseCap, 62));
+      else if (m.status === 'loading language traineddata') ocr.progress = Math.max(ocr.progress, Math.min(tessPhaseCap, 66));
+      else if (m.status === 'initializing tesseract' || m.status === 'initializing api') ocr.progress = Math.max(ocr.progress, Math.min(tessPhaseCap, 70));
+      else if (m.status === 'recognizing text') { ocr.phase = 'tess-run'; ocr.progress = Math.max(ocr.progress, tessPhaseBase + Math.round(m.progress * (tessPhaseCap - tessPhaseBase))); }
+    }
+    function getTessWorker() {
+      if (tessWorkerPromise) return tessWorkerPromise;
+      tessWorkerPromise = (async () => {
         const host = await loadTesseract();
-        const tessOpts = {
+        return Tesseract.createWorker('chi_sim', 1, {
           workerPath: host + '/npm/tesseract.js@5.1.1/dist/worker.min.js',
           corePath: host + '/npm/tesseract.js-core@5.1.1',
-          langPath: host + '/npm/@tesseract.js-data/chi_sim@1.0.0/4.0.0',
-          logger: (m) => {
-            if (m.status === 'recognizing text') ocr.progress = Math.max(ocr.progress, Math.round(m.progress * 100));
-            else if (m.status === 'loading language traineddata') ocr.progress = Math.min(ocr.progress || 5, 5);
-          }
-        };
-        // pass1：常规文字识别（chi_sim 中文为主，数字/字母由 chi_sim 自带字符集覆盖；条码数字由 pass2 单独识别）
-        const result = await Tesseract.recognize(canvas, 'chi_sim', tessOpts);
+          langPath: host + TESS_DATA_DIR + '/chi_sim@1.0.0/4.0.0_best_int',
+          cachePath: 'foodin-ocr-v1',   // 与旧的 float 缓存（默认 key './chi_sim.traineddata'）隔离，强制换新
+          logger: tessLogger
+        });
+      })().catch(e => { tessWorkerPromise = null; throw e; });
+      return tessWorkerPromise;
+    }
+    async function tryTesseractOcr(canvas) {
+      try {
+        ocr.phase = 'tess-load';
+        ocr.progress = Math.max(ocr.progress, 50);
+        // 库下载阶段（仅首次）无内部进度事件——用 50→60 的「加载中」动画反馈，避免进度条静止让用户以为卡死
+        const anim = setInterval(() => { if (ocr.progress < 60) ocr.progress = Math.min(60, ocr.progress + 1); }, 200);
+        try {
+          await loadTesseract();
+        } finally {
+          clearInterval(anim);
+        }
+        // pass1：常规文字识别（chi_sim 中文为主，数字/字母由 chi_sim 自带字符集覆盖）——进度封顶 90%，给可能的条码 pass2 留衔接区间
+        tessPhaseBase = 70; tessPhaseCap = 90;
+        const worker = await getTessWorker();
+        const result = await worker.recognize(canvas);
         const lines = (result.data.text || '')
           .split('\n')
           .map(s => s.replace(/\s+/g, ' ').trim())
           .filter(s => s.replace(/[^0-9a-zA-Z\u4e00-\u9fa5]/g, '').length >= 2);
         ocr.lines = lines.slice(0, 12);
-        // pass2：条码数字识别（v2.21.0）——先直接取 pass1 文本中的条码；未命中时用预处理图 + 数字白名单再识别一轮
+        // pass2：条码数字识别（v2.21.0）——pass1 文本未命中合法条码时，用预处理图 + 数字白名单再识别一轮。
+        // v2.21.6：复用 chi_sim worker（白名单后输出限数字；psm6 单块文本），结束后复位参数——不建 eng worker，省下载与内存
         const barcodes = extractBarcodes(result.data.text || '');
         if (!barcodes.length) {
           try {
-            ocr.progress = Math.max(ocr.progress, 85);
+            tessPhaseBase = 90; tessPhaseCap = 100;
+            ocr.progress = Math.max(ocr.progress, 92);
             const prep = preprocessForBarcode(canvas);
-            const res2 = await Tesseract.recognize(prep, 'eng', {
-              ...tessOpts,
-              langPath: host + '/npm/@tesseract.js-data/eng@1.0.0/4.0.0',
-              tessedit_char_whitelist: '0123456789',
-              tessedit_pageseg_mode: 6
-            });
+            await worker.setParameters({ tessedit_char_whitelist: '0123456789', tessedit_pageseg_mode: 6 });
+            const res2 = await worker.recognize(prep);
             barcodes.push(...extractBarcodes(res2.data.text || ''));
           } catch (e2) { /* 条码识别失败不影响文字结果 */ }
+          finally {
+            try { await worker.setParameters({ tessedit_char_whitelist: '', tessedit_pageseg_mode: 3 }); } catch (e3) { /* 复位失败忽略，下轮识别前会重设 */ }
+          }
         }
         ocr.barcodes = [...new Set(barcodes)].slice(0, 6);
         ocr.engine = 'tesseract';
+        ocr.progress = 100;
+        // 让「100%」在进度面板上可见一拍再随 ocr.processing=false 卸载——若与收尾同步赋值，Vue 批量刷新时
+        // 进度条会停在封顶值（90/92）直接消失出结果，用户看不到完整 100%，与「识别到 100% 出结果」的预期不符
+        await new Promise(r => setTimeout(r, 100));
         if (!ocr.lines.length && !ocr.barcodes.length) {
           ocr.error = '未识别到文字或条码，请靠近一些或重拍';
         }
@@ -5242,15 +5286,28 @@ createApp({
           await tryTesseractOcr(canvas);
         }
       } finally {
-        ocr.processing = false;
         paddleAborted = false;
+        // v2.21.6：识别成功收尾统一补满进度条并短暂停留——progress=100 与 processing=false 若在同一宏任务，
+        // Vue 批量更新会把进度条整体卸载（用户看到「90% 突然消失」）；先补 100% 渲染一帧再收尾
+        if (!ocr.error) {
+          ocr.progress = 100;
+          await new Promise(r => setTimeout(r, 200));
+        }
+        ocr.processing = false;
       }
     }
 
     // v2.21.5+：用户主动取消 Paddle 加载（进度条上的「取消并切 Tesseract」按钮）
+    // 修复：除置 paddleAborted 中断本次等待外，同时把 settings.ocrEngine 切换为 tesseract 并持久化——
+    // 设置页单选按钮由 v-model 自动同步高亮，切走再回来也不回弹（此前只 abort 不改设置，设置页按钮不变且用户困惑）
     function cancelPaddleOcr() {
+      if (paddleAborted) return;   // 防重复点击
       paddleAborted = true;
-      showToast('已取消 Paddle 加载，自动切换 Tesseract 识别…');
+      if (settings.ocrEngine !== 'tesseract') {
+        settings.ocrEngine = 'tesseract';
+        saveData();
+      }
+      showToast('已取消 Paddle 加载，切换 Tesseract 识别…');
     }
 
     // v2.21.0：点击识别到的条码 → 填入条码框（批量录入填当前条目，其他填单条表单）

@@ -45,7 +45,7 @@ function buildProducts() {
 }
 
 (async () => {
-  const browser = await chromium.launch({ channel: 'msedge' });
+  const browser = await chromium.launch({ executablePath: 'C:/Users/Administrator/.agent-browser/browsers/chrome-152.0.7977.64/chrome.exe' });
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();
   const consoleErrors = [];

@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
 const BASE = 'http://127.0.0.1:8001/index.html';
 
 (async () => {
-  const browser = await chromium.launch({ channel: 'msedge', headless: true });
+  const browser = await chromium.launch({ executablePath: 'C:/Users/Administrator/.agent-browser/browsers/chrome-152.0.7977.64/chrome.exe', headless: true });
   const ctx = await browser.newContext({ viewport: { width: 420, height: 900 } });
   const page = await ctx.newPage();
 
