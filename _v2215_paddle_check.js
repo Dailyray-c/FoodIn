@@ -71,14 +71,12 @@ async function enterBatch(page) {
     const { ctx, page } = await newPage(browser, null);
     await page.locator('nav button:has-text("设置")').first().click();
     await page.waitForTimeout(500);
-    const ocrCard = page.locator('div.bg-white.rounded-xl.overflow-hidden.shadow-sm.border.border-gray-100', { hasText: '百度云票据识别' });
+    const ocrCard = page.locator('div.bg-white.rounded-xl.overflow-hidden.shadow-sm.border.border-gray-100', { hasText: '识别引擎' });
     log('A1 设置页存在「文字识别（小票 OCR）」卡片', (await ocrCard.count()) > 0);
     log('A2 卡片标题「文字识别（小票 OCR）」', (await ocrCard.locator(':text("文字识别（小票 OCR）")').count()) > 0);
     log('A3 默认引擎 Paddle radio 选中', await ocrCard.locator('input[value="paddle"]').isChecked());
     log('A4 Tesseract radio 存在', (await ocrCard.locator('input[value="tesseract"]').count()) > 0);
-    log('A5 百度云预留 API Key/Secret Key 输入框',
-      (await ocrCard.locator('input[placeholder="百度智能云 API Key"]').count()) > 0 &&
-      (await ocrCard.locator('input[placeholder="百度智能云 Secret Key"]').count()) > 0);
+    // v2.21.13：百度云票据识别入口已注释/移除（API Key/Secret Key 字段保留兼容老数据），不再断言 placeholder 输入框
 
     await ocrCard.locator('label:has(input[value="tesseract"])').click();
     await ocrCard.locator('button:has-text("保存")').click();
@@ -86,12 +84,7 @@ async function enterBatch(page) {
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('food_inventory_settings') || '{}'));
     log('B1 切换 Tesseract 并保存 → settings.ocrEngine=tesseract', stored.ocrEngine === 'tesseract', `ocrEngine=${stored.ocrEngine}`);
 
-    await ocrCard.locator('input[placeholder="百度智能云 API Key"]').fill('test-ak-123');
-    await ocrCard.locator('button:has-text("保存")').click();
-    await page.waitForTimeout(300);
-    const stored2 = await page.evaluate(() => JSON.parse(localStorage.getItem('food_inventory_settings') || '{}'));
-    log('B2 百度云 API Key 预留字段落盘', stored2.baiduApiKey === 'test-ak-123', `baiduApiKey=${stored2.baiduApiKey}`);
-
+    // v2.21.13：百度云票据识别入口已注释/移除；B2 测试块同步跳过（settings.baiduApiKey 字段保留兼容老数据，无需 UI 路径覆盖写入测试）
     await ocrCard.locator('label:has(input[value="paddle"])').click();
     await ocrCard.locator('button:has-text("保存")').click();
     await page.waitForTimeout(300);
@@ -103,7 +96,7 @@ async function enterBatch(page) {
       const hit = btns.find(b => /版本\s*v?\s*2\.21\.\d/.test(b.textContent || ''));
       return hit ? hit.textContent.trim() : null;
     });
-    log('E1 设置页版本号 v2.21.12', /v2\.21\.12/.test(verText || ''), `ver="${verText}"`);
+    log('E1 设置页版本号 v2.21.13', /v2\.21\.13/.test(verText || ''), `ver="${verText}"`);
     await ctx.close();
   }
 
@@ -114,7 +107,7 @@ async function enterBatch(page) {
     await page.locator('input[type=file][accept="image/*"]:not([capture])').setInputFiles({ name: 't.png', mimeType: 'image/png', buffer: PNG_BUF });
     await page.waitForSelector('div.text-\\[11px\\].text-gray-400:has-text("识别到文字")', { timeout: 15000 });
     const labelC = await page.locator('div.text-\\[11px\\].text-gray-400:has-text("识别到文字")').first().textContent();
-    const linesC = await page.locator('div.max-h-44 button').allTextContents();
+    const linesC = await page.locator('div.max-h-60 button').allTextContents();
     log('C1 Paddle 路径：识别结果行展示', linesC.length >= 3 && linesC[0].includes('蒙牛纯牛奶250ml'), linesC.slice(0, 3).join('|'));
     log('C2 Paddle 路径：引擎标注「Paddle 本地」', (labelC || '').includes('Paddle 本地'), (labelC || '').trim().slice(0, 40));
     const barC = await page.evaluate(() => {
@@ -134,7 +127,7 @@ async function enterBatch(page) {
     // v2.21.8+：等 v-if="ocr.engine" span 渲染完再读 textContent（Vue 异步更新，先出现 div 后渲染 span）
     await page.waitForSelector('div.text-\\[11px\\].text-gray-400:has-text("识别到文字") span:has-text("Tesseract")', { timeout: 5000 }).catch(() => {});
     const labelD = await page.locator('div.text-\\[11px\\].text-gray-400:has-text("识别到文字")').first().textContent();
-    const linesD = await page.locator('div.max-h-44 button').allTextContents();
+    const linesD = await page.locator('div.max-h-60 button').allTextContents();
     log('D1 回退路径：识别结果来自 Tesseract mock', linesD.length >= 1 && linesD[0].includes('回退识别文字'), linesD[0]);
     log('D2 回退路径：引擎标注「Tesseract」', (labelD || '').includes('Tesseract'), (labelD || '').trim().slice(0, 40));
     await ctx.close();

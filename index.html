@@ -231,6 +231,12 @@
     .minipoints li { position: relative; padding: 7px 0 7px 20px; font-size: 12.5px; color: #374151; border-bottom: 1px dashed #EEF0F3; }
     .minipoints li:last-child { border-bottom: none; }
     .minipoints li::before { content: ""; position: absolute; left: 2px; top: 13px; width: 6px; height: 6px; border-radius: 50%; background: #F97316; }
+    /* v2.21.13：OCR 文字框自定义滚动条（更显眼，橙色） */
+    .simple-scroll { scrollbar-width: thin; scrollbar-color: #fb923c transparent; }
+    .simple-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .simple-scroll::-webkit-scrollbar-thumb { background: rgba(251,146,60,0.55); border-radius: 9999px; }
+    .simple-scroll::-webkit-scrollbar-thumb:hover { background: rgba(251,146,60,0.85); }
+    .simple-scroll::-webkit-scrollbar-track { background: transparent; }
   </style>
   <!-- Tailwind 预编译（本地静态 CSS）：
        必须置于上方内联 <style> 之后，使 Tailwind 工具类（.pl-10/.pr-10/.w-auto 等）
@@ -498,7 +504,7 @@
 
           <div>
             <label class="text-xs text-gray-500 mb-1.5 block">商品名称</label>
-            <input v-model="scanForm.name" type="text" placeholder="请输入商品名称" class="input">
+            <input v-model="scanForm.name" type="text" placeholder="名称" class="input">
           </div>
           <div>
             <label class="text-xs text-gray-500 mb-1.5 block">分类</label>
@@ -526,7 +532,7 @@
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="text-xs text-gray-500 mb-1.5 block">净含量<span class="text-gray-300">·单件商品</span></label>
+              <label class="text-xs text-gray-500 mb-1.5 block">净含量</label>
               <input v-model="scanForm.netContent" type="text" placeholder="如：500g" class="input">
             </div>
             <div>
@@ -587,10 +593,15 @@
               <label class="text-[11px] text-gray-400 block mb-1.5">生产厂家</label>
               <input v-model="scanForm.manufacturer" type="text" placeholder="扫码后自动填充" class="input input-sm">
             </div>
+            <!-- v2.21.13：更多信息补回「规格」字段，位于生产厂家之后，不参与统计仅展示 -->
+            <div>
+              <label class="text-[11px] text-gray-400 block mb-1.5">规格</label>
+              <input v-model="scanForm.spec" type="text" placeholder="如：250ml×16" class="input input-sm">
+            </div>
             <div>
               <label class="text-[11px] text-gray-400 block mb-1.5">商品图片（链接）</label>
               <div class="flex gap-2">
-                <input v-model="scanForm.imageUrl" type="text" placeholder="https://…扫码自动获取" class="input input-sm flex-1">
+                <input v-model="scanForm.imageUrl" type="text" placeholder="图片 URL" class="input input-sm flex-1">
                 <button type="button" @click="previewImage(scanForm.imageUrl)" :disabled="!scanForm.imageUrl"
                   class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium disabled:opacity-40 active:bg-gray-200 transition-colors flex-shrink-0">查看图片</button>
               </div>
@@ -658,7 +669,7 @@
             </div>
             <div v-if="ocr.lines.length" class="mt-3">
               <div class="text-[11px] text-gray-400 mb-1.5">识别到文字（点击行添加为商品）<span v-if="ocr.engine" class="ml-1 text-gray-300">· {{ ocr.engine === 'paddle' ? 'Paddle 本地' : 'Tesseract' }}</span></div>
-              <div class="max-h-44 overflow-y-auto rounded-xl border border-gray-100">
+              <div class="max-h-60 overflow-y-auto simple-scroll rounded-xl border border-gray-100">
                 <button v-for="(line, i) in ocr.lines" :key="i" @click="useBatchOcrLine(line)"
                   class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ line }}</button>
               </div>
@@ -733,7 +744,7 @@
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="text-xs text-gray-500 mb-1.5 block">净含量<span class="text-gray-300">·单件商品</span></label>
+                <label class="text-xs text-gray-500 mb-1.5 block">净含量</label>
                 <input v-model="item.netContent" type="text" placeholder="如：500g" class="input">
               </div>
               <div>
@@ -785,12 +796,17 @@
               </div>
               <div>
                 <label class="text-[11px] text-gray-400 block mb-1.5">生产厂家</label>
-                <input v-model="item.manufacturer" type="text" placeholder="扫码后自动填充" class="input input-sm">
+                <input v-model="item.manufacturer" type="text" placeholder="如：内蒙古蒙牛乳业" class="input input-sm">
+              </div>
+              <!-- v2.21.13：更多信息补回「规格」字段，位于生产厂家之后，不参与统计仅展示 -->
+              <div>
+                <label class="text-[11px] text-gray-400 block mb-1.5">规格</label>
+                <input v-model="item.spec" type="text" placeholder="如：250ml×16" class="input input-sm">
               </div>
               <div>
                 <label class="text-[11px] text-gray-400 block mb-1.5">商品图片（链接）</label>
                 <div class="flex gap-2">
-                  <input v-model="item.imageUrl" type="text" placeholder="https://…扫码自动获取" class="input input-sm flex-1">
+                  <input v-model="item.imageUrl" type="text" placeholder="图片 URL" class="input input-sm flex-1">
                   <button type="button" @click="previewImage(item.imageUrl)" :disabled="!item.imageUrl"
                     class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium disabled:opacity-40 active:bg-gray-200 transition-colors flex-shrink-0">查看图片</button>
                 </div>
@@ -801,7 +817,7 @@
               </div>
               <div>
                 <label class="text-[11px] text-gray-400 block mb-1.5">备注</label>
-                <input v-model="item.note" type="text" placeholder="可选，如：临期特价" class="input input-sm">
+                <input v-model="item.note" type="text" placeholder="如：临期特价" class="input input-sm">
               </div>
             </div>
           </div>
@@ -1377,17 +1393,19 @@
             <div>
               <label class="text-[11px] text-gray-400 block mb-1.5">识别引擎</label>
               <div class="grid grid-cols-2 gap-2">
+                <!-- v2.21.13：OCR 引擎 radio button 化——未选中白底橙字橙边（按钮式），选中橙底白字；与首页同类 radio 风格一致 -->
                 <label class="cursor-pointer">
                   <input type="radio" v-model="settings.ocrEngine" value="paddle" class="sr-only peer">
-                  <div class="px-3 py-2 rounded-lg border border-gray-200 text-center text-xs text-gray-500 peer-checked:bg-orange-500 peer-checked:text-white peer-checked:border-orange-500 transition-colors">Paddle 本地（推荐）</div>
+                  <div class="px-3 py-2 rounded-lg border border-orange-200 bg-white text-center text-xs font-medium text-orange-600 peer-checked:bg-orange-500 peer-checked:text-white peer-checked:border-orange-500 transition-colors">Paddle 本地（推荐）</div>
                 </label>
                 <label class="cursor-pointer">
                   <input type="radio" v-model="settings.ocrEngine" value="tesseract" class="sr-only peer">
-                  <div class="px-3 py-2 rounded-lg border border-gray-200 text-center text-xs text-gray-500 peer-checked:bg-orange-500 peer-checked:text-white peer-checked:border-orange-500 transition-colors">Tesseract（兼容）</div>
+                  <div class="px-3 py-2 rounded-lg border border-orange-200 bg-white text-center text-xs font-medium text-orange-600 peer-checked:bg-orange-500 peer-checked:text-white peer-checked:border-orange-500 transition-colors">Tesseract（兼容）</div>
                 </label>
               </div>
               <div class="text-[11px] text-gray-400 mt-1.5">Paddle 本地识别精度更高（中文票据场景约 90%+），识别在小票设备本地完成；自动回退到 Tesseract。</div>
             </div>
+            <!-- v2.21.13：百度云票据识别入口移除（先注释，未来需要再启用）；settings.baiduApiKey/SecretKey 字段保留兼容老数据
             <div class="rounded-lg bg-gray-50 p-2.5">
               <div class="text-[11px] text-gray-400 mb-1.5">百度云票据识别（预留）</div>
               <input v-model="settings.baiduApiKey" type="text" placeholder="百度智能云 API Key"
@@ -1396,6 +1414,7 @@
                 class="input input-sm">
               <div class="text-[11px] text-gray-400 mt-1.5">入口已预留，后续版本开放；当前仍使用本地识别。</div>
             </div>
+            -->
             <button @click="saveOcrSettings" class="w-full py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium">保存</button>
           </div>
         </div>
@@ -1618,11 +1637,11 @@
                 <li><b class="text-gray-800">缓存更新</b>：查过的码显示「更新」，再点一次强制走 API 刷新为最新数据。</li>
                 <li><b class="text-gray-800">分类 / 位置多选</b>：一个商品可同时勾选多个分类与多个位置——例如录入「芝士」，分类勾选 <b>乳品蛋类 + 调味品</b>，位置勾选 <b>冰箱冷藏</b>。都不选 =「待设置」，以后可在首页/编辑里补。</li>
                 <li><b class="text-gray-800">日期三联动</b>：生产日期 / 保质期（日·月·年 可切换）/ 到期日期，任填两项第三项自动算出。</li>
-                <li><b class="text-gray-800">净含量 / 总价 / 初始数量</b>：净含量写单件含量（如 250ml，右侧小字「·单件商品」提示）与总价并排一行；初始数量为本批入库件数。三者分清，统计才准。</li>
-                <li><b class="text-gray-800">更多信息</b>（折叠）：品牌、生产厂家、商品图片、入库日期（自动锁定，批量录入另有备注），可扫码自动带出。</li>
+                <li><b class="text-gray-800">净含量 / 总价 / 初始数量</b>：净含量写单件含量（如 500g），与总价并排一行；初始数量为本批入库件数。三者分清，统计才准。</li>
+                <li><b class="text-gray-800">更多信息</b>（折叠）：品牌、生产厂家、规格、商品图片、入库日期（自动锁定，批量录入另有备注），可扫码自动带出——v2.21.13 补回规格字段。</li>
                 <li>填好点 <b class="text-gray-800">提交入库</b> 即完成（商品名称必填）。</li>
                 <li id="m-batch-recognition"><b class="text-gray-800">小票批量录入</b>：扫码页顶部另有「小票批量录入」入口——一次录入多件商品，支持「拍摄小票」直接拍照或「上传图片」读取图片，自动识别商品名 / 条码 / 金额，点击识别结果即可添加为商品，再手动补充日期等信息；电脑浏览器点「拍摄小票」会打开内置摄像头实时预览拍照，手机则直接调用原生相机。最后点「+ 添加商品」逐条补录、或改完直接「保存全部」一次性批量入库（入库记录标记「批量入库」）。</li>
-                <li><b class="text-gray-800">识别引擎</b>：小票识别默认使用 Paddle 本地识别（百度官方模型，首次自动下载约 10-30 秒、之后复用；识别在本机完成，图片不上传任何服务器）。模型下载失败或识别为空时会自动回退 Tesseract；也可在设置页「文字识别」手动切换引擎。「百度云票据识别」入口已预留（设置页可先填 API Key / Secret Key），将在后续版本开放。</li>
+                <li><b class="text-gray-800">识别引擎</b>：小票识别默认使用 Paddle 本地识别（百度官方模型，首次自动下载约 10-30 秒、之后复用；识别在本机完成，图片不上传任何服务器）。模型下载失败或识别为空时会自动回退 Tesseract；也可在设置页「文字识别」手动切换引擎。引擎 radio 按钮样式（v2.21.13）：未选中白底橙字、选中橙底白字，一眼看清当前引擎。</li>
               </ul>
               <div class="mt-3 bg-orange-50 rounded-xl p-3 text-[12px] text-[#9a4a12]"><b class="text-orange-600">提示</b>：开启「条码查询增强」（设置里）才能自动识别商品信息；不开启也能手动填写。</div>
             </div>
@@ -2039,31 +2058,46 @@
           </div>
 
           <div class="space-y-3">
+            <!-- v2.21.13：主页编辑弹窗基础信息卡与录入页对齐——名称 → 条形码 → 储存位置/分类并排 → 净含量/总价并排 → 库存数量 -->
             <div class="text-xs font-semibold text-gray-400 tracking-wide pt-0.5">基础信息</div>
             <div>
               <label class="text-xs text-gray-500 mb-1.5 block">商品名称</label>
-              <input v-model="editForm.name" type="text" class="input">
+              <input v-model="editForm.name" type="text" placeholder="名称" class="input">
             </div>
             <div>
               <label class="text-xs text-gray-500 mb-1.5 block">条形码</label>
-              <input v-model="editForm.barcode" type="text" class="input">
+              <input v-model="editForm.barcode" type="text" placeholder="条形码" class="input">
             </div>
-            <div>
-              <label class="text-xs text-gray-500 mb-1.5 block">储存位置</label>
-              <select v-model="editForm.location" class="input">
-                <option value="">待设置</option>
-                <option v-if="editForm.location && !settings.locations.includes(editForm.location)" :value="editForm.location">{{ editForm.location }}（当前）</option>
-                <option v-for="loc in settings.locations" :key="loc" :value="loc">{{ loc }}</option>
-              </select>
+            <!-- 储存位置 + 分类 并排，与 scanForm 字段顺序一致 -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-500 mb-1.5 block">储存位置</label>
+                <select v-model="editForm.location" class="input">
+                  <option value="">待设置</option>
+                  <option v-if="editForm.location && !settings.locations.includes(editForm.location)" :value="editForm.location">{{ editForm.location }}（当前）</option>
+                  <option v-for="loc in settings.locations" :key="loc" :value="loc">{{ loc }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1.5 block">分类</label>
+                <select v-model="editForm.category" class="input">
+                  <option value="">待设置</option>
+                  <option v-for="cat in settings.categories" :key="cat" :value="cat">{{ cat }}</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label class="text-xs text-gray-500 mb-1.5 block">分类</label>
-              <select v-model="editForm.category" class="input">
-                <option value="">待设置</option>
-                <option v-for="cat in settings.categories" :key="cat" :value="cat">{{ cat }}</option>
-              </select>
+            <!-- 净含量 + 总价 并排：v2.21.13 从更多块上移到基础信息卡（与录入页对齐） -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-500 mb-1.5 block">净含量</label>
+                <input v-model="editForm.netContent" type="text" placeholder="如：500g" class="input">
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1.5 block">总价</label>
+                <input v-model="editForm.price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="如：12.5" class="input">
+              </div>
             </div>
-            <!-- v2.15.10：库存数量从日期信息下移至基础信息末尾（与扫码页"初始数量"v2.15.8 改动保持一致） -->
+            <!-- 库存数量保留在末位（与扫码页"初始数量"位置对齐） -->
             <div>
               <label class="text-xs text-gray-500 mb-1.5 block">库存数量</label>
               <input :value="editForm.quantity" type="number" disabled class="input">
@@ -2081,8 +2115,22 @@
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="text-xs text-gray-500 mb-1.5 block">保质期</label>
-                <input v-model="editForm.shelfLife" type="text" @change="onEditShelfLifeChange"
-                  class="input">
+                <!-- v2.21.13：保质期胶囊（数字 + 日/月/年 单位切换），与录入页完全一致 -->
+                <div class="flex items-stretch border border-gray-200 rounded-full overflow-hidden bg-white focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+                  <input v-model="editForm.shelfLife" type="number" min="1" inputmode="numeric" @change="onEditShelfLifeChange"
+                    class="flex-1 min-w-0 bg-transparent text-sm text-gray-800 px-3.5 py-2 outline-none">
+                  <div class="flex items-stretch flex-shrink-0 bg-orange-50">
+                    <button type="button" @click="setEditShelfLifeUnit('day')"
+                      :class="editForm.shelfLifeUnit === 'day' ? 'bg-orange-500 text-white' : 'text-orange-600'"
+                      class="px-2.5 py-2 text-xs font-medium transition-colors">日</button>
+                    <button type="button" @click="setEditShelfLifeUnit('month')"
+                      :class="editForm.shelfLifeUnit === 'month' ? 'bg-orange-500 text-white' : 'text-orange-600'"
+                      class="px-2.5 py-2 text-xs font-medium transition-colors">月</button>
+                    <button type="button" @click="setEditShelfLifeUnit('year')"
+                      :class="editForm.shelfLifeUnit === 'year' ? 'bg-orange-500 text-white' : 'text-orange-600'"
+                      class="px-2.5 py-2 text-xs font-medium transition-colors">年</button>
+                  </div>
+                </div>
               </div>
               <div>
                 <label class="text-xs text-gray-500 mb-1.5 block">到期日期</label>
@@ -2090,7 +2138,7 @@
               </div>
             </div>
 
-            <!-- 更多信息（折叠，全部可选；v2.15.6 与扫码页排版统一） -->
+            <!-- 更多信息（折叠，全部可选；v2.21.13 与录入页三页完全一致——品牌 → 生产厂家 → 规格 → 商品图片 → 备注；净含量/价格已上移基础信息卡） -->
             <div class="border border-gray-200 rounded-xl overflow-hidden">
               <button type="button" @click="editShowMore = !editShowMore"
                 class="w-full px-4 py-2.5 flex items-center justify-between text-xs font-semibold text-gray-400 tracking-wide active:bg-gray-50 transition-colors">
@@ -2103,37 +2151,25 @@
                   <label class="text-[11px] text-gray-400 block mb-1.5">品牌</label>
                   <input v-model="editForm.brand" type="text" placeholder="如：蒙牛" class="input input-sm">
                 </div>
-                <div class="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label class="text-[11px] text-gray-400 block mb-1.5">规格</label>
-                    <input v-model="editForm.spec" type="text" placeholder="如：250ml×16" class="input input-sm">
-                  </div>
-                  <div>
-                    <label class="text-[11px] text-gray-400 block mb-1.5">净含量</label>
-                    <input v-model="editForm.netContent" type="text" placeholder="如：500g" class="input input-sm">
-                  </div>
+                <div>
+                  <label class="text-[11px] text-gray-400 block mb-1.5">生产厂家</label>
+                  <input v-model="editForm.manufacturer" type="text" placeholder="如：内蒙古蒙牛乳业" class="input input-sm">
                 </div>
-                <div class="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label class="text-[11px] text-gray-400 block mb-1.5">价格（元）<span class="text-gray-300">·多件为总价</span></label>
-                    <input v-model="editForm.price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="如：12.5" class="input input-sm">
-                  </div>
-                  <div>
-                    <label class="text-[11px] text-gray-400 block mb-1.5">生产厂家</label>
-                    <input v-model="editForm.manufacturer" type="text" placeholder="如：内蒙古蒙牛乳业" class="input input-sm">
-                  </div>
+                <div>
+                  <label class="text-[11px] text-gray-400 block mb-1.5">规格</label>
+                  <input v-model="editForm.spec" type="text" placeholder="如：250ml×16" class="input input-sm">
                 </div>
                 <div>
                   <label class="text-[11px] text-gray-400 block mb-1.5">商品图片（链接）</label>
                   <div class="flex gap-2">
-                    <input v-model="editForm.imageUrl" type="text" placeholder="https://…" class="input input-sm flex-1">
+                    <input v-model="editForm.imageUrl" type="text" placeholder="图片 URL" class="input input-sm flex-1">
                     <button type="button" @click="previewImage(editForm.imageUrl)" :disabled="!editForm.imageUrl"
                       class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium disabled:opacity-40 active:bg-gray-200 transition-colors flex-shrink-0">查看图片</button>
                   </div>
                 </div>
                 <div>
                   <label class="text-[11px] text-gray-400 block mb-1.5">备注</label>
-                  <input v-model="editForm.note" type="text" placeholder="可选，如：临期特价" class="input input-sm">
+                  <input v-model="editForm.note" type="text" placeholder="如：临期特价" class="input input-sm">
                 </div>
               </div>
             </div>
@@ -2327,7 +2363,7 @@
             </div>
             <template v-if="ocr.lines.length">
               <div class="px-4 pt-3 pb-1 text-xs text-gray-400">点击文字，用作{{ scanContext === 'home' ? '搜索词' : (scanContext === 'batch' ? '新商品名称' : '商品名称') }}<span v-if="ocr.engine" class="ml-1 text-gray-300">· {{ ocr.engine === 'paddle' ? 'Paddle 本地' : 'Tesseract' }}</span></div>
-              <div class="max-h-40 overflow-y-auto">
+              <div class="max-h-48 overflow-y-auto simple-scroll">
                 <button v-for="(line, i) in ocr.lines" :key="i" @click="useOcrText(line)"
                   class="w-full text-left px-4 py-2.5 text-sm text-gray-800 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ line }}</button>
               </div>
@@ -2412,7 +2448,7 @@ createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.12';   // 当前代码版本号（v2.21.12：Paddle GPU/资源占用优化——识别输入图上限 1280→960（paddlejs det 模型固定 960×960 输入，更大图纯属浪费纹理上传与内部二次缩放）；相册选图一次缩到 1280（原 1600→识别时再缩 1280 两段重采样）；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
+    const CURRENT_VERSION = '2.21.13';   // 当前代码版本号（v2.21.13：UI 优化 7 项——净含量 label 统一、更多信息补规格放厂家后、OCR radio button 化、保质期按自然月-1 天算法恢复、批量页/主页编辑弹窗 UI 与录入页三页完全一致、OCR 文字框滚动样式优化、删除/注释百度云票据识别入口（字段保留兼容老数据）；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留
 
     const searchQuery = ref('');
@@ -2749,12 +2785,19 @@ createApp({
 
     const changelog = [
       {
-        version: '2.21.12',
+        version: '2.21.13',
         date: '2026-09-03',
         items: [
-          '优化 Paddle 识别时的 GPU/CPU 占用：paddlejs 的 det 检测模型**固定 960×960 输入**（本地模型实测确认），此前识别图按 1280 长边上传、由库内部再二次缩放——现识别前直接缩到 960，减少大纹理上传与内部重采样（识别质量无损，模型本就按 960 训练）',
-          '相册选图改为**一次缩到 1280**（此前先缩 1600、识别阶段再缩 1280，两段重采样多余）——减少大图多次搬上 GPU 造成的峰值占用',
-          '版本 2.21.11 → 2.21.12；SW 缓存 v67 → v68'
+          'UI 优化 7 项（批量录入页、单个录入页、主页编辑弹窗三页结构完全一致）：',
+          '① 净含量 label 去掉「·单件商品」副标题，统一颜色（与总价同标准色）',
+          '② 更多信息补回「规格」字段，位于生产厂家之后（仅展示，不参与统计）',
+          '③ 保质期按「自然月-1 天」「自然年-1 天」算法恢复（如 2/20 + 1月 = 3/19、5/15 + 1年 = 次年 5/14）；先前 v2.16.5 改为不-1 天导致临期判断偏紧',
+          '④ 主页编辑弹窗三页 UI 完全一致——净含量/总价上移到基础信息卡；储存位置/分类并排；保质期胶囊与录入页同步支持日/月/年单位切换',
+          '⑤ 清理录入冗余提示：条形码/商品名称/生产厂家/商品图片占位文案去掉「扫码自动获取」「请输入」等操作提示，仅保留如『如：500g』『如：12.5』『如：250ml×16』数据示例',
+          '⑥ 设置页 OCR 引擎 radio button 化（白底橙字橙边），选中橙底白字——更醒目',
+          '⑦ OCR 文字框滚动样式优化（max-h 提升 + 自定义橙色滚动条），识别结果不再撑页面',
+          '清理：百度云票据识别入口已注释（API Key/Secret Key 字段保留兼容老数据，未来启用只需取消注释）',
+          '版本 2.21.12 → 2.21.13；SW 缓存 v68 → v69'
         ]
       },
       {
@@ -4236,9 +4279,11 @@ createApp({
       return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
     }
 
-    // 录入页保质期胶囊：到期 = 生产日期 + N 单位（自然月/年，月末收敛，不减 1 天）
-    // 例：1个月 → 2026-08-10 + 1月 = 2026-09-10；2026-01-31 + 1月 = 2026-02-28（2月无31取月末）
-    // 1年 → 2026-05-15 + 1年 = 2027-05-15；2026-02-29 + 1年 = 2027-02-28（平年取2月末）
+    // 录入页/编辑弹窗共享：到期 = 生产日期 + N 单位（自然月/年-1 天，日+直接）
+    // 例：1个月 → 2026-08-10 + 1月 = 2026-09-10 → -1天 = 2026-09-09；2026-02-20 + 1月 = 2026-03-20 → 2026-03-19
+    //     2026-01-31 + 1月 = 2026-02-28（2月无31）→ 2026-02-27；2026-05-15 + 1年 = 2027-05-15 → 2027-05-14
+    // 1年 → 2026-08-10 + 1年 = 2027-08-10 → -1天 = 2027-08-09；2026-02-29 + 1年 = 2027-02-28（平年） → 2027-02-27
+    // 日单位 → 不 -1 天（保持 +N 天直接加）
     function calcExpiryDateFromParts(prod, num, unit) {
       if (!prod || !num) return '';
       const n = parseInt(num);
@@ -4255,6 +4300,7 @@ createApp({
         d.setMonth(d.getMonth() + n);
         const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
         d.setDate(Math.min(day, last));   // 当月无此日期时取当月最后一天
+        d.setDate(d.getDate() - 1);   // v2.21.13：自然月-1 天（如 2/20 + 1月 = 3/19）
       } else if (unit === 'year') {
         const day = d.getDate();
         d.setFullYear(d.getFullYear() + n);
@@ -4263,8 +4309,9 @@ createApp({
           d.setMonth(1);
           d.setDate(new Date(d.getFullYear(), 2, 0).getDate());
         }
+        d.setDate(d.getDate() - 1);   // v2.21.13：自然年-1 天
       } else {
-        d.setDate(d.getDate() + n);
+        d.setDate(d.getDate() + n);   // 日单位：不减
       }
       return toDateStr(d);
     }
@@ -4608,10 +4655,11 @@ createApp({
         id: product.id, name: product.name, barcode: product.barcode || '',
         location: product.location || '', category: product.category || '', stockInDate: product.stockInDate || '',
         productionDate: product.productionDate || '',
-        shelfLife: product.shelfLife || '', expiryDate: product.expiryDate || '',
+        shelfLife: product.shelfLife || '', expiryDate: product.expiryDate || '', shelfLifeUnit: 'month',
         quantity: product.quantity || 0,
-        brand: product.brand || '', spec: product.spec || '', netContent: product.netContent || '',
-        manufacturer: product.manufacturer || '', price: product.price === 0 ? 0 : (product.price || ''),
+        netContent: product.netContent || '',
+        price: product.price === 0 ? 0 : (product.price || ''),
+        brand: product.brand || '', spec: product.spec || '', manufacturer: product.manufacturer || '',
         imageUrl: product.imageUrl || '', note: product.note || ''
       });
       editShowMore.value = false;
@@ -4627,21 +4675,35 @@ createApp({
     }
 
     function onEditDateChange() {
-      // 生产日期变更：优先用 保质期 重算到期日期，否则用 到期日期 反算保质期
+      // 生产日期变更：优先用 保质期（+当前单位）重算到期日期；否则按"自然月-1 天"算法反算保质期
       if (editForm.productionDate && editForm.shelfLife) {
-        editForm.expiryDate = calcExpiryDate(editForm.productionDate, editForm.shelfLife);
+        editForm.expiryDate = calcExpiryDateFromParts(editForm.productionDate, editForm.shelfLife, editForm.shelfLifeUnit);
       } else if (editForm.productionDate && editForm.expiryDate) {
-        editForm.shelfLife = calcShelfLife(editForm.productionDate, editForm.expiryDate);
+        const parts = calcShelfLifeParts(editForm.productionDate, editForm.expiryDate, editForm.shelfLifeUnit);
+        if (parts.num) {
+          editForm.shelfLife = parts.num;
+          // 反算后若 unit 变化（月/日/年），保留原单位（更直观）
+        }
       }
     }
     function onEditExpiryChange() {
+      // 到期日期变更：按当前单位反算保质期
       if (editForm.productionDate && editForm.expiryDate) {
-        editForm.shelfLife = calcShelfLife(editForm.productionDate, editForm.expiryDate);
+        const parts = calcShelfLifeParts(editForm.productionDate, editForm.expiryDate, editForm.shelfLifeUnit);
+        if (parts.num) editForm.shelfLife = parts.num;
       }
     }
     function onEditShelfLifeChange() {
+      // 保质期变更：按当前单位 + 生产日期 → 到期日期
       if (editForm.productionDate && editForm.shelfLife) {
-        editForm.expiryDate = calcExpiryDate(editForm.productionDate, editForm.shelfLife);
+        editForm.expiryDate = calcExpiryDateFromParts(editForm.productionDate, editForm.shelfLife, editForm.shelfLifeUnit);
+      }
+    }
+    // 编辑弹窗保质期单位切换：与录入页 setShelfLifeUnit 等价
+    function setEditShelfLifeUnit(unit) {
+      editForm.shelfLifeUnit = unit;
+      if (editForm.productionDate && editForm.shelfLife) {
+        editForm.expiryDate = calcExpiryDateFromParts(editForm.productionDate, editForm.shelfLife, unit);
       }
     }
 
@@ -4665,6 +4727,8 @@ createApp({
 
       const changes = [];
       const fmt = v => (v === '' || v == null) ? '（空）' : String(v);
+      // v2.21.13：product.shelfLife 持久化为合成文本（如 "12个月"），changes.push 与 product.shelfLife 赋值都用文本
+      const editShelfLifeText = composeShelfLifeText(editForm);
       if (product.name !== editForm.name) changes.push({ field: '名称', before: product.name, after: editForm.name });
       if ((product.barcode || '') !== editForm.barcode) changes.push({ field: '条码', before: product.barcode || '', after: editForm.barcode || '' });
       if ((product.location || '') !== editForm.location) changes.push({ field: '储存位置', before: product.location || '', after: editForm.location || '' });
@@ -4672,7 +4736,7 @@ createApp({
       if ((product.stockInDate || '') !== editForm.stockInDate) changes.push({ field: '入库日期', before: product.stockInDate || '', after: editForm.stockInDate || '' });
       if ((product.productionDate || '') !== editForm.productionDate) changes.push({ field: '生产日期', before: product.productionDate || '', after: editForm.productionDate || '' });
       if ((product.expiryDate || '') !== editForm.expiryDate) changes.push({ field: '到期日期', before: product.expiryDate || '', after: editForm.expiryDate || '' });
-      if ((product.shelfLife || '') !== editForm.shelfLife) changes.push({ field: '保质期', before: product.shelfLife || '', after: editForm.shelfLife || '' });
+      if ((product.shelfLife || '') !== editShelfLifeText) changes.push({ field: '保质期', before: product.shelfLife || '', after: editShelfLifeText });
       if ((product.brand || '') !== editForm.brand) changes.push({ field: '品牌', before: product.brand || '', after: editForm.brand || '' });
       if ((product.spec || '') !== editForm.spec) changes.push({ field: '规格', before: product.spec || '', after: editForm.spec || '' });
       if ((product.netContent || '') !== editForm.netContent) changes.push({ field: '净含量', before: product.netContent || '', after: editForm.netContent || '' });
@@ -4691,7 +4755,7 @@ createApp({
         product.stockInDate = editForm.stockInDate;
         product.productionDate = editForm.productionDate;
         product.expiryDate = editForm.expiryDate;
-        product.shelfLife = editForm.shelfLife;
+        product.shelfLife = editShelfLifeText;
         product.brand = editForm.brand.trim() || '';
         product.spec = editForm.spec.trim() || '';
         product.netContent = editForm.netContent.trim() || '';

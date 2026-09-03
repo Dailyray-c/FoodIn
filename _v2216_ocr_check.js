@@ -321,13 +321,19 @@ const log = (name, ok, extra) => {
     log('G5 语言包仅 chi_sim 且走 4.0.0_best_int', (html.match(/4\.0\.0_best_int/g) || []).length >= 1 && !/@tesseract\.js-data\/eng@1\.0\.0/.test(html));
     log('G6 pass2 参数复位（whitelist 清空 + psm3）', /tessedit_char_whitelist:\s*''/.test(html) && /tessedit_pageseg_mode:\s*3/.test(html));
     log('G7 进度分区变量 tessPhaseBase/tessPhaseCap', /let tessPhaseBase = 70, tessPhaseCap = 90/.test(html) && /tessPhaseBase = 90; tessPhaseCap = 100/.test(html));
-    log('G8 CURRENT_VERSION=2.21.12', /CURRENT_VERSION = '2\.21\.12'/.test(html));
-    log('G9 changelog 含 2.21.12 条目', /version: '2\.21\.12'/.test(html));
-    log('G10 SW 缓存 v68', /food-inventory-v68/.test(sw));
+    log('G8 CURRENT_VERSION=2.21.13', /CURRENT_VERSION = '2\.21\.13'/.test(html));
+    log('G9 changelog 含 2.21.13 条目', /version: '2\.21\.13'/.test(html));
+    log('G10 SW 缓存 v69', /food-inventory-v69/.test(sw));
     log('G11 cancelPaddleOcr 持久化切换（settings.ocrEngine = \'tesseract\' + saveData）', /settings\.ocrEngine = 'tesseract';\s*\n\s*saveData\(\)/.test(html));
     log('G12 v2.21.11 canvasToImage 存在且 recognize 传 srcImg（Paddle 传 canvas 恒 0 行根因修复）', /function canvasToImage\(canvas\)/.test(html) && /ocrApi\.recognize\(srcImg\)/.test(html) && /canvasToImage\(srcCanvas\)/.test(html));
     log('G13 v2.21.12 Paddle 识别前缩 960（shrinkForOcr(canvas, 960)，det 模型固定 960 输入）', /const srcCanvas = shrinkForOcr\(canvas, 960\)/.test(html) && /canvasToImage\(srcCanvas\)/.test(html));
     log('G14 v2.21.12 相册选图一次缩 1280（无残留 1600 上限）', /const maxW = 1280/.test(html) && !/const maxW = 1600/.test(html));
+    log('G15 v2.21.13 净含量 label 去掉「·单件商品」副标题（scanForm + batchForm 两处均已剔除）', !/净含量<span class="text-gray-300">·单件商品<\/span>/.test(html));
+    log('G16 v2.21.13 三处「更多信息」均含规格（scanForm/batchForm/editForm 厂家之后都有 spec input）', /v-model="scanForm\.spec"/.test(html) && /v-model="item\.spec"/.test(html) && /v-model="editForm\.spec"/.test(html));
+    log('G17 v2.21.13 calcExpiryDateFromParts 月单位 -1 天（自然月算法：收敛完毕后 d.setDate(d.getDate() - 1) 仅在 month/year 分支）', /d\.setDate\(d\.getDate\(\) - 1\)/.test(html) && /unit === 'month'/.test(html));
+    log('G18 v2.21.13 editForm 含 shelfLifeUnit（与 scanForm 一致，单位胶囊切换）', /shelfLifeUnit:\s*'month'/.test(html) && /setEditShelfLifeUnit/.test(html));
+    log('G19 v2.21.13 OCR radio button 化（白底橙字橙边） + 百度云入口已注释（HTML 注释内仍保留 placeholder 文本）', /border-orange-200 bg-white/.test(html) && /<!-- v2\.21\.13：百度云票据识别入口移除/.test(html));
+    log('G20 v2.21.13 OCR 文字框加 simple-scroll 自定义滚动条 + max-h 提升（单条 max-h-48、批量页 max-h-60）', /\.simple-scroll \{/.test(html) && /max-h-60 overflow-y-auto simple-scroll/.test(html) && /max-h-48 overflow-y-auto simple-scroll/.test(html));
   }
 
   console.log('\n=== 总结: ' + pass + ' 通过 / ' + fail + ' 失败 ===');

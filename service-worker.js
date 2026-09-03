@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-inventory-v68';   // v2.21.12（Paddle GPU/资源优化：识别输入 960 + 相册一次缩放；缓存号递增保证更新可见）
+const CACHE_NAME = 'food-inventory-v69';   // v2.21.13（UI 优化 7 项；缓存号递增保证更新可见）
 
 // 仅预缓存同域静态资源（GitHub Pages 加载快、体积小；不再阻塞等待慢速第三方 CDN）
 const PRECACHE_ASSETS = [
