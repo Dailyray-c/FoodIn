@@ -2412,7 +2412,7 @@ createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.10';   // 当前代码版本号（v2.21.10：批量录入页 OCR 结果区补 processing 门控——结果不再在进度 92% 提前上屏，进度走满 100% 后与结果一起显示；Paddle 静默回退 Tesseract 时新增「原因提示 toast + 空结果日志」，不再让用户误以为「选了 Paddle 不生效」；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
+    const CURRENT_VERSION = '2.21.11';   // 当前代码版本号（v2.21.11：根治「Paddle 模型就绪却从不出字」——paddlejs ocr.recognize 内部 detect 依赖 image.naturalWidth/naturalHeight（HTMLImageElement 专属），FoodIn 此前传 HTMLCanvasElement 致缩放 NaN、检测框恒空、静默回退 Tesseract；新增 canvasToImage 把识别图转成 <img> 再识别；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留
 
     const searchQuery = ref('');
@@ -2748,6 +2748,15 @@ createApp({
     };
 
     const changelog = [
+      {
+        version: '2.21.11',
+        date: '2026-09-03',
+        items: [
+          '**根治「Paddle 模型就绪却从不出字、总是静默用 Tesseract」**：排查确认 paddlejs ocr 的 `recognize()` 内部检测用 `image.naturalWidth / naturalHeight`（HTMLImageElement 专属属性），而应用一直传的是 canvas——导致缩放计算失效、检测框恒空、识别结果恒 0 行（不报错）。修复：识别前先把图转成 `<img>` 元素（新增 canvasToImage，toBlob 避免 base64 膨胀）；控制台 `__foodin.testPaddle(图片)` 同步修正。沙箱实测同图对照：img 输入识别出文字、canvas 输入 0 行',
+          '配合 v2.21.10 的「回退原因 toast」：若修复后仍偶尔回退，会明确提示原因（识别无结果 / 识别异常 / 模型加载失败）',
+          '版本 2.21.10 → 2.21.11；SW 缓存 v66 → v67'
+        ]
+      },
       {
         version: '2.21.10',
         date: '2026-09-03',
@@ -5173,9 +5182,11 @@ createApp({
         }
         ocr.phase = 'paddle-run';
         ocr.progress = Math.max(ocr.progress, 55);
-        // v2.21.8：识别前缩图（大图加速 2-3x，识别质量无影响）——直接传 canvas 给 paddlejs
+        // v2.21.8：识别前缩图（大图加速 2-3x，识别质量无影响）
+        // v2.21.10：recognize 必须传 HTMLImageElement——其 detect 依赖 naturalWidth/naturalHeight，传 canvas 恒返回 0 行
         const srcCanvas = shrinkForOcr(canvas);
-        const res = await ocrApi.recognize(srcCanvas);
+        const srcImg = await canvasToImage(srcCanvas);
+        const res = await ocrApi.recognize(srcImg);
         ocr.progress = Math.max(ocr.progress, 90);
         const textArr = Array.isArray(res && res.text) ? res.text : [];
         const lines = textArr
@@ -5240,10 +5251,8 @@ createApp({
           img.src = URL.createObjectURL(blob);
         }
         await new Promise((r, j) => { img.onload = r; img.onerror = j; });
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
-        canvas.getContext('2d').drawImage(img, 0, 0);
-        const res = await ocrApi.recognize(canvas);
+        // v2.21.10：直接 recognize(HTMLImageElement)——此前多此一举画到 canvas 再传，触发 paddlejs naturalWidth/Height 兼容问题恒 0 行
+        const res = await ocrApi.recognize(img);
         console.log('[FoodIn] Paddle 识别结果（' + (res.text || []).length + ' 行）:');
         (res.text || []).forEach((t, i) => console.log('  ' + (i + 1) + '. ' + t));
         return res;
@@ -5277,6 +5286,22 @@ createApp({
       out.width = nw; out.height = nh;
       out.getContext('2d').drawImage(canvas, 0, 0, nw, nh);
       return out;
+    }
+    // v2.21.10：paddlejs ocr.recognize 内部 detect() 使用 image.naturalWidth / image.naturalHeight（HTMLImageElement 专属属性），
+    // 传入 HTMLCanvasElement 时这些值为 undefined → letterbox 等比缩放计算 NaN → 检测框恒空 → recognize 静默返回 0 行（不抛错）。
+    // 这就是「Paddle 模型就绪却从不出字、每次都静默回退 Tesseract」的根因（沙箱实测：同图 img 输入识别出 1 行、canvas 输入 0 行）。
+    // 识别前必须把 canvas 转成 HTMLImageElement；用 toBlob + objectURL（不用 toDataURL，避免 base64 体积膨胀 33%）。
+    function canvasToImage(canvas) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) { reject(new Error('canvas toBlob 失败')); return; }
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+          img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('图像解码失败')); };
+          img.src = url;
+        }, 'image/png');
+      });
     }
     function preprocessForBarcode(canvas) {
       const w = canvas.width, h = canvas.height;

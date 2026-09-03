@@ -103,7 +103,7 @@ async function enterBatch(page) {
       const hit = btns.find(b => /版本\s*v?\s*2\.21\.\d/.test(b.textContent || ''));
       return hit ? hit.textContent.trim() : null;
     });
-    log('E1 设置页版本号 v2.21.10', /v2\.21\.10/.test(verText || ''), `ver="${verText}"`);
+    log('E1 设置页版本号 v2.21.11', /v2\.21\.11/.test(verText || ''), `ver="${verText}"`);
     await ctx.close();
   }
 
