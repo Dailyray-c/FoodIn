@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-inventory-v69';   // v2.21.13（UI 优化 7 项；缓存号递增保证更新可见）
+const CACHE_NAME = 'food-inventory-v71';   // v2.21.15（OCR 引擎 radio 显式高亮 + 三页 placeholder 移除 + OCR 文字框滚动兜底；缓存号递增保证更新可见）
 
 // 仅预缓存同域静态资源（GitHub Pages 加载快、体积小；不再阻塞等待慢速第三方 CDN）
 const PRECACHE_ASSETS = [
