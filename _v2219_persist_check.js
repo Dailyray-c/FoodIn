@@ -40,7 +40,7 @@ const { chromium } = require('playwright');
   await page.goto('http://127.0.0.1:8765/index.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForFunction(() => !!window.__foodin, null, { timeout: 15000 });
   const ver = await page.evaluate(() => __foodin.settings.version);
-  log('P0 应用版本 2.21.9', ver === '2.21.9', 'ver=' + ver);
+  log('P0 应用版本 2.21.10', ver === '2.21.10', 'ver=' + ver);
 
   // P1: 自动探测（600ms 后启动，HEAD 探测很快）
   const t1 = Date.now();

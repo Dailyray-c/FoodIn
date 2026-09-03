@@ -647,21 +647,24 @@
             <button v-if="ocr.phase === 'paddle-dl' && settings.ocrEngine === 'paddle'" @click="cancelPaddleOcr"
               class="mt-2 w-full py-1.5 text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg active:bg-gray-100">取消并切 Tesseract 识别（更快）</button>
           </div>
-          <div v-if="ocr.barcodes.length" class="mt-3">
-            <div class="text-[11px] text-gray-400 mb-1.5">识别到条码（点击填入商品条码）</div>
-            <div class="flex flex-wrap gap-1.5">
-              <button v-for="bc in ocr.barcodes" :key="bc" @click="useBatchOcrBarcode(bc)"
-                class="px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-medium border border-orange-100 active:scale-95 transition-all">{{ bc }}</button>
+          <!-- v2.21.10：结果区包进 processing 的 v-else——此前批量页结果区无门控，pass1 一结束 lines 立即上屏而进度条才 92%（未到 100），与单条扫码页一致改为「进度走满 → 结果一起显示」 -->
+          <template v-else>
+            <div v-if="ocr.barcodes.length" class="mt-3">
+              <div class="text-[11px] text-gray-400 mb-1.5">识别到条码（点击填入商品条码）</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button v-for="bc in ocr.barcodes" :key="bc" @click="useBatchOcrBarcode(bc)"
+                  class="px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-medium border border-orange-100 active:scale-95 transition-all">{{ bc }}</button>
+              </div>
             </div>
-          </div>
-          <div v-if="ocr.lines.length" class="mt-3">
-            <div class="text-[11px] text-gray-400 mb-1.5">识别到文字（点击行添加为商品）<span v-if="ocr.engine" class="ml-1 text-gray-300">· {{ ocr.engine === 'paddle' ? 'Paddle 本地' : 'Tesseract' }}</span></div>
-            <div class="max-h-44 overflow-y-auto rounded-xl border border-gray-100">
-              <button v-for="(line, i) in ocr.lines" :key="i" @click="useBatchOcrLine(line)"
-                class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ line }}</button>
+            <div v-if="ocr.lines.length" class="mt-3">
+              <div class="text-[11px] text-gray-400 mb-1.5">识别到文字（点击行添加为商品）<span v-if="ocr.engine" class="ml-1 text-gray-300">· {{ ocr.engine === 'paddle' ? 'Paddle 本地' : 'Tesseract' }}</span></div>
+              <div class="max-h-44 overflow-y-auto rounded-xl border border-gray-100">
+                <button v-for="(line, i) in ocr.lines" :key="i" @click="useBatchOcrLine(line)"
+                  class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ line }}</button>
+              </div>
             </div>
-          </div>
-          <div v-else-if="ocr.error" class="mt-3 text-xs text-red-500 text-center">{{ ocr.error }}</div>
+            <div v-else-if="ocr.error" class="mt-3 text-xs text-red-500 text-center">{{ ocr.error }}</div>
+          </template>
           <button @click="addBatchItem" type="button"
             class="w-full mt-3 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-medium active:bg-orange-600 transition-colors">+ 添加商品</button>
         </div>
@@ -2409,7 +2412,7 @@ createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.9';   // 当前代码版本号（v2.21.9：Paddle 本地模型「自动探测 + 持久化 + 静默预加载」——自定义模型地址存 localStorage 刷新不丢；页面跑在 http://127.0.0.1 等本机/内网服务时自动发现站内 _paddle_models 目录并指向本地模型、后台预下载，识别不再静默回退 Tesseract；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
+    const CURRENT_VERSION = '2.21.10';   // 当前代码版本号（v2.21.10：批量录入页 OCR 结果区补 processing 门控——结果不再在进度 92% 提前上屏，进度走满 100% 后与结果一起显示；Paddle 静默回退 Tesseract 时新增「原因提示 toast + 空结果日志」，不再让用户误以为「选了 Paddle 不生效」；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留
 
     const searchQuery = ref('');
@@ -2614,7 +2617,7 @@ createApp({
     const torchOn = ref(false);         // 手电筒开关
     const torchSupported = ref(false);  // 设备是否支持手电筒
     const albumFileRef = ref(null);     // 相册选图 input
-    const ocr = reactive({ processing: false, progress: 0, lines: [], linesTotal: 0, barcodes: [], error: '', engine: '', phase: '' });   // v2.21.0：+barcodes 条码识别结果；v2.21.5：+engine 记录实际识别引擎（paddle/tesseract）；v2.21.5+：+phase 识别阶段（paddle-dl 下载模型 / paddle-run / tess-load 加载组件 / tess-run 识别），驱动进度文案与取消按钮显隐；v2.21.8：+linesTotal 识别总行数（不限 slice 后 UI 显示「X / Y 行」用）
+    const ocr = reactive({ processing: false, progress: 0, lines: [], linesTotal: 0, barcodes: [], error: '', engine: '', phase: '', paddleNote: '' });   // v2.21.0：+barcodes 条码识别结果；v2.21.5：+engine 记录实际识别引擎（paddle/tesseract）；v2.21.5+：+phase 识别阶段（paddle-dl 下载模型 / paddle-run / tess-load 加载组件 / tess-run 识别），驱动进度文案与取消按钮显隐；v2.21.8：+linesTotal 识别总行数（不限 slice 后 UI 显示「X / Y 行」用）；v2.21.10：+paddleNote Paddle 回退原因（仅 Paddle 分支失败回退 Tesseract 时写入，供 toast 提示用户为什么没用上 Paddle）
     const cloudSyncing = ref(false);
     const cloudSyncStatus = ref('');
     let cloudPushTimer = null;
@@ -2745,6 +2748,15 @@ createApp({
     };
 
     const changelog = [
+      {
+        version: '2.21.10',
+        date: '2026-09-03',
+        items: [
+          '修复（批量录入页进度 92% 就显示结果）：批量页识别结果区此前未受 `ocr.processing` 门控——pass1 一结束识别文字就提前上屏，而进度条才走到条码 pass2 起点 92%；现与单条扫码页对齐，识别结果等进度走满 100% 后一起显示',
+          '诊断增强（选 Paddle 却走 Tesseract）：Paddle 识别无结果 / init 失败 / 识别异常时，回退到 Tesseract 的同时会弹出提示说明回退原因（此前完全静默，设置页又仍显示 Paddle，容易被误读为「选了不生效」）；「Paddle 识别结果为空」也新增控制台日志便于排查（多为 WebGL/图形环境受限）',
+          '版本 2.21.9 → 2.21.10；SW 缓存 v65 → v66'
+        ]
+      },
       {
         version: '2.21.9',
         date: '2026-09-02',
@@ -5147,10 +5159,13 @@ createApp({
             const elapsed = Math.round((Date.now() - paddleInitStartedAt) / 1000);
             if (waitReason === 'aborted') {
               console.warn('[FoodIn][Paddle] 已取消（' + elapsed + 's），本单切 Tesseract；模型仍在后台下载，完成后自动就绪');
+              ocr.paddleNote = '已取消';
             } else if (paddleLastError) {
               console.warn('[FoodIn][Paddle] init 失败（' + elapsed + 's）→ 切 Tesseract。失败原因：' + paddleLastError);
+              ocr.paddleNote = '模型加载失败（' + String(paddleLastError).slice(0, 60) + '）';
             } else {
               console.warn('[FoodIn][Paddle] init ' + elapsed + 's 仍未完成（超过 ' + (PADDLE_INIT_TIMEOUT_MS / 1000) + 's 窗口）→ 本单切 Tesseract；模型仍在后台下载，完成后自动就绪。若你确认下载很快，请把控制台完整日志发开发者排查');
+              ocr.paddleNote = '模型加载超时';
             }
             return false;
           }
@@ -5169,11 +5184,18 @@ createApp({
         ocr.linesTotal = lines.length;   // v2.21.8：保留总行数（UI 容器已有 max-h 滚动保护，无需再 slice）
         ocr.lines = lines;
         ocr.barcodes = [...new Set(extractBarcodes(textArr.join('\n')))].slice(0, 6);
-        if (!ocr.lines.length && !ocr.barcodes.length) return false;
+        if (!ocr.lines.length && !ocr.barcodes.length) {
+          // v2.21.10：此前静默回退——「选了 Paddle 却走 Tesseract」的常见原因（模型已就绪但识别返回空，多为 WebGL/图形环境受限），补日志便于排查
+          console.warn('[FoodIn][Paddle] recognize 结果为空（模型已就绪但未识别到文字/条码，多为 WebGL 图形受限），本单切 Tesseract');
+          ocr.paddleNote = '识别无结果';
+          return false;
+        }
+        ocr.paddleNote = '';
         ocr.engine = 'paddle';
         return true;
       } catch (e) {
         console.warn('Paddle OCR failed, fallback to Tesseract:', e && e.message || e);
+        ocr.paddleNote = '识别异常（' + String((e && e.message) || e).slice(0, 60) + '）';
         return false;   // paddleOcrReady/initPromise 状态由 init 链自维护，此处不重置（模型若已就绪后续仍可复用）
       }
     }
@@ -5239,6 +5261,7 @@ createApp({
       ocr.error = '';
       ocr.engine = '';
       ocr.phase = '';
+      ocr.paddleNote = '';   // v2.21.10：每次识别前清空回退原因
     }
 
     // ===== v2.21.0 OCR 条码识别优化 =====
@@ -5439,7 +5462,11 @@ createApp({
           const ok = await tryPaddleOcr(canvas);
           if (ok) return;
           // Paddle 加载失败 / 识别为空 / 用户取消 → 自动回退 Tesseract，保证旧行为不丢
+          const pNote = ocr.paddleNote || '不可用';
           await tryTesseractOcr(canvas);
+          // v2.21.10：回退原因不再静默——提示用户「为什么选了 Paddle 却出 Tesseract 结果」
+          // （识别无结果=图形环境受限 / 模型加载失败=模型源不可达；设置页仍显示 Paddle 属预期，下次仍会先试 Paddle）
+          if (pNote && !ocr.error) showToast('Paddle ' + pNote + '，本单已用 Tesseract 出结果');
         } else {
           await tryTesseractOcr(canvas);
         }

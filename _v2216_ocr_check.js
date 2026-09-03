@@ -321,9 +321,9 @@ const log = (name, ok, extra) => {
     log('G5 语言包仅 chi_sim 且走 4.0.0_best_int', (html.match(/4\.0\.0_best_int/g) || []).length >= 1 && !/@tesseract\.js-data\/eng@1\.0\.0/.test(html));
     log('G6 pass2 参数复位（whitelist 清空 + psm3）', /tessedit_char_whitelist:\s*''/.test(html) && /tessedit_pageseg_mode:\s*3/.test(html));
     log('G7 进度分区变量 tessPhaseBase/tessPhaseCap', /let tessPhaseBase = 70, tessPhaseCap = 90/.test(html) && /tessPhaseBase = 90; tessPhaseCap = 100/.test(html));
-    log('G8 CURRENT_VERSION=2.21.9', /CURRENT_VERSION = '2\.21\.9'/.test(html));
-    log('G9 changelog 含 2.21.9 条目', /version: '2\.21\.9'/.test(html));
-    log('G10 SW 缓存 v65', /food-inventory-v65/.test(sw));
+    log('G8 CURRENT_VERSION=2.21.10', /CURRENT_VERSION = '2\.21\.10'/.test(html));
+    log('G9 changelog 含 2.21.10 条目', /version: '2\.21\.10'/.test(html));
+    log('G10 SW 缓存 v66', /food-inventory-v66/.test(sw));
     log('G11 cancelPaddleOcr 持久化切换（settings.ocrEngine = \'tesseract\' + saveData）', /settings\.ocrEngine = 'tesseract';\s*\n\s*saveData\(\)/.test(html));
   }
 

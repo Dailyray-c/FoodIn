@@ -164,7 +164,7 @@ const log = (name, ok, extra) => {
   // F. SW 缓存号
   {
     const sw = fs.readFileSync('C:\\Users\\Administrator\\WorkBuddy\\2026-08-08-19-09-36\\service-worker.js', 'utf8');
-    log('F1 SW 缓存 v64（v2.21.8）', /food-inventory-v64/.test(sw));
+    log('F1 SW 缓存 v66（v2.21.10）', /food-inventory-v66/.test(sw));
   }
 
   console.log('\n=== 总结: ' + pass + ' 通过 / ' + fail + ' 失败 ===');
