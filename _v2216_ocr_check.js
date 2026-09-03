@@ -321,11 +321,13 @@ const log = (name, ok, extra) => {
     log('G5 语言包仅 chi_sim 且走 4.0.0_best_int', (html.match(/4\.0\.0_best_int/g) || []).length >= 1 && !/@tesseract\.js-data\/eng@1\.0\.0/.test(html));
     log('G6 pass2 参数复位（whitelist 清空 + psm3）', /tessedit_char_whitelist:\s*''/.test(html) && /tessedit_pageseg_mode:\s*3/.test(html));
     log('G7 进度分区变量 tessPhaseBase/tessPhaseCap', /let tessPhaseBase = 70, tessPhaseCap = 90/.test(html) && /tessPhaseBase = 90; tessPhaseCap = 100/.test(html));
-    log('G8 CURRENT_VERSION=2.21.11', /CURRENT_VERSION = '2\.21\.11'/.test(html));
-    log('G9 changelog 含 2.21.11 条目', /version: '2\.21\.11'/.test(html));
-    log('G10 SW 缓存 v67', /food-inventory-v67/.test(sw));
+    log('G8 CURRENT_VERSION=2.21.12', /CURRENT_VERSION = '2\.21\.12'/.test(html));
+    log('G9 changelog 含 2.21.12 条目', /version: '2\.21\.12'/.test(html));
+    log('G10 SW 缓存 v68', /food-inventory-v68/.test(sw));
     log('G11 cancelPaddleOcr 持久化切换（settings.ocrEngine = \'tesseract\' + saveData）', /settings\.ocrEngine = 'tesseract';\s*\n\s*saveData\(\)/.test(html));
     log('G12 v2.21.11 canvasToImage 存在且 recognize 传 srcImg（Paddle 传 canvas 恒 0 行根因修复）', /function canvasToImage\(canvas\)/.test(html) && /ocrApi\.recognize\(srcImg\)/.test(html) && /canvasToImage\(srcCanvas\)/.test(html));
+    log('G13 v2.21.12 Paddle 识别前缩 960（shrinkForOcr(canvas, 960)，det 模型固定 960 输入）', /const srcCanvas = shrinkForOcr\(canvas, 960\)/.test(html) && /canvasToImage\(srcCanvas\)/.test(html));
+    log('G14 v2.21.12 相册选图一次缩 1280（无残留 1600 上限）', /const maxW = 1280/.test(html) && !/const maxW = 1600/.test(html));
   }
 
   console.log('\n=== 总结: ' + pass + ' 通过 / ' + fail + ' 失败 ===');

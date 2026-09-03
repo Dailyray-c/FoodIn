@@ -2412,7 +2412,7 @@ createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.11';   // 当前代码版本号（v2.21.11：根治「Paddle 模型就绪却从不出字」——paddlejs ocr.recognize 内部 detect 依赖 image.naturalWidth/naturalHeight（HTMLImageElement 专属），FoodIn 此前传 HTMLCanvasElement 致缩放 NaN、检测框恒空、静默回退 Tesseract；新增 canvasToImage 把识别图转成 <img> 再识别；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
+    const CURRENT_VERSION = '2.21.12';   // 当前代码版本号（v2.21.12：Paddle GPU/资源占用优化——识别输入图上限 1280→960（paddlejs det 模型固定 960×960 输入，更大图纯属浪费纹理上传与内部二次缩放）；相册选图一次缩到 1280（原 1600→识别时再缩 1280 两段重采样）；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留
 
     const searchQuery = ref('');
@@ -2748,6 +2748,15 @@ createApp({
     };
 
     const changelog = [
+      {
+        version: '2.21.12',
+        date: '2026-09-03',
+        items: [
+          '优化 Paddle 识别时的 GPU/CPU 占用：paddlejs 的 det 检测模型**固定 960×960 输入**（本地模型实测确认），此前识别图按 1280 长边上传、由库内部再二次缩放——现识别前直接缩到 960，减少大纹理上传与内部重采样（识别质量无损，模型本就按 960 训练）',
+          '相册选图改为**一次缩到 1280**（此前先缩 1600、识别阶段再缩 1280，两段重采样多余）——减少大图多次搬上 GPU 造成的峰值占用',
+          '版本 2.21.11 → 2.21.12；SW 缓存 v67 → v68'
+        ]
+      },
       {
         version: '2.21.11',
         date: '2026-09-03',
@@ -5184,7 +5193,8 @@ createApp({
         ocr.progress = Math.max(ocr.progress, 55);
         // v2.21.8：识别前缩图（大图加速 2-3x，识别质量无影响）
         // v2.21.10：recognize 必须传 HTMLImageElement——其 detect 依赖 naturalWidth/naturalHeight，传 canvas 恒返回 0 行
-        const srcCanvas = shrinkForOcr(canvas);
+        // v2.21.12：Paddle 上限缩到 960——本地 det 模型 feedShape 实测固定 960×960，传更大图纯属浪费纹理上传与库内二次缩放（GPU/CPU 占用优化，质量无损）
+        const srcCanvas = shrinkForOcr(canvas, 960);
         const srcImg = await canvasToImage(srcCanvas);
         const res = await ocrApi.recognize(srcImg);
         ocr.progress = Math.max(ocr.progress, 90);
@@ -5377,8 +5387,9 @@ createApp({
       if (!file) return;
       const img = new Image();
       img.onload = () => {
-        // 大图等比缩小到 1600px 内，加快识别
-        const maxW = 1600;
+        // v2.21.12：一次缩到 1280 长边（此前先缩 1600、识别阶段再由 runOcr 二次缩到 1280/960，两段重采样多余）
+        // 识别目标：Paddle det 固定 960、Tesseract 识别用 1280——1280 覆盖两者，runOcr 内 Paddle 分支会再精确缩到 960
+        const maxW = 1280;
         const scale = Math.min(1, maxW / (img.naturalWidth || maxW));
         const canvas = document.createElement('canvas');
         canvas.width = Math.round(img.naturalWidth * scale);
@@ -5541,7 +5552,8 @@ createApp({
       if (!file) return;
       const img = new Image();
       img.onload = () => {
-        const maxW = 1600;
+        // v2.21.12：与 ocrFromFile 对齐一次缩到 1280（Paddle det 固定 960 / Tesseract 1280，1600 两段重采样多余）
+        const maxW = 1280;
         const scale = Math.min(1, maxW / (img.naturalWidth || maxW));
         const canvas = document.createElement('canvas');
         canvas.width = Math.round(img.naturalWidth * scale);
