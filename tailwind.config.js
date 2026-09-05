@@ -9,6 +9,11 @@ module.exports = {
     '-translate-y-1/2', '-translate-x-1/2',
     '-translate-x-1/2 -rotate-90', '-rotate-90', 'rotate-90',
     'grid-cols-5', 'grid-cols-6', 'grid-cols-7', 'grid-cols-8',
+    // v2.22.4：<toggle-setting> 组件 template 里的 peer-checked 变体类（颜色参数驱动）
+    'peer-checked:bg-green-500',
+    'peer-checked:bg-violet-500',
+    'peer-checked:bg-indigo-500',
+    'peer-checked:bg-orange-500',
   ],
   theme: {
     extend: {},

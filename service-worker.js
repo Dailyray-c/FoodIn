@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-inventory-v71';   // v2.21.15（OCR 引擎 radio 显式高亮 + 三页 placeholder 移除 + OCR 文字框滚动兜底；缓存号递增保证更新可见）
+const CACHE_NAME = 'food-inventory-v80';   // v2.22.4 ①抽取 <toggle-setting> 通用组件 5 个 toggle 统一 ②名称清洗 40×20→36×20 ③扫码页「从相册选图」OCR 关闭态与「拍照识别」同款浅灰；缓存号递增使旧 SW 失效重新预缓存
 
 // 仅预缓存同域静态资源（GitHub Pages 加载快、体积小；不再阻塞等待慢速第三方 CDN）
 const PRECACHE_ASSETS = [
@@ -8,13 +8,15 @@ const PRECACHE_ASSETS = [
   './manifest.json',
   './icon-180.png',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './vendor/vue.global.prod.js',
+  './vendor/html5-qrcode.min.js',
+  './vendor/qrcode.min.js'
 ];
 
-// 第三方 CDN（Vue / 二维码 / OCR）：改用运行时缓存（cache-first），首次访问不阻塞安装
+// 第三方 CDN（Tesseract / OCR 大模型按需加载）：运行时缓存（cache-first），首次访问不阻塞安装
+// Vue / html5-qrcode 已本地化到 ./vendor/ 并走 PRECACHE_ASSETS，避开 CDN 受限网络
 const CDN_RESOURCES = [
-  'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js',
-  'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js',
   'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'
 ];
 

@@ -14,9 +14,14 @@
   <link rel="icon" type="image/png" sizes="180x180" href="./icon-180.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
-    <!-- 核心 JS：jsdelivr 国内比 unpkg 更稳定；加载后由 Service Worker 缓存，后续离线秒开 -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- 核心 JS：本地化优先（vendor/ 同源加载，避开 CDN 受限网络），onerror 时回退到 unpkg/jsdelivr/fastly 多源 -->
+    <script src="./vendor/vue.global.prod.js"
+            onerror="var s=document.createElement('script');s.src='https://unpkg.com/vue@3/dist/vue.global.prod.js';s.onerror=function(){var t=document.createElement('script');t.src='https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js';document.head.appendChild(t)};document.head.appendChild(s);this.remove()"></script>
+  <script src="./vendor/html5-qrcode.min.js"
+            onerror="var s=document.createElement('script');s.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';s.onerror=function(){var t=document.createElement('script');t.src='https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(t)};document.head.appendChild(s);this.remove()"></script>
+  <!-- v2.22.0：本地化 qrcodejs（davidshimjs/qrcodejs@1.0.0），同源加载避开 jsdelivr 受限网络；用于「扫码配置同步」生成配置码 QR -->
+  <script src="./vendor/qrcode.min.js"
+            onerror="var s=document.createElement('script');s.src='https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js';s.onerror=function(){var t=document.createElement('script');t.src='https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';document.head.appendChild(t)};document.head.appendChild(s);this.remove()"></script>
   <style>
     [v-cloak] { display: none; }
     * { -webkit-tap-highlight-color: transparent; }
@@ -637,13 +642,14 @@
           <div class="text-sm font-semibold text-gray-700 mb-2">小票批量录入</div>
           <p class="text-xs text-gray-400 mb-3">上传小票图片，自动识别商品名称 / 条码 / 金额；识别结果点击即可添加为商品，再手动补充日期等信息。</p>
           <!-- v2.21.3：「拍摄小票」智能分流——桌面浏览器走 getUserMedia 摄像头预览弹层拍照；移动端走原生相机（capture）；两者都不可用则回退文件选择 -->
+          <!-- v2.22.3：两个按钮改用 onClickOcr(fn) 守卫，关闭态点击立即 toast 不再绕到 hidden input click 后才拦截；颜色统一为浅灰底+灰边（与「上传图片」同款） -->
           <div class="flex gap-2">
-            <button @click="openReceiptCamera" :disabled="ocr.processing"
-              class="flex-1 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-medium active:bg-orange-600 disabled:opacity-40 transition-colors">
+            <button @click="onClickOcr(openReceiptCamera)" :disabled="ocr.processing"
+              :class="settings.ocrEnabled ? 'flex-1 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-medium active:bg-orange-600 disabled:opacity-40 transition-colors' : 'flex-1 py-2.5 rounded-xl bg-gray-100 border border-gray-200 text-gray-400 text-sm font-medium cursor-not-allowed transition-colors'">
               {{ ocr.processing ? '正在识别小票…' : '拍摄小票' }}
             </button>
-            <button @click="batchAlbumRef && batchAlbumRef.click()" :disabled="ocr.processing"
-              class="flex-1 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-orange-600 text-sm font-medium active:bg-orange-100 disabled:opacity-40 transition-colors">
+            <button @click="onClickOcr(() => batchAlbumRef && batchAlbumRef.click())" :disabled="ocr.processing"
+              :class="settings.ocrEnabled ? 'flex-1 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-orange-600 text-sm font-medium active:bg-orange-100 disabled:opacity-40 transition-colors' : 'flex-1 py-2.5 rounded-xl bg-gray-100 border border-gray-200 text-gray-400 text-sm font-medium cursor-not-allowed transition-colors'">
               上传图片
             </button>
           </div>
@@ -667,12 +673,60 @@
                   class="px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-medium border border-orange-100 active:scale-95 transition-all">{{ bc }}</button>
               </div>
             </div>
+            <!-- v2.21.16：智能分组——OCR 结果按启发式规则聚合为商品卡（name/spec/qty/price）；默认开启，用户可一键切回单行视图 -->
             <div v-if="ocr.lines.length" class="mt-3">
-              <div class="text-[11px] text-gray-400 mb-1.5">识别到文字（点击行添加为商品）<span v-if="ocr.engine" class="ml-1 text-gray-300">· {{ ocr.engine === 'paddle' ? 'Paddle 本地' : 'Tesseract' }}</span></div>
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="text-[11px] text-gray-400">识别到文字（点击组/行添加为商品）<span v-if="ocr.engine" class="ml-1 text-gray-300">· {{ ocr.engine === 'paddle' ? 'Paddle 本地' : 'Tesseract' }}</span></div>
+                <button @click="toggleBatchGroupMode" type="button"
+                  class="text-[11px] px-2 py-0.5 rounded-full border transition-colors"
+                  :class="ocr.groupMode ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-gray-200 text-gray-500'">
+                  {{ ocr.groupMode ? '✓ 智能分组' : '智能分组' }}
+                </button>
+              </div>
               <!-- v2.21.15：inline max-height 兜底（Tailwind JIT 在某些容器嵌套下未编译 max-h-*；强制限制并打开滚动） -->
               <div class="max-h-60 overflow-y-auto simple-scroll rounded-xl border border-gray-100" style="max-height: 240px; overflow-y: auto;">
-                <button v-for="(line, i) in ocr.lines" :key="i" @click="useBatchOcrLine(line)"
-                  class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ line }}</button>
+                <!-- 分组卡片视图（默认） -->
+                <template v-if="ocr.groupMode">
+                  <div v-for="(g, gi) in ocr.groups" :key="'g-'+gi" class="px-3 py-2.5 border-b border-gray-100 last:border-0 bg-white">
+                    <div class="text-[11px] text-gray-400 mb-1.5 flex items-center gap-1">
+                      <span class="inline-block w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                      分组 {{ gi + 1 }}<span v-if="g.lineIndices && g.lineIndices.length > 1" class="text-gray-300">· 合并 {{ g.lineIndices.length }} 行</span>
+                    </div>
+                    <div class="text-xs text-gray-700 leading-relaxed space-y-0.5">
+                      <div v-if="g.barcode" class="flex"><span class="text-gray-400 w-10 shrink-0">条码</span><span class="font-mono text-[11px]">{{ g.barcode }}</span></div>
+                      <div v-if="g.name" class="flex"><span class="text-gray-400 w-10 shrink-0">名称</span><span class="break-all">{{ g.name }}</span></div>
+                      <div v-if="g.spec" class="flex"><span class="text-gray-400 w-10 shrink-0">规格</span><span>{{ g.spec }}</span></div>
+                      <div v-if="g.qty || g.unit" class="flex"><span class="text-gray-400 w-10 shrink-0">数量</span><span>{{ g.qty || 1 }}{{ g.unit }}</span></div>
+                      <div v-if="g.price" class="flex"><span class="text-gray-400 w-10 shrink-0">价格</span><span class="text-orange-600 font-medium">¥{{ g.price }}</span></div>
+                      <div v-if="!g.name && !g.spec && !g.qty && !g.price && !g.barcode" class="text-gray-400 italic">无可用字段</div>
+                    </div>
+                    <div class="flex gap-1.5 mt-2">
+                      <button @click="addGroupToBatch(g)" type="button"
+                        class="flex-1 py-1 text-[11px] rounded-lg bg-orange-500 text-white active:bg-orange-600 transition-colors">＋ 加入批量</button>
+                      <button @click="splitGroupUi(gi)" type="button"
+                        class="px-2 py-1 text-[11px] rounded-lg bg-white border border-gray-200 text-gray-500 active:bg-gray-50 transition-colors">✂️ 拆开</button>
+                    </div>
+                  </div>
+                  <!-- 拆开的单行（splitIndices）—— 显示在分组卡片之后，单行按钮样式 -->
+                  <template v-if="ocr.splitIndices.length">
+                    <div class="px-3 py-1.5 bg-gray-50 text-[10px] text-gray-400">— 已拆开的单行 —</div>
+                    <button v-for="idx in ocr.splitIndices" :key="'s-'+idx"
+                      @click="useBatchOcrSingleLine(idx)" type="button"
+                      class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ ocr.lines[idx] }}</button>
+                  </template>
+                  <!-- 分组后还有未归属任何组的孤立行（防御性，正常应为空） -->
+                  <template v-if="ungroupedLineIndices.length">
+                    <div class="px-3 py-1.5 bg-gray-50 text-[10px] text-gray-400">— 其他识别行 —</div>
+                    <button v-for="idx in ungroupedLineIndices" :key="'u-'+idx"
+                      @click="useBatchOcrSingleLine(idx)" type="button"
+                      class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ ocr.lines[idx] }}</button>
+                  </template>
+                </template>
+                <!-- 单行视图（groupMode=false，原版行为完全保留） -->
+                <template v-else>
+                  <button v-for="(line, i) in ocr.lines" :key="i" @click="useBatchOcrLine(line)"
+                    class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ line }}</button>
+                </template>
               </div>
             </div>
             <div v-else-if="ocr.error" class="mt-3 text-xs text-red-500 text-center">{{ ocr.error }}</div>
@@ -1015,6 +1069,37 @@
           <p class="text-[11px] text-red-400 mt-2">浪费金额/净含量按记录单价快照统计；临期金额为当前库存状态</p>
         </div>
 
+        <!-- v2.22.0：浪费复盘（本月）——浪费时选原因，越用越懂家里在丢什么 -->
+        <div class="bg-white rounded-xl border border-gray-100 p-3 lg:col-span-2">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-medium text-gray-700">浪费复盘 · {{ new Date().getMonth() + 1 }}月</p>
+            <span class="text-[11px] text-gray-400">可避免：过期 / 变质 / 买多 {{ wasteReviewMonth.avoidableQty }} 件</span>
+          </div>
+          <div v-if="!wasteReviewMonth.hasData" class="text-[11px] text-gray-400 py-1">本月暂无浪费记录。删除商品走「浪费删除」并点选原因后，这里按月复盘。</div>
+          <div v-else class="space-y-2">
+            <div class="grid grid-cols-3 gap-2">
+              <div class="bg-red-50 rounded-xl p-2.5">
+                <div class="text-[11px] text-gray-400">浪费件数</div>
+                <div class="text-lg font-bold text-red-600 mt-0.5">{{ wasteReviewMonth.qty }}</div>
+              </div>
+              <div class="bg-red-50 rounded-xl p-2.5">
+                <div class="text-[11px] text-gray-400">浪费金额</div>
+                <div class="text-lg font-bold text-red-600 mt-0.5">{{ wasteReviewMonth.amount > 0 ? '¥' + wasteReviewMonth.amount.toFixed(1) : '—' }}</div>
+              </div>
+              <div class="bg-amber-50 rounded-xl p-2.5">
+                <div class="text-[11px] text-gray-400">可避免浪费</div>
+                <div class="text-lg font-bold text-amber-600 mt-0.5">{{ wasteReviewMonth.avoidableQty }} 件</div>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <div v-for="row in wasteReviewMonth.rows" :key="row.label" class="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                <span class="text-xs text-gray-700">{{ row.label }}<span class="text-[10px] text-gray-400 ml-1.5">{{ row.qty }} 件</span></span>
+                <span class="text-xs font-medium" :class="(row.label === '吃腻了' || row.label === '其他' || row.label === '未标注') ? 'text-gray-500' : 'text-red-600'">{{ row.amount > 0 ? '¥' + row.amount.toFixed(1) : '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- b · 近 6 个月柱状图（v2.20.3：grid 三段式重写——总数标签贴柱顶、柱体 92px、月份名独立底栏） -->
         <div class="bg-white rounded-xl p-3 border border-gray-100 lg:col-span-2">
           <div class="text-[11px] text-gray-400 mb-2">近 6 个月采购 vs 消耗 vs 浪费（件）</div>
@@ -1338,11 +1423,9 @@
                 <div class="text-[11px] text-gray-400">{{ settings.cloudSyncEnabled ? '已开启' : '未开启' }}{{ settings.cloudLastSync ? ' · 上次同步 ' + formatDateTime(settings.cloudLastSync) : '' }}</div>
               </div>
             </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settings.cloudSyncEnabled" @change="saveCloudSettings" class="sr-only peer">
-              <div class="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-indigo-500 transition-colors"></div>
-              <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
-            </label>
+            <!-- v2.22.4：云同步开关统一用 <toggle-setting> 组件（颜色 indigo） -->
+            <toggle-setting :model-value="settings.cloudSyncEnabled" color="indigo"
+              @update:model-value="v => { settings.cloudSyncEnabled = v; saveCloudSettings(); }" />
           </div>
           <div v-if="settings.cloudSyncEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
             <div>
@@ -1356,10 +1439,17 @@
                 class="input input-sm">
             </div>
             <div class="flex items-center gap-2 pt-1">
-              <button @click="saveCloudSettings" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium">保存设置</button>
+              <button @click="saveCloudSettings" class="flex-1 py-2 rounded-lg bg-indigo-500 text-white text-xs font-medium active:bg-indigo-600 transition-colors">保存设置</button>
               <button @click="cloudSync" :disabled="cloudSyncing" class="flex-1 py-2 rounded-lg bg-indigo-500 text-white text-xs font-medium disabled:opacity-50">
                 {{ cloudSyncing ? '同步中...' : '立即同步' }}
               </button>
+            </div>
+            <!-- v2.22.0：扫码配置同步——老设备生成配置码，新设备扫码接入即共用同一 jsonbin -->
+            <div class="flex items-center gap-2 pt-0.5">
+              <button @click="openConfigQr"
+                class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium active:bg-gray-200 transition-colors">生成配置码</button>
+              <button @click="openConfigScan"
+                class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium active:bg-gray-200 transition-colors">扫码接入</button>
             </div>
             <div class="flex items-center justify-between gap-2 pt-2">
               <label class="text-[11px] text-gray-400 flex-shrink-0 whitespace-nowrap">自动云保存</label>
@@ -1386,11 +1476,15 @@
               </div>
               <div>
                 <div class="text-sm text-gray-700">文字识别（小票 OCR）</div>
-                <div class="text-[11px] text-gray-400">{{ settings.ocrEngine === 'tesseract' ? 'Tesseract 兼容模式' : 'Paddle 本地识别 · 首次需下载模型' }}</div>
+                <div class="text-[11px] text-gray-400">{{ settings.ocrEnabled ? (settings.ocrEngine === 'tesseract' ? 'Tesseract 兼容模式' : 'Paddle 本地识别 · 首次需下载模型') : '已关闭 · 扫码/批量界面将无法使用文字识别' }}</div>
               </div>
             </div>
+            <!-- v2.22.4：文字识别总开关统一用 <toggle-setting> 组件（颜色 green） -->
+            <toggle-setting :model-value="settings.ocrEnabled" color="green"
+              @update:model-value="v => { settings.ocrEnabled = v; saveData(); showToast(v ? '已开启文字识别' : '已关闭文字识别'); }" />
           </div>
-          <div class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
+          <!-- v2.22.3：OCR 总开关关闭后整个 body 自动收起（只显示卡片头部），与「条码查询增强」关闭后样式对齐 -->
+          <div v-if="settings.ocrEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
             <div>
               <label class="text-[11px] text-gray-400 block mb-1.5">识别引擎</label>
               <div class="grid grid-cols-2 gap-2">
@@ -1406,6 +1500,27 @@
               </div>
               <div class="text-[11px] text-gray-400 mt-1.5">Paddle 本地识别精度更高（中文票据场景约 90%+），识别在小票设备本地完成；自动回退到 Tesseract。</div>
             </div>
+            <!-- v2.21.16 增强：识别前图像增强开关——Tesseract 对低对比度彩色图识别率低，开关默认开（OTSU 二值化）；Paddle 路径不受影响 -->
+            <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 green） -->
+            <div class="flex items-center justify-between mt-2">
+              <div>
+                <div class="text-[11px] text-gray-700">识别前图像增强</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">灰度 + 自适应二值化（Tesseract 生效）</div>
+              </div>
+              <toggle-setting :model-value="settings.ocrImageEnhance" color="green"
+                @update:model-value="v => { settings.ocrImageEnhance = v; saveData(); showToast(v ? '已开启图像增强' : '已关闭图像增强'); }" />
+              </label>
+            </div>
+            <!-- v2.21.16：批量识别智能分组开关（设置页入口，与 OCR 识别区顶部开关双向同步） -->
+            <!-- v2.22.4：统一用 <toggle-setting> 组件 -->
+            <div class="flex items-center justify-between mt-2">
+              <div>
+                <div class="text-[11px] text-gray-700">批量 OCR 智能分组</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">把 name/规格/数量/价格 自动聚合为商品卡</div>
+              </div>
+              <toggle-setting :model-value="settings.ocrGroupMode" color="green"
+                @update:model-value="v => { settings.ocrGroupMode = v; ocr.groupMode = v; saveData(); showToast(v ? '已开启智能分组' : '已关闭智能分组'); }" />
+            </div>
             <!-- v2.21.13：百度云票据识别入口移除（先注释，未来需要再启用）；settings.baiduApiKey/SecretKey 字段保留兼容老数据
             <div class="rounded-lg bg-gray-50 p-2.5">
               <div class="text-[11px] text-gray-400 mb-1.5">百度云票据识别（预留）</div>
@@ -1416,9 +1531,89 @@
               <div class="text-[11px] text-gray-400 mt-1.5">入口已预留，后续版本开放；当前仍使用本地识别。</div>
             </div>
             -->
-            <button @click="saveOcrSettings" class="w-full py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium">保存</button>
+            <button @click="saveOcrSettings" class="w-full py-2 rounded-lg bg-green-500 text-white text-xs font-medium active:bg-green-600 transition-colors">保存</button>
           </div>
         </div>
+
+        <!-- v2.22.0：名称清洗规则（录入 / OCR 落库自动整理：去营销词 · 统一大小写 · 全半角） -->
+        <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <div class="px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              </div>
+              <div>
+                <div class="text-sm text-gray-700">名称清洗规则</div>
+                <div class="text-[11px] text-gray-400">录入时自动整理名称，统计归并更准</div>
+              </div>
+            </div>
+            <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 violet），从 40×20 尺寸收敛到与 OCR 同款 36×20 -->
+            <toggle-setting :model-value="settings.nameCleanEnabled" color="violet"
+              @update:model-value="v => { settings.nameCleanEnabled = v; saveData(); showToast(v ? '已开启名称清洗' : '已关闭名称清洗'); }" />
+          </div>
+          <div v-if="settings.nameCleanEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[11px] text-gray-700">删除营销 / 包装词</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">特惠装 · 新品上市 · 家庭装…（整词匹配）</div>
+              </div>
+              <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 violet） -->
+              <toggle-setting :model-value="settings.nameCleanMarketing" color="violet"
+                @update:model-value="v => { settings.nameCleanMarketing = v; saveData(); }" />
+            </div>
+            <div>
+              <label class="text-[11px] text-gray-400 block mb-1.5">英文大小写</label>
+              <select v-model="settings.nameCleanCase" class="input input-sm">
+                <option value="smart">3+ 大写段转小写（默认）</option>
+                <option value="lower">全部转小写</option>
+                <option value="none">不处理</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] text-gray-400 block mb-1.5">自定义删除词（换行 / 逗号分隔）</label>
+              <textarea v-model="settings.nameCleanCustom" rows="2" class="input input-sm resize-none"></textarea>
+            </div>
+            <div>
+              <label class="text-[11px] text-gray-400 block mb-1.5">白名单（绝不删除，优先保护）</label>
+              <textarea v-model="settings.nameCleanWhitelist" rows="1" class="input input-sm resize-none"></textarea>
+            </div>
+            <div>
+              <label class="text-[11px] text-gray-400 block mb-1.5">试一下（输入名称看整理效果）</label>
+              <input v-model="nameCleanPreviewText" @input="previewNameClean" type="text" class="input input-sm">
+              <div class="text-[11px] text-gray-400 mt-1 min-h-[16px]">{{ nameCleanPreviewOut ? '整理后：' + nameCleanPreviewOut : '' }}</div>
+            </div>
+            <div class="flex items-center gap-2 pt-0.5">
+              <button @click="saveNameCleanSettings" class="flex-1 py-2 rounded-lg bg-violet-500 text-white text-xs font-medium active:bg-violet-600 transition-colors">保存规则</button>
+              <button @click="openCleanHistoryModal" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium active:bg-gray-200 transition-colors">整理历史名称…</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- v2.22.0：历史名称整理 dry-run 预览弹窗 -->
+        <transition name="modal">
+          <div v-if="showCleanHistoryModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showCleanHistoryModal = false">
+            <div class="bg-white rounded-2xl max-w-sm w-full p-5 max-h-[80vh] overflow-y-auto">
+              <h3 class="text-base font-semibold text-gray-800 mb-1">整理历史名称</h3>
+              <p class="text-xs text-gray-400 mb-3">将按当前规则整理 <b class="text-gray-700">{{ cleanHistoryDraft.total }}</b> 个商品名称（仅在名称确实变化时列出预览；建议先「导出库存 CSV」留底）。</p>
+              <div v-if="cleanHistoryDraft.changed.length" class="space-y-1.5 mb-3">
+                <div v-for="(c, i) in cleanHistoryDraft.changed" :key="i" class="rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed">
+                  <span class="text-gray-400 line-through">{{ c.old }}</span> → <span class="text-gray-800 font-medium">{{ c.neu }}</span>
+                </div>
+              </div>
+              <p v-if="cleanHistoryDraft.total > cleanHistoryDraft.changed.length" class="text-[11px] text-gray-400 mb-3">…其余 {{ cleanHistoryDraft.total - cleanHistoryDraft.changed.length }} 条同理</p>
+              <div class="flex gap-2">
+                <button @click="showCleanHistoryModal = false" class="flex-1 py-2.5 rounded-lg font-semibold text-sm text-violet-600 bg-white border border-violet-300 active:bg-violet-50 transition-colors">取消</button>
+                <button @click="applyCleanHistory" :disabled="!cleanHistoryDraft.total || !settings.nameCleanEnabled"
+                  class="flex-1 py-2.5 rounded-lg font-semibold text-sm text-white transition-colors shadow-sm"
+                  :class="(!cleanHistoryDraft.total || !settings.nameCleanEnabled) ? 'bg-violet-400 cursor-not-allowed' : 'bg-violet-600 active:bg-violet-700'">
+                  <span v-if="!cleanHistoryDraft.total">无可整理</span>
+                  <span v-else-if="!settings.nameCleanEnabled">先开启清洗</span>
+                  <span v-else>应用整理 {{ cleanHistoryDraft.total }} 条</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </transition>
 
         <!-- Barcode Lookup API Card -->
         <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
@@ -1432,11 +1627,9 @@
                 <div class="text-[11px] text-gray-400">{{ settings.barcodeLookupEnabled ? '已开启' : '未开启' }} · 扫码三级回退识别商品（GS1官方→通用→进口）</div>
               </div>
             </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settings.barcodeLookupEnabled" @change="saveBarcodeSettings" class="sr-only peer">
-              <div class="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-orange-500 transition-colors"></div>
-              <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
-            </label>
+            <!-- v2.22.4：条码查询增强开关统一用 <toggle-setting> 组件（颜色 orange） -->
+            <toggle-setting :model-value="settings.barcodeLookupEnabled" color="orange"
+              @update:model-value="v => { settings.barcodeLookupEnabled = v; saveBarcodeSettings(); }" />
           </div>
           <div v-if="settings.barcodeLookupEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
             <div>
@@ -1448,28 +1641,79 @@
           </div>
         </div>
 
+        <!-- v2.22.0 改造：数据管理折叠——「数据整理」总入口，点击展开 5 个子动作（3 CSV → 导出备份 → 导入备份） -->
         <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
-          <button @click="exportData" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors">
+          <button @click="showDataManage = !showDataManage" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
               </div>
-              <span class="text-sm text-gray-700">导出备份</span>
+              <span class="text-sm text-gray-700">数据整理</span>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 transition-transform" :class="showDataManage ? 'rotate-90' : ''"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
-          <div class="border-t border-gray-100"></div>
-          <label class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors cursor-pointer">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <!-- 展开区：3 个 CSV → 导出备份 → 导入备份 -->
+          <div v-if="showDataManage" class="border-t border-gray-100">
+            <button @click="exportStockCsv" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors border-b border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+                </div>
+                <span class="text-sm text-gray-700">导出库存表格（CSV）</span>
               </div>
-              <span class="text-sm text-gray-700">导入数据</span>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300"><polyline points="9 18 15 12 9 6"/></svg>
-            <input type="file" accept=".json" @change="importData" class="hidden">
-          </label>
-          <div class="border-t border-gray-100"></div>
+              <div class="flex items-center gap-1 flex-shrink-0 ml-2 self-center">
+                <span class="text-[11px] text-gray-400 leading-none">{{ products.length }} 件</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </button>
+            <button @click="exportRecordsCsv" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors border-b border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+                </div>
+                <span class="text-sm text-gray-700">导出操作流水表格（CSV）</span>
+              </div>
+              <div class="flex items-center gap-1 flex-shrink-0 ml-2 self-center">
+                <span class="text-[11px] text-gray-400 leading-none">{{ records.length }} 条</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </button>
+            <button @click="exportStatsCsv" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors border-b border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+                </div>
+                <span class="text-sm text-gray-700">导出统计表格（CSV）</span>
+              </div>
+              <div class="flex items-center gap-1 flex-shrink-0 ml-2 self-center">
+                <span class="text-[11px] text-gray-400 leading-none">{{ statsPage.recordCount }} 条</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </button>
+            <button @click="exportData" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors border-b border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <span class="text-sm text-gray-700">导出备份</span>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0 self-center"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <label class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors cursor-pointer">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <span class="text-sm text-gray-700">导入数据</span>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0 self-center"><polyline points="9 18 15 12 9 6"/></svg>
+              <input type="file" accept=".json" @change="importData" class="hidden">
+            </label>
+          </div>
+        </div>
+
+        <!-- 清空全部数据（与数据整理分开独立卡片） -->
+        <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
           <button @click="showClearConfirm = true" class="w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 transition-colors">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
@@ -1564,6 +1808,7 @@
                 <li><b class="text-gray-800">商品卡</b>：名称 + 位置/分类标签（未选显示灰色「待设置」），右上圆形为数量。</li>
                 <li><b class="text-gray-800">状态色</b>：左边条与到期文字随临期变化——<span style="color:#16a34a">新鲜绿</span> / <span style="color:#f59e0b">临期橙</span> / <span style="color:#ef4444">过期红</span>。</li>
                 <li><b class="text-gray-800">三按钮</b>：<b>+1 入库</b> / <b>−1 吃完</b> / <b>编辑</b>。</li>
+                <li><b class="text-gray-800">吃完最后 1 件</b>会弹确认防误触；确为浪费（变质/过期等）请走 编辑 → 删除 →「浪费删除」，点选原因后计入浪费复盘。</li>
                 <li><b class="text-gray-800">过期提醒</b>：首页右上角铃铛随时看临期/过期清单。</li>
               </ul>
               <div class="mt-3 bg-orange-50 rounded-xl p-3 text-[12px] text-[#9a4a12]"><b class="text-orange-600">提示</b>：库存数量只能在首页用 +1/−1 调整，编辑弹窗里不可改数量。</div>
@@ -1785,6 +2030,7 @@
               <ul class="space-y-1.5 text-[13px] text-gray-600 leading-relaxed">
                 <li><b class="text-gray-800">时间范围</b>：顶部预设「今日 / 近一周 / 近一月 / 本年度」，或自定义起止日期；所有指标随范围联动。</li>
                 <li><b class="text-gray-800">浪费 · 临期</b>：浪费率、临期金额、浪费金额、浪费净含量，一眼看清损耗重点。</li>
+                <li><b class="text-gray-800">浪费复盘（本月）</b>：按浪费原因（放过期了 / 变质了 / 吃腻了 / 买多了 / 其他）按月复盘件数与金额，其中过期 / 变质 / 买多合计为「可避免浪费」——记得浪费时点选原因，复盘才准。</li>
                 <li><b class="text-gray-800">近 6 月趋势</b>：采购 / 消耗 / 浪费 三色柱状对比（红柱为浪费），柱顶为单月件数，可发现囤货与短缺规律。</li>
                 <li><b class="text-gray-800">当期金额</b>：采购金额与消耗金额大字并排展示，附日均金额与累计件数，底部为净支出（采购 − 消耗）。</li>
                 <li><b class="text-gray-800">库存状态</b>：甜甜圈展示正常 / 临期 / 过期占比，中心为总件数与临期占比；点击状态标签可跳到首页按该状态筛选。</li>
@@ -1874,6 +2120,9 @@
                 <li><b class="text-gray-800">云端数据同步</b>：注册 jsonbin 的 API Key + Bin ID 即可开启；多设备按事件全序增量收敛（如妈妈 −1 + 爸爸 −2 = 云端 −3，互不覆盖），支持立即同步、自动保存间隔，断网恢复自动补同步。</li>
                 <li><b class="text-gray-800">安装到主屏（PWA）</b>：手机浏览器「添加到主屏」即可像 App 一样打开，图标为购物篮；v2.18.2 起已优化启动图标显示，避免被系统裁切。</li>
                 <li><b class="text-gray-800">条码查询增强</b>：开关 + 可选 API Key，开启后扫码自动识别商品信息（三级回退）。</li>
+                <li><b class="text-gray-800">导出表格（CSV）</b>：库存 / 操作流水 / 统计 三种表格一键导出，Excel、WPS 直接打开；统计导出跟随当前统计页时间范围。</li>
+                <li><b class="text-gray-800">名称清洗规则</b>：录入与 OCR 落库时自动去营销词、统一大小写与全半角（可逐项开关、自定义词库、白名单保护），也支持一键「整理历史名称」先预览再应用。</li>
+                <li><b class="text-gray-800">扫码配置同步</b>：换新设备不用手抄长串 Key——老设备「生成配置码」、新设备「扫码接入」即共用同一 jsonbin（配置码含密钥，仅当面使用、30 秒自动关闭；本机数据先并入云端，不会被覆盖）。</li>
                 <li><b class="text-gray-800">导出 / 导入 / 清空</b>：导出 JSON 备份；导入合并不覆盖新数据；清空全部数据⚠ 慎用（开云同步会同步清空所有设备）。</li>
                 <li><b class="text-gray-800">版本</b>：底部点版本号查看更新日志。</li>
               </ul>
@@ -1985,6 +2234,76 @@
               直接删除（移除商品及入库记录，不产生记录）
             </button>
             <button @click="showDeleteConfirm = false" class="w-full py-2.5 rounded-lg bg-gray-50 text-gray-500 text-sm">取消</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- v2.22.0：吃完「最后一件」确认（防误触） -->
+    <transition name="modal">
+      <div v-if="eatingConfirmProduct" class="fixed inset-0 z-40 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="cancelLastEat">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5">
+          <h3 class="text-base font-semibold text-gray-800 mb-2">确认吃完？</h3>
+          <p class="text-sm text-gray-500 mb-1.5">「{{ eatingConfirmProduct?.name }}」还剩最后 1 件，吃完后将自动移出库存。</p>
+          <p class="text-xs text-gray-400 mb-4">没吃完请取消；若已变质/过期请到编辑里走「浪费删除」并选原因，便于浪费复盘。</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button @click="cancelLastEat" class="py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium active:bg-gray-200 transition-colors">取消</button>
+            <button @click="confirmLastEat" class="py-2.5 rounded-lg bg-green-500 text-white text-sm font-medium active:bg-green-600 transition-colors">确认吃完</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- v2.22.0：浪费原因选择（删除商品记为浪费时） -->
+    <transition name="modal">
+      <div v-if="showWasteReason" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="cancelWasteReason">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5">
+          <h3 class="text-base font-semibold text-gray-800 mb-1">为什么浪费？</h3>
+          <p class="text-xs text-gray-400 mb-4">「{{ wasteReasonTarget?.name }}」剩余 {{ wasteReasonTarget?.quantity }} 件将记为浪费；选择原因后记入浪费复盘月报。</p>
+          <div class="space-y-2">
+            <button v-for="r in WASTE_REASONS" :key="r.value" @click="executeWasteDeleteWithReason(r.value)"
+              class="w-full py-2.5 rounded-lg bg-red-50 text-red-600 border border-red-200 text-sm font-medium active:bg-red-100 transition-colors">{{ r.label }}</button>
+            <button @click="cancelWasteReason" class="w-full py-2.5 rounded-lg bg-gray-50 text-gray-500 text-sm transition-colors">返回（先不删除）</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- v2.22.0：生成配置码（供另一台设备扫码接入同一 jsonbin） -->
+    <transition name="modal">
+      <div v-if="showConfigQr" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="closeConfigQr">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5">
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="text-base font-semibold text-gray-800">同步配置码</h3>
+            <button @click="closeConfigQr" class="text-gray-400">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <p class="text-[11px] text-orange-500 mb-3">⚠ 配置码含 API Key（等同密码），仅当面 / 可信设备使用，30 秒后自动关闭。</p>
+          <div class="flex justify-center bg-white rounded-xl border border-gray-100 p-3 mb-2">
+            <div id="qr-render" style="width:190px;height:190px;" class="bg-white"></div>
+          </div>
+          <div v-if="configQrError" class="text-center text-xs text-gray-500 mb-2">二维码生成失败（可能离线 / 首次加载库中）——请直接复制下方文本</div>
+          <textarea id="config-text-sel" readonly v-model="configQrText" rows="2" class="w-full text-[10px] text-gray-500 bg-gray-50 rounded-lg p-2 mb-2 break-all"></textarea>
+          <div class="flex gap-2">
+            <button @click="copyConfigText" class="flex-1 py-2.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 text-sm font-medium active:bg-indigo-100 transition-colors">复制配置文本</button>
+            <button @click="closeConfigQr" class="flex-1 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium transition-colors">关闭</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- v2.22.0：扫码接入配置确认（本机有数据时先合并、绝不覆盖） -->
+    <transition name="modal">
+      <div v-if="showConfigConfirm" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5">
+          <h3 class="text-base font-semibold text-gray-800 mb-1">接入云端配置</h3>
+          <p class="text-sm text-gray-500 mb-2">将本机云同步切换到 Bin <b class="text-gray-800">{{ configPending ? maskConfigBin(configPending.binId) : '' }}</b>？</p>
+          <p class="text-xs text-gray-400 mb-3">API Key 已自动填入（内容不在界面明文显示）。接入后先「拉取云端并入本地」，再开始双向同步。</p>
+          <p v-if="products.length > 0 || records.length > 0" class="text-[11px] text-amber-600 mb-3">本机现有 库存 {{ products.length }} 件 / 流水 {{ records.length }} 条，将先并入云端后再双向同步。</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button @click="cancelConfigConfirm" class="py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium transition-colors">取消</button>
+            <button @click="applyConfigConfirm" class="py-2.5 rounded-lg bg-indigo-500 text-white text-sm font-medium active:bg-indigo-600 transition-colors">接入并合并</button>
           </div>
         </div>
       </div>
@@ -2386,10 +2705,10 @@
         <div class="px-6 pt-3 flex justify-center gap-3 flex-shrink-0"
           style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));">
           <template v-if="scanMode === 'ocr'">
-            <button @click="captureAndOcr" :disabled="!scanning || ocr.processing"
-              class="flex-1 max-w-[220px] py-3.5 rounded-full bg-orange-500 text-white text-base font-medium active:bg-orange-600 disabled:opacity-40 transition-colors">拍照识别</button>
-            <button @click="albumFileRef && albumFileRef.click()" :disabled="ocr.processing"
-              class="flex-1 max-w-[220px] py-3.5 rounded-full bg-white/15 text-white text-base font-medium border border-white/30 active:bg-white/25 disabled:opacity-40 transition-colors">从相册选图</button>
+            <button @click="onClickOcr(captureAndOcr)" :disabled="!scanning || ocr.processing"
+              :class="settings.ocrEnabled ? 'flex-1 max-w-[220px] py-3.5 rounded-full bg-orange-500 text-white text-base font-medium active:bg-orange-600 disabled:opacity-40 transition-colors' : 'flex-1 max-w-[220px] py-3.5 rounded-full bg-gray-200 text-gray-400 text-base font-medium cursor-not-allowed transition-colors'">拍照识别</button>
+            <button @click="onClickOcr(() => albumFileRef && albumFileRef.click())" :disabled="ocr.processing"
+              :class="settings.ocrEnabled ? 'flex-1 max-w-[220px] py-3.5 rounded-full bg-white/15 text-white text-base font-medium border border-white/30 active:bg-white/25 disabled:opacity-40 transition-colors' : 'flex-1 max-w-[220px] py-3.5 rounded-full bg-gray-200 text-gray-400 text-base font-medium cursor-not-allowed transition-colors'">从相册选图</button>
           </template>
           <button v-else @click="stopScanning"
             class="px-10 py-3.5 rounded-full bg-white/15 text-white text-base font-medium border border-white/30 active:bg-white/25 transition-colors">停止扫码</button>
@@ -2448,19 +2767,53 @@
 </div>
 
 <script>
-const { createApp, ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+const { createApp, ref, reactive, computed, onMounted, watch, nextTick, h } = Vue;
+// v2.22.4：通用 toggle 组件（用 render 函数定义，避免 <script type="text/x-template"> 被浏览器误解析）——OCR 绿 / 名称清洗紫 / 云同步靛蓝 / 条码橙，颜色由 props.color 控制；统一尺寸 36×20 + 16×16 圆点
+const ToggleSetting = {
+  props: { modelValue: Boolean, color: { type: String, default: 'green' } },
+  emits: ['update:modelValue'],
+  computed: {
+    bgChecked() {
+      const map = { green: 'peer-checked:bg-green-500', violet: 'peer-checked:bg-violet-500', indigo: 'peer-checked:bg-indigo-500', orange: 'peer-checked:bg-orange-500' };
+      return map[this.color] || map.green;
+    },
+  },
+  render() {
+    return h('label', { class: 'relative inline-flex items-center cursor-pointer shrink-0 ml-2' }, [
+      h('input', {
+        type: 'checkbox',
+        checked: this.modelValue,
+        class: 'sr-only peer',
+        onChange: (e) => this.$emit('update:modelValue', e.target.checked),
+      }),
+      h('div', { class: ['w-9 h-5 bg-gray-200 rounded-full peer transition-colors', this.bgChecked] }),
+      h('div', { class: 'absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4' }),
+    ]);
+  },
+};
 
-createApp({
+const app = createApp({
   setup() {
     // ===== State =====
     const currentPage = ref('home');
     const cameFromGuide = ref(false);   // 追踪是否从指南页跳转出去——决定点设置时是否回到指南
     const revokingRecord = ref(null);   // v2.16.8：待撤销的记录（null=弹窗关闭）
+    const eatingConfirmProduct = ref(null);   // 待确认「吃完最后一件」的商品（null=无弹窗）
+    const showWasteReason = ref(false);        // 浪费原因选择弹窗
+    const wasteReasonTarget = ref(null);       // 待选原因的浪费删除商品
+    const WASTE_REASONS = [
+      { value: 'stale', label: '放过期了' },
+      { value: 'spoiled', label: '变质了' },
+      { value: 'tired', label: '吃腻了' },
+      { value: 'overbought', label: '买多了' },
+      { value: 'other', label: '其他' }
+    ];
+    const WASTE_REASON_LABEL = r => { const f = WASTE_REASONS.find(x => x.value === r); return f ? f.label : (r || '未标注'); };
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.21.15';   // 当前代码版本号（v2.21.15：用户验收反馈——①设置页 OCR 引擎 radio peer-checked 在某些渲染下不触发高亮，改显式 :class 绑定确保选中绿底白字；②三页面（单个录入/批量录入/主页编辑弹窗）同步移除输入框 placeholder 灰色占位；③OCR 识别结果框加 inline max-height 兜底，强制 240px/192px 上限与滚动；用于强制覆盖 settings.version，修复旧版/旧缓存导致的版本号不更新）
-    const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留
+    const CURRENT_VERSION = '2.22.4';   // v2.22.4：①抽取 <toggle-setting> 通用组件（设置页所有 toggle 共用）：5 个 toggle（OCR 总开关 green / 识别前图像增强 green / 批量 OCR 智能分组 green / 名称清洗启用 violet / 删除营销包装词 violet / 云同步 indigo / 条码查询增强 orange）全部从 inline `<label>+<input sr-only peer>` 或 `<button>+:class` 重构为 `<toggle-setting :model-value color>`，统一尺寸 36×20 + 16×16 圆点 + peer-checked 控制颜色；②名称清洗板块从 40×20 收敛到与 OCR 同款 36×20；③主页扫码页「从相册选图」OCR 关闭态从 `bg-white/10 text-white/40 border-white/15` 改成 `bg-gray-200 text-gray-400`（与「拍照识别」完全同款实心浅灰，逻辑与批量页一致）
+    const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', ocrEnabled: true, baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0, ocrGroupMode: true, ocrImageEnhance: true, nameCleanEnabled: true, nameCleanCase: 'smart', nameCleanMarketing: true, nameCleanCustom: '', nameCleanWhitelist: '' });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留；v2.21.16：+ocrGroupMode 批量 OCR 智能分组开关（持久化，默认 true，首次加载迁移）+ocrImageEnhance 识别前图像增强开关（灰度+OTSU 二值化，Tesseract 路径生效，默认 true）；v2.22.0：+nameClean* 名称清洗规则库（默认开：去营销词 / 大小写 smart / 全半角）；v2.22.2：+ocrEnabled 文字识别总开关（默认 true；关闭后所有 OCR 入口按钮变灰并提示）
 
     const searchQuery = ref('');
     const homeFilter = ref([]);        // v2.20.6 起状态筛选改走搜索框 &状态 token（见 parseSearchQuery/matchesProduct）；此数组保留仅用于旧版本迁移兼容，实际不再参与筛选
@@ -2656,6 +3009,7 @@ createApp({
     const showEditModal = ref(false);
     const showChangelog = ref(false);
     const showClearConfirm = ref(false);
+    const showDataManage = ref(false);          // 数据整理折叠区展开态
     const showCloudSyncModal = ref(false);
     const showScanModal = ref(false);   // 全屏扫码弹层
     const scanning = ref(false);
@@ -2664,7 +3018,7 @@ createApp({
     const torchOn = ref(false);         // 手电筒开关
     const torchSupported = ref(false);  // 设备是否支持手电筒
     const albumFileRef = ref(null);     // 相册选图 input
-    const ocr = reactive({ processing: false, progress: 0, lines: [], linesTotal: 0, barcodes: [], error: '', engine: '', phase: '', paddleNote: '' });   // v2.21.0：+barcodes 条码识别结果；v2.21.5：+engine 记录实际识别引擎（paddle/tesseract）；v2.21.5+：+phase 识别阶段（paddle-dl 下载模型 / paddle-run / tess-load 加载组件 / tess-run 识别），驱动进度文案与取消按钮显隐；v2.21.8：+linesTotal 识别总行数（不限 slice 后 UI 显示「X / Y 行」用）；v2.21.10：+paddleNote Paddle 回退原因（仅 Paddle 分支失败回退 Tesseract 时写入，供 toast 提示用户为什么没用上 Paddle）
+    const ocr = reactive({ processing: false, progress: 0, lines: [], linesTotal: 0, barcodes: [], error: '', engine: '', phase: '', paddleNote: '', rawBoxes: [], groups: [], groupMode: true, splitIndices: [], lineMap: [] });   // v2.21.0：+barcodes 条码识别结果；v2.21.5：+engine 记录实际识别引擎（paddle/tesseract）；v2.21.5+：+phase 识别阶段（paddle-dl 下载模型 / paddle-run / tess-load 加载组件 / tess-run 识别），驱动进度文案与取消按钮显隐；v2.21.8：+linesTotal 识别总行数（不限 slice 后 UI 显示「X / Y 行」用）；v2.21.10：+paddleNote Paddle 回退原因（仅 Paddle 分支失败回退 Tesseract 时写入，供 toast 提示用户为什么没用上 Paddle）；v2.21.16：+rawBoxes Paddle bbox（运行时探测，缺则空数组）+groups 智能分组结果 +groupMode 智能分组开关（默认 true，用户可在 OCR 区顶部切换）+splitIndices 已被「拆开」为单行的原行下标（这些行从分组卡片里移除，单独显示为单行按钮）；v2.21.16b：+lineMap 重组后第 i 行对应的原始 paddleBox 索引数组（UI 显示「拆开」后的真实 box 文本用）
     const cloudSyncing = ref(false);
     const cloudSyncStatus = ref('');
     let cloudPushTimer = null;
@@ -2795,6 +3149,90 @@ createApp({
     };
 
     const changelog = [
+      {
+        version: '2.22.4',
+        date: '2026-09-06',
+        items: [
+          '① 抽取 <toggle-setting> 通用组件——设置页 7 个 toggle（OCR 总开关 / 识别前图像增强 / 批量 OCR 智能分组 = 绿色；名称清洗启用 / 删除营销包装词 = 紫色；云同步开关 = 靛蓝；条码查询增强 = 橙色）全部从 inline `<label>+<input sr-only peer>` 或 `<button>+:class` 重构为 `<toggle-setting :model-value color="..." />`，统一尺寸 36×20 + 16×16 圆点 + peer-checked 控制颜色（之前名称清洗是 40×20 + 22px 滑动，与 OCR 36×20 + 16px 滑动不一致）',
+          '② 主页扫码页「从相册选图」OCR 关闭态样式从 `bg-white/10 text-white/40 border-white/15` 改成 `bg-gray-200 text-gray-400`（与「拍照识别」完全同款实心浅灰 + cursor-not-allowed），逻辑与批量页一致——关闭时点击也触发 onClickOcr 守卫弹 toast「文字识别已关闭，请先在设置 → 文字识别中开启」',
+          '③ SW 缓存 v79 → v80（强制刷新可见）；CURRENT_VERSION 2.22.3 → 2.22.4',
+        ],
+      },
+      {
+        version: '2.22.3',
+        date: '2026-09-05',
+        items: [
+          '① 文字识别板块总开关关闭后自动收起（body 用 v-if="settings.ocrEnabled" 包裹，关闭态只显示卡片头部：图标 + 标题 + 副标题 + 总开关；展开内容识别引擎/两个小开关/保存按钮全部隐藏）；与「条码查询增强」关闭后样式一致',
+          '② 批量录入页「拍摄小票 / 上传图片」关闭态颜色统一：都改用「上传图片」样式 bg-gray-100 border border-gray-200 text-gray-400 + cursor-not-allowed（之前「拍摄小票」是 bg-gray-200 无边框，看着有差异）',
+          '③ 新增 onClickOcr(fn) 包装函数作为按钮 @click 入口守卫——4 个 OCR 入口按钮（拍摄小票/上传图片/拍照识别/从相册选图）改用它，关闭态点击立即弹 toast「文字识别已关闭，请先在设置 → 文字识别中开启『启用文字识别』」；不再依赖函数内拦截（上传图片/从相册选图此前会绕过拦截触发 hidden input 文件选择）',
+          '④ SW 缓存 v78 → v79（强制刷新可见）；CURRENT_VERSION 2.22.2 → 2.22.3',
+        ],
+      },
+      {
+        version: '2.22.2',
+        date: '2026-09-05',
+        items: [
+          '① 云端同步「保存设置」按钮改蓝色（与「立即同步」同色 bg-indigo-500 text-white active:bg-indigo-600），形成视觉对齐',
+          '② 文字识别板块新增总开关（设置页 OCR 卡片头部右侧 toggle，settings.ocrEnabled，默认开启）；关闭后扫码页「拍照识别 / 从相册选图」、批量录入页「拍摄小票 / 上传图片」四个入口按钮自动变灰（灰底 + 灰字 + not-allowed 光标），点击时 toast 提示「请先在设置 → 文字识别中开启『启用文字识别』开关」；函数入口（captureAndOcr/ocrFromFile/batchOcrFromFile/openReceiptCamera）均加守卫，防御性兜底',
+          '③ 整理历史名称弹窗左侧加「取消」按钮（白底紫字紫边 border-violet-300 active:bg-violet-50），与「应用整理」紫底白字主按钮并列 flex gap-2，关闭弹窗不应用',
+          '④ 导出统计表格右侧数量提示从「X 条记录」规范为「X 条」，与导出操作流水表格「X 条」保持一致',
+          '⑤ SW 缓存 v77 → v78（强制刷新可见）；CURRENT_VERSION 2.22.1 → 2.22.2'
+        ]
+      },
+      {
+        version: '2.22.1',
+        date: '2026-09-04',
+        items: [
+          '设置页视觉收敛（v2.22.0 视觉补丁）：① 数据整理展开后 5 个子按钮 padding 与父按钮一致（px-4 py-3.5），三个 CSV 子图标背景加深到 -100（teal-100/violet-100/rose-100）让色块更明显；② 名称清洗规则主图标加深到 bg-violet-200 + 紫色填充漏斗（#5b21b6）让主题色更显眼；③ 整理历史名称弹窗底部「应用整理」按钮改 bg-violet-600 + font-semibold + shadow（启用）/ bg-violet-400（禁用，紫色仍可见）；④ 弹窗内删除「启用名称清洗」开关（设置页统一管理即可）；⑤ OCR 识别里两个开关（识别前图像增强 / 批量 OCR 智能分组）改用与云端同步同款 toggle 样式（label + sr-only checkbox + peer-checked），颜色保持绿色',
+          '版本 2.22.0 → 2.22.1；SW 缓存 v76 → v77（强制刷新可见）'
+        ]
+      },
+      {
+        version: '2.22.0',
+        date: '2026-09-04',
+        items: [
+          '一键导出表格（数据管理）：库存 CSV（18 列含剩余天数/件均价）/ 操作流水 CSV（类型中文映射 入库/吃完/浪费/调整）/ 统计 CSV（当前时间范围概览 + 分类·位置分布 + 近 6 月趋势）——UTF-8 BOM 中文不乱码，条码/数量列强制文本防科学计数与丢前导 0，防公式注入',
+          '名称清洗规则库（默认开，可在设置页逐项开关/自定义词库/白名单）：录入与批量 OCR 落库时自动——① 全半角/空白归一（NFKC）② 英文大小写 smart（3+ 大写段转小写）③ 营销/包装词整词删除（促销/包装计量两组默认词表）④ 空/过短回退原文；支持「整理历史名称」先预览 N 条再应用',
+          '扫码配置同步（方案一）：设备 A 在「云端数据同步」生成含 binId+key 的配置码（QR，davidshimjs/qrcodejs 本地化，30 秒自动清除 + 密钥遮罩警示）；设备 B 点「扫码接入」扫一下即写入并首拉合并——本地已有数据不覆盖，事件增量协议不变',
+          '浪费复盘月报（统计页）：浪费时选择原因（放过期了/变质了/吃腻了/买多了/其他），最后一件「吃完」弹确认防误触；统计页新增本月浪费复盘卡（件数/金额/原因分布）',
+          '设置页视觉收敛：云端同步图标恢复靛蓝（与立即同步一致）、三个按钮（保存设置/生成配置码/扫码接入）改灰底黑字；OCR「保存」绿底白字（主题色）；名称清洗图标加深 + 「整理历史名称」改灰底黑字；弹窗底部按钮禁用时改 `bg-violet-300`（紫底白字仍可见）；数据整理子图标恢复原色（teal/violet/rose/blue/green 五色，右侧 X件 与 chevron 严格对齐）',
+          '核心库本地化 vendor/：Vue 3.5.42 + html5-qrcode 2.3.8 + qrcodejs 1.0.0 同源加载（避开 CDN 受限网络）',
+          '版本 2.21.16 → 2.22.0；SW 缓存 v74 → v76（强制刷新可见）'
+        ]
+      },
+      {
+        version: '2.21.16b',
+        date: '2026-09-04',
+        items: [
+          '修复 Paddle 中文场景「一行一识别框」切碎问题：',
+          '① 新增 clusterBoxesToLines(bboxes)——按 Y 中心聚类（行高 0.6×自适应阈值）重组行；同行的 box 按 X 排序拼接，空隙自动补空格',
+          '② Paddle 路径在 groupOcrLines 之前先重组 lines：「青瓜块」3 个 box 拼成 1 行「青瓜块」进入分组，而非 3 个孤立「商品卡」',
+          '③ 新增 ocr.lineMap 记录重组后第 i 行对应的原始 box 索引数组，UI 拆开按钮可回到 box 级别显示原始识别文本',
+          '④ Tesseract 路径不变（其 result.data.text 已按行 join 过），自动兼容',
+          '⑤ SW 缓存 v73 → v74（强制刷新可见）；CURRENT_VERSION 保持 2.21.16'
+        ]
+      },
+      {
+        version: '2.21.16',
+        date: '2026-09-04',
+        items: [
+          '批量 OCR 智能分组——解决「识别结果一行一按钮、商品字段被人为拆散」问题：',
+          '① OCR 结果区按启发式规则（blank 切组 / 名称 / 数量 / 价格 / 其他）自动聚合为「商品卡」，一次性展示 name + spec + qty + unit + price + barcode；底部「＋ 加入批量」一键写一个完整批量条目（旧版要点 4-5 个独立按钮分别填）',
+          '② Paddle 路径运行时探测 bbox（@paddlejs-models/ocr 多种字段名 textRaw / boxes / regions 都尝试），命中则额外按「垂直间距 > 1.5×行高」切组，识别小票真实换行；探测失败/未启用自动降级纯启发式',
+          '③ 默认开（智能分组），用户可一键切回原版单行视图；切回状态持久化到 settings.ocrGroupMode，下次识别保持',
+          '④ 每个分组卡提供「✂️ 拆开」按钮——拆开后该组对应识别行进入「单行 fallback」区，按原版逻辑逐行加入；中途修改不影响其他组',
+          '⑤ 原 useBatchOcrLine / useBatchOcrBarcode / useBatchOcrText 完全保留——单行回退 / 拆开 / 开关关闭都走原路径',
+          '版本 2.21.15 → 2.21.16；SW 缓存 v71 → v72',
+          '【v2.21.16 增强迭代 / 版本号保持 2.21.16、SW v72 → v73】识别准确率优化：',
+          '① 图像增强（Tesseract 路径）：识别前对图做灰度化 + OTSU 自适应二值化 + 反相判断——热敏小票/手机拍屏等低对比度场景识别率显著提升；设置页新增「识别前图像增强」开关，默认开；Paddle 路径不破坏其内置处理（识别质量已很好）',
+          '② 解析规则：识别行「RMB 16.900 / USD 12.50 / ￥99 / ¥99」自动剥货币前缀识别为价格行；价格小数位规范化（取第一个完整数字而非最后一个，避免「16.900」被截成「0」）；',
+          '③ other 行兜底提数字作为价格；',
+          '④ 净含量单位全集：克/g/千克/kg/毫升/ml/L/升/片/粒/颗/枚/袋/包/盒/瓶/罐/箱/份/杯/块/张/本/只 全覆盖；',
+          '⑤ barcode 短码识别：`[NNNN]` 3-14 位小票品类码全部提取到 g.barcode（如「[474] 全脂牛奶」→ barcode=474, name=全脂牛奶）；',
+          '⑥ 设置页新增「批量 OCR 智能分组」开关，与批量录入页识别区顶部开关双向同步（持久化到 settings.ocrGroupMode）',
+          '⑦ 单测试调用 groupOcrLines 自动通过 Paddle/Tesseract 识别后立即重算 ocr.groups；新增 `_v2216_receipt_grouping.js` 回归（21/21 通过，含真实小票 fixture、价格在前/在后、Paddle bbox 切组、UI 集成）'
+        ]
+      },
       {
         version: '2.21.15',
         date: '2026-09-04',
@@ -4489,6 +4927,16 @@ createApp({
         if (r) records.value = JSON.parse(r);
         const s = localStorage.getItem('food_inventory_settings');
         if (s) Object.assign(settings, JSON.parse(s));
+        // v2.21.16：迁移 ocrGroupMode（老用户 settings 没这个字段，默认 true）
+        if (settings.ocrGroupMode == null) settings.ocrGroupMode = true;
+        ocr.groupMode = !!settings.ocrGroupMode;
+        if (settings.ocrImageEnhance == null) settings.ocrImageEnhance = true;
+        // v2.22.0：迁移名称清洗规则（老用户 settings 缺字段，用默认值补齐）
+        if (settings.nameCleanEnabled == null) settings.nameCleanEnabled = true;
+        if (settings.nameCleanCase == null) settings.nameCleanCase = 'smart';
+        if (settings.nameCleanMarketing == null) settings.nameCleanMarketing = true;
+        if (settings.nameCleanCustom == null) settings.nameCleanCustom = '';
+        if (settings.nameCleanWhitelist == null) settings.nameCleanWhitelist = '';
         const bc = localStorage.getItem('food_inventory_barcode_cache');
         if (bc) barcodeCache.value = JSON.parse(bc);
       } catch (e) { console.error('Load failed:', e); }
@@ -4515,6 +4963,7 @@ createApp({
         detail: data.detail || '',
         unitPrice: Math.round(unitPrice * 100) / 100,
         netContent,
+        reason: data.reason || '',   // v2.22.0：浪费原因（放过期了/变质了/吃腻了/买多了/其他），供统计页浪费复盘月报
         createdAt: new Date().toISOString()
       });
     }
@@ -4644,13 +5093,35 @@ createApp({
 
     function decrementStock(product) {
       if (product.quantity <= 0) return;
+      if (eatingConfirmProduct.value) return;   // 已有确认弹窗时防重复触发
+      if (product.quantity === 1) {
+        // v2.22.0：最后一件「吃完」先弹确认（防误触；确为浪费请走 删除 → 浪费删除并选原因）
+        eatingConfirmProduct.value = product;
+        return;
+      }
+      eatOne(product);
+    }
+
+    // v2.22.0：真正执行「−1 吃完」（多件直接走 / 最后一件确认后）
+    function eatOne(product) {
+      if (!product || (product.quantity || 0) <= 0) return;
       applyStockDelta(product, -1);  // v2.18.0：数量走 delta 增量事件
       addRecord({ type: 'eat', productId: product.id, productName: product.name, barcode: product.barcode, quantity: -1, detail: '正常吃完 -1' });
       if (product.quantity <= 0) {
         products.value = products.value.filter(item => item.id !== product.id);
         showToast('「' + product.name + '」已吃完，自动移出库存');
       }
+      eatingConfirmProduct.value = null;
       saveData();
+    }
+
+    function confirmLastEat() {
+      if (!eatingConfirmProduct.value) return;
+      eatOne(eatingConfirmProduct.value);
+    }
+
+    function cancelLastEat() {
+      eatingConfirmProduct.value = null;
     }
 
     function confirmDelete(product) {
@@ -4661,11 +5132,30 @@ createApp({
     function executeDelete() {
       const p = deletingProduct.value;
       if (!p) return;
+      // v2.22.0：浪费删除前先选择原因（进入原因弹窗）；删除弹窗保留但按钮行为升级
+      wasteReasonTarget.value = p;
+      showDeleteConfirm.value = false;
+      // 让删除确认弹窗离场过渡先走一帧，再弹原因选择，避免视觉上短暂叠层
+      setTimeout(() => { if (wasteReasonTarget.value === p) showWasteReason.value = true; }, 80);
+    }
+
+    function cancelWasteReason() {
+      showWasteReason.value = false;
+      wasteReasonTarget.value = null;
+      // 返回删除确认弹窗（选原因时反悔不丢商品）
+      if (deletingProduct.value) showDeleteConfirm.value = true;
+    }
+
+    function executeWasteDeleteWithReason(reason) {
+      const p = wasteReasonTarget.value || deletingProduct.value;
+      if (!p) return;
       if (p.quantity > 0) {
-        addRecord({ type: 'waste', productId: p.id, productName: p.name, barcode: p.barcode, quantity: -p.quantity, detail: `删除商品，浪费 ${p.quantity} 件` });
+        addRecord({ type: 'waste', productId: p.id, productName: p.name, barcode: p.barcode, quantity: -p.quantity, reason, detail: '删除商品，浪费 ' + p.quantity + ' 件（' + WASTE_REASON_LABEL(reason) + '）' });
       }
       products.value = products.value.filter(item => item.id !== p.id);
       saveData();
+      showWasteReason.value = false;
+      wasteReasonTarget.value = null;
       showDeleteConfirm.value = false;
       deletingProduct.value = null;
       showToast('已删除「' + p.name + '」（记为浪费）');
@@ -4873,9 +5363,10 @@ createApp({
         showToast('到期日期不能早于生产日期，无法保存');
         return;
       }
+      const productName = cleanWithNotice(scanForm.name.trim());   // v2.22.0：名称清洗（回填仍显示原文，提交时整理并提示）
       const product = {
         id: generateId(),
-        name: scanForm.name.trim(),
+        name: productName,
         barcode: scanForm.barcode || '',
         location: (scanForm.location || []).join(', '),         // v2.15.1：数组 → 字符串（保持商品模型兼容）
         category: (scanForm.category || []).join(', '),         // v2.15.1：数组 → 字符串
@@ -4920,9 +5411,10 @@ createApp({
         showToast('商品「' + (item.name || '未命名') + '」到期日期不能早于生产日期，无法保存');
         return false;
       }
+      const productName = cleanWithNotice(item.name.trim());   // v2.22.0：名称清洗（批量条目同样整理）
       const product = {
         id: generateId(),
-        name: item.name.trim(),
+        name: productName,
         barcode: item.barcode || '',
         location: (item.location || []).join(', '),
         category: (item.category || []).join(', '),
@@ -5024,6 +5516,15 @@ createApp({
             if (scanLock) return;
             if (scanMode.value !== 'barcode') return;   // 文字识别模式下不触发条码解码
             scanLock = true;
+            // v2.22.0：扫码配置同步——识别到 foodin-sync:// 前缀直接走配置接入，绝不当条码查询
+            if (typeof decodedText === 'string' && decodedText.indexOf('foodin-sync://') === 0) {
+              if (navigator.vibrate) navigator.vibrate(60);
+              showToast('识别到 FoodIn 配置码');
+              await nextTick();
+              await stopScanning();
+              handleConfigCodeText(decodedText);
+              return;
+            }
             if (navigator.vibrate) navigator.vibrate(60);  // 振动反馈
             // Clean barcode: remove non-numeric chars (some scanners add prefix)
             const cleaned = decodedText.replace(/\D/g, '');
@@ -5046,6 +5547,10 @@ createApp({
                 apiMessage.value = '非国内条码（非69开头），请手动填写商品信息';
                 apiSuccess.value = false;
               }
+            } else if (scanContext === 'config') {
+              // v2.22.0：配置接入扫码页——普通条码不是配置码，提示对准 QR 配置码
+              apiMessage.value = '请对准 FoodIn 配置码（QR 码）扫码';
+              apiSuccess.value = false;
             } else {
               // 录入页扫码：写入条码框并自动查询
               scanForm.barcode = cleaned;
@@ -5334,6 +5839,29 @@ createApp({
           .filter(s => s.replace(/[^0-9a-zA-Z\u4e00-\u9fa5]/g, '').length >= 2);
         ocr.linesTotal = lines.length;   // v2.21.8：保留总行数（UI 容器已有 max-h 滚动保护，无需再 slice）
         ocr.lines = lines;
+        // v2.21.16：探测 Paddle 返回的 bbox——@paddlejs-models/ocr 不同版本字段名可能差异（textRaw / boxes / regions），尝试多种常见结构；
+        // 命中且与 textArr 等长才采纳，否则 rawBoxes=[]，groupOcrLines 自动走纯启发式
+        let paddleBoxes = [];
+        try {
+          if (Array.isArray(res.textRaw) && res.textRaw.length === textArr.length) {
+            paddleBoxes = res.textRaw.map((r, i) => ({ text: textArr[i] || '', box: Array.isArray(r && r.box) ? r.box : null, score: typeof r && r.score === 'number' ? r.score : null }));
+          } else if (Array.isArray(res.boxes) && res.boxes.length === textArr.length) {
+            paddleBoxes = res.boxes.map((b, i) => ({ text: textArr[i] || '', box: Array.isArray(b && b.box) ? b.box : (Array.isArray(b) ? b : null), score: null }));
+          } else if (Array.isArray(res.regions) && res.regions.length === textArr.length) {
+            paddleBoxes = res.regions.map((r, i) => ({ text: textArr[i] || '', box: Array.isArray(r && r.bbox) ? r.bbox : null, score: null }));
+          }
+        } catch (eBox) { /* 探测失败兜底为空数组 */ }
+        ocr.rawBoxes = paddleBoxes;
+        if (paddleBoxes.length) console.log('[FoodIn][Paddle] 启用 bbox 版面分析，共', paddleBoxes.length, '个识别框');
+        // v2.21.16b：Paddle 中文场景下每个文字/词都是独立 box（一框一字），直接当行会切碎「青瓜块」→ ['青','瓜','块']
+        // 先按 bbox Y 中心聚类重组行（同 Y 的 box 按 X 排序拼接），再用 cluster 后的 lines 走 groupOcrLines
+        const clustered = paddleBoxes.length ? clusterBoxesToLines(paddleBoxes) : { lines: [], lineMap: [] };
+        const groupedLines = clustered.lines.length ? clustered.lines : lines;
+        ocr.lines = groupedLines;
+        ocr.linesTotal = groupedLines.length;
+        ocr.lineMap = clustered.lineMap;   // 记录「重组后第 i 行 → 原始 paddleBox 索引」数组，UI 拆开/单行按钮需要回到 box 级别显示
+        ocr.groups = groupOcrLines(groupedLines, paddleBoxes);   // v2.21.16：智能分组（Paddle 路径若有 bbox 启用垂直间距切组，否则走启发式）
+        ocr.splitIndices = [];   // v2.21.16：每次新识别重置已被「拆开」的行
         ocr.barcodes = [...new Set(extractBarcodes(textArr.join('\n')))].slice(0, 6);
         if (!ocr.lines.length && !ocr.barcodes.length) {
           // v2.21.10：此前静默回退——「选了 Paddle 却走 Tesseract」的常见原因（模型已就绪但识别返回空，多为 WebGL/图形环境受限），补日志便于排查
@@ -5411,6 +5939,10 @@ createApp({
       ocr.engine = '';
       ocr.phase = '';
       ocr.paddleNote = '';   // v2.21.10：每次识别前清空回退原因
+      ocr.rawBoxes = [];     // v2.21.16：Paddle bbox（探测失败/未启用=空数组）
+      ocr.groups = [];       // v2.21.16：智能分组结果
+      ocr.splitIndices = []; // v2.21.16：被「拆开」回单行的原行下标
+      ocr.lineMap = [];      // v2.21.16b：重组后第 i 行对应的原始 box 索引数组（每次识别前清空）
     }
 
     // ===== v2.21.0 OCR 条码识别优化 =====
@@ -5470,6 +6002,56 @@ createApp({
       return out;
     }
 
+    // v2.21.16 增强：识别前图像预处理——灰度化 + OTSU 自适应二值化 + 反相判断（Tesseract 路径默认启用，Paddle 路径不破坏其内置处理）。
+    // 热敏小票/手机拍屏场景下，Tesseract 对低对比度/光照不均的彩色图像识别率显著下降；二值化后只剩黑白两态，文字边缘更锐利。
+    function preprocessForOcr(canvas) {
+      // 开关关闭直接返回（settings.ocrImageEnhance=false 时跳过全部计算，省 CPU）
+      if (settings.ocrImageEnhance === false) return canvas;
+      const w = canvas.width, h = canvas.height;
+      const out = document.createElement('canvas');
+      out.width = w; out.height = h;
+      const ctx = out.getContext('2d');
+      ctx.drawImage(canvas, 0, 0);
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const d = imgData.data;
+      const n = w * h;
+      const gray = new Uint8Array(n);
+      // 1) 灰度化（ITU-R BT.601 加权）
+      for (let i = 0, j = 0; i < d.length; i += 4, j++) {
+        gray[j] = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) | 0;
+      }
+      // 2) OTSU 阈值（最大化类间方差，自动选最佳切分点）
+      const hist = new Uint32Array(256);
+      for (let i = 0; i < n; i++) hist[gray[i]]++;
+      let total = n, sum = 0;
+      for (let i = 0; i < 256; i++) sum += i * hist[i];
+      let sumB = 0, wB = 0, maxVar = 0, threshold = 127;
+      for (let t = 0; t < 256; t++) {
+        wB += hist[t];
+        if (wB === 0) continue;
+        const wF = total - wB;
+        if (wF === 0) break;
+        sumB += t * hist[t];
+        const mB = sumB / wB;
+        const mF = (sum - sumB) / wF;
+        const between = wB * wF * (mB - mF) * (mB - mF);
+        if (between > maxVar) { maxVar = between; threshold = t; }
+      }
+      // 3) 反相判断：浅色为主（图整体偏亮、白底黑字场景）→ 文字黑色，背景白色；Tesseract 偏好白底黑字所以不反相
+      //    但若 OTSU 阈值偏低（< 128，说明图整体偏暗/深底浅字）→ 反相让前景为白
+      const inv = threshold < 128;
+      // 4) 二值化输出
+      for (let i = 0, j = 0; i < d.length; i += 4, j++) {
+        let v = gray[j] >= threshold ? 255 : 0;
+        if (inv) v = 255 - v;
+        d[i] = d[i + 1] = d[i + 2] = v;
+        d[i + 3] = 255;
+      }
+      ctx.putImageData(imgData, 0, 0);
+      console.log('[FoodIn][preprocess] OTSU threshold=' + threshold + ', inv=' + inv + ', size=' + w + 'x' + h);
+      return out;
+    }
+
     // EAN/UPC 校验位（模10）：支持 8/12/13/14 位
     function isValidEan(code) {
       if (!/^\d{8,14}$/.test(code) || ![8, 12, 13, 14].includes(code.length)) return false;
@@ -5498,8 +6080,15 @@ createApp({
       return found.slice(0, 6);
     }
 
+    // v2.22.3：4 个 OCR 入口按钮统一守卫——关闭态点击立即弹 toast，不绕到 hidden input click 后才拦截
+    function onClickOcr(fn) {
+      if (!settings.ocrEnabled) { showToast('文字识别已关闭，请先在设置 → 文字识别中开启「启用文字识别」'); return; }
+      fn();
+    }
+
     // 拍摄当前取景画面并识别
     function captureAndOcr() {
+      if (!settings.ocrEnabled) { showToast('文字识别已关闭，请先在设置 → 文字识别中开启「启用文字识别」'); return; }
       if (!scanning.value) { showToast('相机未开启，可从相册选图'); return; }
       const video = document.querySelector('#qr-reader video');
       if (!video || video.readyState < 2) { showToast('取景未就绪，请稍后再试'); return; }
@@ -5512,6 +6101,7 @@ createApp({
 
     // 从相册选图识别
     function ocrFromFile(ev) {
+      if (!settings.ocrEnabled) { showToast('文字识别已关闭，请先在设置 → 文字识别中开启「启用文字识别」'); ev.target.value = ''; return; }
       const file = ev.target.files && ev.target.files[0];
       ev.target.value = '';
       if (!file) return;
@@ -5578,13 +6168,19 @@ createApp({
         const worker = await getTessWorker();
         // v2.21.8：识别前缩图——大图加速 2-3x，对小票/印刷体识别质量无负面影响
         const srcCanvas = shrinkForOcr(canvas);
-        const result = await worker.recognize(srcCanvas);
+        // v2.21.16 增强：识别前图像增强（灰度+自适应二值化+反相）——Tesseract 对低对比度/光照不均的彩色图识别率显著下降；二值化后只剩黑白两态，文字边缘更锐利。
+        // Paddle 路径不加（其内置处理已经够好，外部预处理可能干扰）
+        const preCanvas = preprocessForOcr(srcCanvas);
+        const result = await worker.recognize(preCanvas);
         const lines = (result.data.text || '')
           .split('\n')
           .map(s => s.replace(/\s+/g, ' ').trim())
           .filter(s => s.replace(/[^0-9a-zA-Z\u4e00-\u9fa5]/g, '').length >= 2);
         ocr.linesTotal = lines.length;   // v2.21.8：保留总行数（UI 容器已有 max-h 滚动保护，无需再 slice）
         ocr.lines = lines;
+        ocr.rawBoxes = [];   // v2.21.16：Tesseract 不提供 bbox，rawBoxes 留空走纯启发式分组
+        ocr.groups = groupOcrLines(lines, []);   // v2.21.16：智能分组（收尾时填 UI 用）
+        ocr.splitIndices = [];   // v2.21.16：每次新识别重置已被「拆开」的行
         // pass2：条码数字识别（v2.21.0）——pass1 文本未命中合法条码时，用预处理图 + 数字白名单再识别一轮。
         // v2.21.6：复用 chi_sim worker（白名单后输出限数字；psm6 单块文本），结束后复位参数——不建 eng worker，省下载与内存
         const barcodes = extractBarcodes(result.data.text || '');
@@ -5677,6 +6273,7 @@ createApp({
 
     // v2.21.0 批量录入：小票图片识别（与弹层同走 runOcr，结果用于添加商品）
     function batchOcrFromFile(ev) {
+      if (!settings.ocrEnabled) { showToast('文字识别已关闭，请先在设置 → 文字识别中开启「启用文字识别」'); ev.target.value = ''; return; }
       const file = ev.target.files && ev.target.files[0];
       ev.target.value = '';
       if (!file) return;
@@ -5698,6 +6295,7 @@ createApp({
 
     // v2.21.3 桌面浏览器拍摄小票：智能分流——移动端走原生相机（capture）；桌面端 getUserMedia 预览弹层；均不可用回退文件选择
     async function openReceiptCamera() {
+      if (!settings.ocrEnabled) { showToast('文字识别已关闭，请先在设置 → 文字识别中开启「启用文字识别」'); return; }
       const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
       // 移动端（含微信内置浏览器等 getUserMedia 支持差的容器）：直接调原生相机/文件选择，体验最稳
       if (isMobile) {
@@ -5767,6 +6365,239 @@ createApp({
     }
 
     // v2.21.0 批量录入：点击识别行 → 解析并添加为一条商品（行内条码→barcode；行尾金额→总价；其余→名称）
+    // v2.21.16：智能分组——把小票/收据这种「name+spec+qty+price 多行描述同一商品」的识别结果按启发式规则自动聚合。
+    // 返回 Array<{ name, spec, qty, unit, price, lineIndices }>。lines 是清洗后的字符串数组；rawBoxes 是 Paddle 路径探测到的 bbox（缺则空数组）。
+    // v2.21.16b：把 Paddle 返回的逐 box 文本按 bbox Y 中心聚类成「真正的行」——同一行的 box 按 X 排序拼接成一行字符串。
+    // Paddle 1.2.4 中文场景会把「青瓜块」拆成 ['青','瓜','块'] 三个独立 box（一框一词），若直接当 line 喂给 groupOcrLines 会切碎。
+    // 输入：rawBoxes [{ text, box: [[x1,y1],[x2,y2],[x3,y3],[x4,y4]] }]；返回：{ lines: [str], lineMap: [[boxIdx,...], ...] }
+    // 当 box 缺失或异常时返回空对象——调用方应回退到 rawBoxes.length === lines.length 的旧路径。
+    function clusterBoxesToLines(rawBoxes) {
+      const arr = Array.isArray(rawBoxes) ? rawBoxes : [];
+      if (!arr.length) return { lines: [], lineMap: [] };
+      const metas = arr.map((b, i) => {
+        const cy = bboxCenter(b && b.box);   // v2.21.16：bboxCenter 仅算 Y 中心（数字）；X 中心另算
+        const h = bboxHeight(b && b.box);
+        // X 中心 = box 内所有 x 坐标的中点
+        const box = Array.isArray(b && b.box) ? b.box : [];
+        const xs = box.map(p => Array.isArray(p) ? p[0] : null).filter(x => typeof x === 'number');
+        const cx = xs.length ? (Math.min(...xs) + Math.max(...xs)) / 2 : null;
+        return { idx: i, text: String(b && b.text || '').trim(), cx, cy, h };
+      }).filter(m => m.cy != null && m.h > 0);
+      if (!metas.length) return { lines: [], lineMap: [] };
+      const avgH = metas.reduce((s, m) => s + m.h, 0) / metas.length;
+      const rowTol = Math.max(8, avgH * 0.6);
+      metas.sort((a, b) => a.cy - b.cy);
+      const rows = [];
+      metas.forEach(m => {
+        const last = rows[rows.length - 1];
+        if (last && Math.abs(m.cy - last.cy) <= rowTol) {
+          last.cy = (last.cy * last.members.length + m.cy) / (last.members.length + 1);
+          last.h = Math.max(last.h, m.h);
+          last.members.push(m);
+        } else {
+          rows.push({ cy: m.cy, h: m.h, members: [m] });
+        }
+      });
+      const lines = [];
+      const lineMap = [];
+      rows.forEach(row => {
+        row.members.sort((a, b) => a.cx - b.cx);
+        let text = '';
+        const indices = [];
+        let prevRight = null;
+        const charW = Math.max(8, row.h * 0.7);
+        row.members.forEach(m => {
+          const left = m.cx - m.h / 2;
+          if (prevRight != null && left - prevRight > charW * 1.2) text += ' ';
+          text += m.text;
+          indices.push(m.idx);
+          prevRight = m.cx + m.h / 2;
+        });
+        const cleaned = String(text || '').replace(/\s+/g, ' ').trim();
+        if (cleaned.replace(/[^0-9a-zA-Z\u4e00-\u9fa5]/g, '').length >= 1) {
+          lines.push(cleaned);
+          lineMap.push(indices);
+        }
+      });
+      return { lines, lineMap };
+    }
+
+    function groupOcrLines(lines, rawBoxes) {
+      const arr = Array.isArray(lines) ? lines : [];
+      if (!arr.length) return [];
+
+      // 1) 抽取每行的 Y 中心与行高（bbox 可用时）——用于「垂直间距切组」规则
+      const hasBox = Array.isArray(rawBoxes) && rawBoxes.length === arr.length;
+      const centers = hasBox ? rawBoxes.map(b => bboxCenter(b && b.box)) : arr.map(() => null);
+      const heights = hasBox ? rawBoxes.map(b => bboxHeight(b && b.box)) : arr.map(() => null);
+      const validH = heights.filter(h => h != null && h > 0);
+      const avgH = validH.length ? validH.reduce((a, b) => a + b, 0) / validH.length : 20;
+
+      // 2) 行级分类：blank / price / qty / name / other
+      const classify = (line) => {
+        const t = String(line || '').trim();
+        if (!t) return 'blank';
+        // 小票汇总行（合计 / 小计 / 总计 / 共 计 / 总 额）：视为分隔行（不归任何商品组）
+        if (/^(合计|小计|总计|共\s*计|总\s*额|sum|total|subtotal)\s*[:：]?\s*[\d.,]*\s*$/i.test(t)) return 'blank';
+        // v2.21.16 增强：剥除货币前缀后再判 price——「RMB 16.900」「USD 12.50」「￥99」也能识别
+        const stripped = t.replace(/^(?:RMB|USD|CNY|EUR|GBP|HKD|JPY|TWD|￥|¥|\$|元|圆)\s*/i, '').trim();
+        if (stripped !== t && /^[\d.,\s]+$/.test(stripped) && /\d/.test(stripped)) return 'price';
+        if (/^[\d.,\s元¥$￥]+$/.test(t) && /\d/.test(t)) return 'price';
+        // 数量行：1袋 / 2 瓶 / 500g / 250ml×16（带或不带空格都识别）
+        if (/^\s*\d+(?:\.\d+)?\s*(?:袋|包|瓶|盒|个|g|kg|ml|L|箱|枚|只|片|罐|份|杯|组|块|张|本|克|千克|毫升|升|颗|粒|包|盒)\s*(?:[×x*]\s*\d+\s*)?$/i.test(t)) return 'qty';
+        if (/[\u4e00-\u9fa5]/.test(t)) return 'name';
+        return 'other';
+      };
+
+      // 3) 主循环：构建 groups 数组
+      const groups = [];
+      let cur = null;
+
+      const ensure = (idx) => {
+        if (!cur) cur = { name: '', spec: '', qty: '', unit: '', price: '', lineIndices: [] };
+        if (idx != null && !cur.lineIndices.includes(idx)) cur.lineIndices.push(idx);
+        return cur;
+      };
+
+      for (let i = 0; i < arr.length; i++) {
+        const line = arr[i];
+        const type = classify(line);
+
+        // Paddle bbox 可用 + 当前行与上一行间距 > 1.5×平均行高 → 强制切组（处理小票真实换行）
+        if (cur && centers[i] != null && centers[i - 1] != null && heights[i] != null && heights[i - 1] != null) {
+          const gap = centers[i] - centers[i - 1];
+          const localAvg = (heights[i] + heights[i - 1]) / 2;
+          if (gap > 1.5 * localAvg && gap > avgH * 1.2) {
+            groups.push(cur);
+            cur = null;
+          }
+        }
+
+        if (type === 'blank') {
+          if (cur) { groups.push(cur); cur = null; }
+          continue;
+        }
+        if (type === 'price') {
+          const g = ensure(i);
+          // v2.21.16 增强：价格小数位规范化——「16.900」OCR 多读了一位 0，正则贪婪会截断到「16.90」并把尾随的「0」当作独立匹配项；
+          // 这里先剥货币前缀再 match(\d+(?:\.\d{1,2})?)，**取第一个**数字（不再是「最后一个」，避免 16.900 → 0）
+          const stripped = line.replace(/^(?:RMB|USD|CNY|EUR|GBP|HKD|JPY|TWD|￥|¥|\$|元|圆)\s*/i, '').trim();
+          const m = stripped.match(/\d+(?:\.\d{1,2})?/g);
+          if (m && m.length) g.price = m[0];   // 取第一个完整数字（一个价格行通常只有 1 个主要价格）
+          continue;
+        }
+        if (type === 'qty') {
+          const g = ensure(i);
+          const m = line.match(/(\d+(?:\.\d+)?)\s*([\u4e00-\u9fa5a-zA-Z]*)/);
+          if (m) { g.qty = m[1]; g.unit = (m[2] || '').trim(); }
+          continue;
+        }
+        if (type === 'name') {
+          // name 行一律开新组——不再「同一组的 spec」就地合并（避免把下一个商品当 spec，真实小票相邻行就是不同商品）
+          if (cur) groups.push(cur);
+          cur = { name: line, spec: '', qty: '', unit: '', price: '', lineIndices: [i] };
+          continue;
+        }
+        // v2.21.16 增强：other 兜底合并到当前组，并尝试提数字作为价格（应对「RMB 16.900」未命中前置剥前缀的边界）
+        if (cur && !cur.lineIndices.includes(i)) cur.lineIndices.push(i);
+        if (cur && !cur.price) {
+          const stripped2 = line.replace(/^(?:RMB|USD|CNY|EUR|GBP|HKD|JPY|TWD|￥|¥|\$|元|圆)\s*/i, '').trim();
+          const m = stripped2.match(/\d+(?:\.\d{1,2})?/);
+          if (m && /\d/.test(m[0])) cur.price = m[0];
+        }
+      }
+      if (cur) groups.push(cur);
+
+      // 4) 后处理：「名称+规格同行」拆分——「甜黄豆(豌豆仁) 250g」→ name="甜黄豆(豌豆仁)", spec="250g"
+      // v2.21.16 增强：净含量单位全集——克/g/千克/kg/毫升/ml/L/升/片/粒/颗/枚/袋/包/盒/瓶/罐/箱/份/杯/块（覆盖绝大多数小票语种）
+      groups.forEach(g => {
+        if (!g.spec && g.name) {
+          const m = g.name.match(/^(.+?)\s+(\d+(?:\.\d+)?\s*(?:g|kg|ml|L|升|克|千克|毫升|片|粒|颗|枚|袋|包|盒|瓶|罐|箱|份|杯|块|张|本|只)\s*(?:[×x*]\s*\d+\s*)?)$/i);
+          if (m) { g.name = m[1].trim(); g.spec = m[2].trim(); }
+        }
+        // 名称含条码的拆出去：
+        //   1) 标准 EAN/UPC 8-14 位
+        //   2) [NNNN] 类小票品类码（如 [0809] [474]）—— 3-14 位都可，视为 barcode 候选
+        let bc = (Array.isArray(extractBarcodes(g.name)) && extractBarcodes(g.name)[0]) || '';
+        if (!bc) {
+          const bracket = g.name.match(/^\[(\d{3,14})\]\s*/);
+          if (bracket) { bc = bracket[1]; g.name = g.name.replace(bracket[0], '').trim(); }
+        } else {
+          g.name = g.name.replace(bc, '').replace(/[\s\[\]【】]+/g, ' ').trim();
+        }
+        if (bc) g.barcode = bc;
+      });
+
+      // 5) 后处理：把「仅含 price 的孤立组」合并到下一组（OCR 行序错乱时常见）；末尾的纯 price 丢弃
+      for (let i = 0; i < groups.length; i++) {
+        const g = groups[i];
+        const isPriceOnly = !!g.price && !g.name && !g.spec && !g.qty && !g.barcode;
+        if (isPriceOnly) {
+          // 找到下一个非空组
+          for (let j = i + 1; j < groups.length; j++) {
+            if (!groups[j].price && (groups[j].name || groups[j].spec || groups[j].qty || groups[j].barcode)) {
+              groups[j].price = g.price;
+              break;
+            }
+          }
+          // 无论是否合并，g 本体都删
+          groups.splice(i, 1);
+          i--;
+        }
+      }
+
+      // 6) 过滤完全空的组
+      return groups.filter(g => g && (g.name || g.spec || g.qty || g.barcode));
+    }
+
+    // v2.21.16：bbox 辅助
+    function bboxCenter(box) {
+      if (!Array.isArray(box) || box.length < 4) return null;
+      const ys = box.map(p => Array.isArray(p) ? p[1] : null).filter(y => typeof y === 'number');
+      if (!ys.length) return null;
+      return (Math.min(...ys) + Math.max(...ys)) / 2;
+    }
+    function bboxHeight(box) {
+      if (!Array.isArray(box) || box.length < 4) return null;
+      const ys = box.map(p => Array.isArray(p) ? p[1] : null).filter(y => typeof y === 'number');
+      if (!ys.length) return null;
+      return Math.max(...ys) - Math.min(...ys);
+    }
+
+    // v2.21.16：把一个分组整组写入一个新批量条目（name/spec/qty/unit/price 一次性填好）
+    function addGroupToBatch(group) {
+      if (!group) return;
+      const item = blankBatchItem();
+      const fallbackName = '商品 ' + (batchItems.value.length + 1);
+      item.name = cleanWithNotice(group.name || fallbackName);   // v2.22.0：OCR 分组落库也走名称清洗，同物不同写法自动归并
+      item.spec = group.spec || '';
+      if (group.qty) item.quantity = Number(group.qty) || 1;
+      // unit 字段在 batchItem 不存在，附带在 note 末尾（不替换用户已写内容）
+      if (group.unit) item.note = (item.note ? item.note + ' ' : '') + group.unit;
+      if (group.price) item.price = String(group.price);
+      if (group.barcode) item.barcode = group.barcode;
+      batchItems.value.push(item);
+      batchActiveItem = item;
+      showToast('已添加整组：' + (item.name || '商品') + (group.spec ? '（' + group.spec + '）' : ''));
+    }
+
+    // v2.21.16：把指定分组「拆开」——从 groups 中移除该组，对应行下标进入 splitIndices，由 UI 在「单行 fallback」区展示
+    function splitGroupUi(groupIdx) {
+      const g = ocr.groups[groupIdx];
+      if (!g) return;
+      const newSplits = (g.lineIndices || []).filter(i => !ocr.splitIndices.includes(i));
+      ocr.splitIndices = ocr.splitIndices.concat(newSplits);
+      ocr.groups.splice(groupIdx, 1);
+      showToast('已拆开为单行');
+    }
+
+    // v2.21.16：单行回退按钮——展示已被「拆开」或被识别为「无价格/无数量」的孤立行
+    function useBatchOcrSingleLine(idx) {
+      const text = (ocr.lines || [])[idx];
+      if (text == null) return;
+      useBatchOcrLine(text);
+    }
+
     function useBatchOcrLine(line) {
       const text = String(line || '').trim();
       if (!text) return;
@@ -5800,6 +6631,25 @@ createApp({
       batchActiveItem.barcode = bc;
       showToast('已填入条码：' + bc);
       if (bc.startsWith('69')) lookupBarcode(bc, false, batchActiveItem);
+    }
+
+    // v2.21.16：智能分组开关切换（持久化到 settings.ocrGroupMode）
+    function toggleBatchGroupMode() {
+      ocr.groupMode = !ocr.groupMode;
+      settings.ocrGroupMode = ocr.groupMode;
+      saveData();
+      showToast(ocr.groupMode ? '已开启智能分组' : '已切回单行视图');
+    }
+
+    // v2.21.16：找出既不在任何分组、也不在 splitIndices 中的「孤立行」下标（防御性：理论上 groupOcrLines 已分配所有 name/other 行，剩 price 行会在分组内）
+    function ungroupedLineIndices() {
+      if (!ocr.lines || !ocr.lines.length) return [];
+      const used = new Set();
+      (ocr.groups || []).forEach(g => (g.lineIndices || []).forEach(i => used.add(i)));
+      (ocr.splitIndices || []).forEach(i => used.add(i));
+      const out = [];
+      for (let i = 0; i < ocr.lines.length; i++) if (!used.has(i)) out.push(i);
+      return out;
     }
 
     // 点击识别结果：录入页填商品名，主页填搜索词，批量录入页添加为商品
@@ -5972,6 +6822,12 @@ createApp({
             if (Array.isArray(obj.locations) && obj.locations.length) settings.locations = obj.locations;
             if (Array.isArray(obj.categories) && obj.categories.length) settings.categories = obj.categories;
             settings.autoSaveInterval = obj.autoSaveInterval || 0;
+            // v2.22.0：名称清洗规则白名单导入（仅当旧备份里有值才覆盖）
+            settings.nameCleanEnabled = (obj.nameCleanEnabled == null) ? settings.nameCleanEnabled : !!obj.nameCleanEnabled;
+            settings.nameCleanCase = (obj.nameCleanCase === 'lower' || obj.nameCleanCase === 'none') ? obj.nameCleanCase : 'smart';
+            settings.nameCleanMarketing = (obj.nameCleanMarketing == null) ? settings.nameCleanMarketing : !!obj.nameCleanMarketing;
+            if (typeof obj.nameCleanCustom === 'string') settings.nameCleanCustom = obj.nameCleanCustom;
+            if (typeof obj.nameCleanWhitelist === 'string') settings.nameCleanWhitelist = obj.nameCleanWhitelist;
             // version 由代码常量控制，不从备份导入
             settings.version = CURRENT_VERSION;
           }
@@ -6021,6 +6877,368 @@ createApp({
       saveData();
       showToast('识别设置已保存');
     }
+
+    // ============================================================
+    // v2.22.0 新功能：① 一键导出表格（库存/流水/统计 CSV）
+    //                 ② 名称清洗规则库  ③ 扫码配置同步  ④ 浪费复盘月报
+    // ============================================================
+
+    // ---- ① CSV 导出通用件 ----
+    function fmtMoneyCsv(x) {
+      if (x === '' || x === null || x === undefined) return '';
+      const n = Number(x);
+      if (!isFinite(n) || n === 0) return '';
+      return n.toFixed(2).replace(/\.?0+$/, '');
+    }
+    function csvCell(v) {   // 常规文本单元格：含逗号/引号/换行 → RFC4180 引号转义
+      let s = (v === null || v === undefined) ? '' : String(v);
+      if (/[",\r\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+    function csvNumCell(v) {   // 条码/数量等「看起来像数字但必须按文本」的列：Excel 公式 ="值" 强制文本，避免科学计数与丢前导 0
+      const s = (v === null || v === undefined) ? '' : String(v);
+      if (s === '') return '';
+      if (/^[=+\-@]/.test(s)) return "'" + s;   // 防公式注入（罕见，兜底）
+      return '="' + s.replace(/"/g, '""') + '"';
+    }
+    function buildCsvFile(headers, rows) {
+      const enc = c => (c && c.t === 'num') ? csvNumCell(c.v) : csvCell(c && c.v);
+      const line = arr => arr.map(enc).join(',');
+      return '\uFEFF' + [line(headers), ...rows.map(line)].join('\r\n');   // BOM：Excel/WPS 中文不乱码
+    }
+    function downloadCsvFile(filename, headers, rows) {
+      const blob = new Blob([buildCsvFile(headers, rows)], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('已导出 ' + rows.length + ' 行表格');
+    }
+    const csvToday = () => new Date().toISOString().split('T')[0];
+
+    // 库存 CSV（18 列）
+    function exportStockCsv() {
+      const headers = ['名称', '条形码', '分类', '储存位置', '净含量', '规格', '品牌', '厂家', '数量', '入库日期', '生产日期', '到期日期', '保质期', '剩余天数', '总价', '单件均价', '备注', '更新时间'].map(l => ({ t: 'text', v: l }));
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const rows = products.value.map(p => {
+        const qty = p.quantity || 0;
+        const price = (p.price !== '' && p.price != null) ? Number(p.price) : 0;
+        let remain = '';
+        if (p.expiryDate) {
+          const e = new Date(p.expiryDate); e.setHours(0, 0, 0, 0);
+          remain = Math.round((e - today) / 86400000);
+        }
+        return [
+          { t: 'text', v: p.name },
+          { t: 'num', v: p.barcode || '' },
+          { t: 'text', v: p.category || '' },
+          { t: 'text', v: p.location || '' },
+          { t: 'text', v: p.netContent || '' },
+          { t: 'text', v: p.spec || '' },
+          { t: 'text', v: p.brand || '' },
+          { t: 'text', v: p.manufacturer || '' },
+          { t: 'num', v: qty || '' },
+          { t: 'text', v: p.stockInDate || '' },
+          { t: 'text', v: p.productionDate || '' },
+          { t: 'text', v: p.expiryDate || '' },
+          { t: 'text', v: p.shelfLife || '' },
+          { t: 'num', v: remain },
+          { t: 'text', v: fmtMoneyCsv(price) },
+          { t: 'text', v: qty > 0 && price > 0 ? fmtMoneyCsv(price / qty) : '' },
+          { t: 'text', v: p.note || '' },
+          { t: 'text', v: p.updatedAt ? formatDateTime(p.updatedAt) : '' }
+        ];
+      });
+      downloadCsvFile('FoodIn库存_' + csvToday() + '.csv', headers, rows);
+    }
+
+    // 操作流水 CSV（含 v2.22.0 浪费原因列）
+    function exportRecordsCsv() {
+      const headers = ['时间', '类型', '商品名称', '条形码', '数量', '单件单价快照', '净含量快照', '浪费原因', '明细'].map(l => ({ t: 'text', v: l }));
+      const rows = records.value.map(r => [
+        { t: 'text', v: r.createdAt ? formatDateTime(r.createdAt) : '' },
+        { t: 'text', v: recordTypeLabel(r.type) },
+        { t: 'text', v: r.productName || '' },
+        { t: 'num', v: r.barcode || '' },
+        { t: 'num', v: r.quantity || 0 },
+        { t: 'text', v: fmtMoneyCsv(r.unitPrice) },
+        { t: 'text', v: r.netContent || '' },
+        { t: 'text', v: r.type === 'waste' ? WASTE_REASON_LABEL(r.reason) : '' },
+        { t: 'text', v: r.detail || '' }
+      ]);
+      downloadCsvFile('FoodIn流水_' + csvToday() + '.csv', headers, rows);
+    }
+
+    // 统计 CSV（当前时间范围：概览 + 分类/位置分布 + 近 6 月趋势 + 本月浪费复盘）
+    function exportStatsCsv() {
+      const s = statsPage.value;
+      const rangeLabel = hasStatsCustom.value
+        ? ((statsDateStart.value || '…') + ' ~ ' + (statsDateEnd.value || '至今'))
+        : (({ today: '今日', week: '近一周', month: '近一月', year: '本年度' })[statsRange.value] || '全部时间');
+      const lines = [];
+      const sec = (title) => lines.push([{ t: 'text', v: title }]);
+      const pair = (k, v) => lines.push([{ t: 'text', v: k }, { t: 'text', v: v }]);
+      const pct = n => (n == null || !isFinite(n)) ? '' : n.toFixed(1) + '%';
+      sec('FoodIn 统计报表（' + rangeLabel + '）');
+      pair('入库件数', s.totalIn); pair('吃完件数', s.totalEat); pair('浪费件数', s.totalWaste);
+      pair('净增件数', (s.netChange >= 0 ? '+' : '') + s.netChange); pair('调整次数', s.adjustCount);
+      pair('浪费率', pct(s.wasteRate));
+      pair('采购金额', fmtMoneyCsv(s.spend)); pair('消耗金额（含浪费）', fmtMoneyCsv(s.consumeAmount));
+      pair('浪费金额', fmtMoneyCsv(s.wasteAmount)); pair('净支出', (s.netCash >= 0 ? '+' : '') + fmtMoneyCsv(Math.abs(s.netCash)));
+      pair('日均采购金额', fmtMoneyCsv(s.dailySpendAmount)); pair('日均消耗金额', fmtMoneyCsv(s.dailyConsumeAmount));
+      pair('日均采购件数', s.dailyIn ? Number(s.dailyIn).toFixed(2) : ''); pair('日均消耗件数', s.dailyEat ? Number(s.dailyEat).toFixed(2) : '');
+      pair('库存货值', fmtMoneyCsv(s.inventoryValue)); pair('过期货值', fmtMoneyCsv(s.expiredValue)); pair('临期货值', fmtMoneyCsv(s.expiringValue));
+      pair('已过期商品', s.expiredCount + (s.expiredUnpriced ? '（其中 ' + s.expiredUnpriced + ' 件未填价格）' : ''));
+      pair('可吃天数', s.stockDays == null ? '数据不足' : s.stockDays);
+      pair('数据质量（未填价格/净含量/分类/位置）', [s.dataQuality.noPrice, s.dataQuality.noNet, s.dataQuality.noCat, s.dataQuality.noLoc].join(' / '));
+      lines.push([]);
+      sec('库存状态分布（当前）');
+      (s.stockStatusDist || []).forEach(x => pair(x.label, x.count + ' 件（' + pct(x.pct) + '）'));
+      lines.push([]);
+      sec('分类分布（件数）');
+      (s.categoryDonut.items || []).forEach(x => pair(x.name, x.qty + '（' + pct(x.pct) + '）'));
+      lines.push([]);
+      sec('位置分布（件数）');
+      (s.locationDonut.items || []).forEach(x => pair(x.name, x.qty + '（' + pct(x.pct) + '）'));
+      lines.push([]);
+      sec('近 6 个月 采购/消耗/浪费（件）');
+      (s.monthTrend || []).forEach(m => pair(m.label, '采购 ' + m.inQty + ' · 消耗 ' + m.consumeQty + ' · 浪费 ' + m.wasteQty));
+      lines.push([]);
+      sec('本月浪费复盘');
+      const wm = wasteReviewMonth.value;
+      if (wm.hasData) {
+        pair('本月浪费件数', wm.qty); pair('本月浪费金额', fmtMoneyCsv(wm.amount));
+        pair('可避免浪费（过期/变质/买多）', wm.avoidableQty);
+        wm.rows.forEach(x => pair(x.label, x.qty + ' 件 · ' + fmtMoneyCsv(x.amount)));
+      } else {
+        pair('本月浪费', '本月暂无浪费记录');
+      }
+      downloadCsvFile('FoodIn统计_' + csvToday() + '.csv', [{ t: 'text', v: '统计项' }, { t: 'text', v: '数值' }], lines);
+    }
+
+    // ---- ② 名称清洗规则库 ----
+    const NAME_CLEAN_MARKETING_DEFAULT = [
+      '特惠装', '超值装', '超值', '买一送一', '买一赠一', '买二送一', '限时特惠', '限时抢购', '限时', '秒杀', '特价', '热卖', '爆款', '促销', '大促', '会员价', '新人价', '新品上市', '新品尝鲜', '尝鲜价', '加量装', '量贩装', '整箱特惠', '实惠装', '家庭装', '分享装', '便携装', '迷你装', '试用装', '赠品', '超值组合', '优惠装'
+    ];
+    function parseCleanTermList(raw) {
+      return String(raw || '').split(/[\n,，、;；]+/).map(t => t.trim()).filter(t => t.length >= 2);
+    }
+    function cleanProductName(raw) {
+      if (!settings.nameCleanEnabled) return raw;
+      const input = String(raw || '').trim();
+      if (!input) return input;
+      let s = input.normalize('NFKC');                                    // ① 全半角统一
+      s = s.replace(/[\s\u3000]+/g, ' ').trim();                          // 空白收敛（含全角空格）
+      const mode = settings.nameCleanCase || 'smart';
+      if (mode === 'lower') s = s.toLowerCase();
+      else if (mode === 'smart') s = s.replace(/[A-Z]{3,}/g, m => m.toLowerCase());   // ② 3+ 连续大写段转小写
+      if (settings.nameCleanMarketing !== false) {
+        const whitelist = parseCleanTermList(settings.nameCleanWhitelist);
+        const sentinels = {};
+        whitelist.forEach((w, i) => {
+          const token = '\uE000' + i + '\uE001';
+          sentinels[token] = w;
+          s = s.split(w).join(token);
+        });
+        const terms = NAME_CLEAN_MARKETING_DEFAULT.concat(parseCleanTermList(settings.nameCleanCustom));
+        terms.sort((a, b) => b.length - a.length);
+        terms.forEach(t => {
+          const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          s = s.replace(new RegExp(esc, 'g'), '');
+        });
+        Object.keys(sentinels).forEach(token => { s = s.split(token).join(sentinels[token]); });
+        s = s.replace(/[【】『』\[\]（）()]/g, ' ');                        // ③ 残留包装括号清理（避免留下空【】）
+      }
+      s = s.replace(/[\s\u3000]+/g, ' ').trim();
+      // ④ 兜底：清洗结果过短 / 为空 → 回退原文，绝不误伤
+      if (s.length < 2 || /^[^0-9a-zA-Z\u4e00-\u9fa5]+$/.test(s)) return input;
+      return s;
+    }
+    function cleanWithNotice(raw) {
+      if (!settings.nameCleanEnabled) return raw;
+      const cleaned = cleanProductName(raw);
+      if (cleaned !== raw && cleaned) {
+        showToast('名称已按规则整理：' + (raw || '') + ' → ' + cleaned);
+      }
+      return cleaned;
+    }
+    // 历史数据整理：先 dry-run 预览（不改数据），确认后应用
+    const showCleanHistoryModal = ref(false);
+    const cleanHistoryDraft = ref({ total: 0, changed: [] });
+    const nameCleanPreviewText = ref('');
+    const nameCleanPreviewOut = ref('');
+    function previewNameClean() {
+      nameCleanPreviewOut.value = cleanProductName(nameCleanPreviewText.value);
+    }
+    function saveNameCleanSettings() {
+      if (settings.nameCleanCase !== 'lower' && settings.nameCleanCase !== 'smart' && settings.nameCleanCase !== 'none') settings.nameCleanCase = 'smart';
+      saveData();
+      showToast('名称清洗规则已保存');
+    }
+    function openCleanHistoryModal() {
+      if (!settings.nameCleanEnabled) { showToast('请先开启「名称清洗」开关'); return; }
+      const changed = [];
+      products.value.forEach(p => {
+        const n = String(p.name || '').trim();
+        if (!n) return;
+        const c = cleanProductName(n);
+        if (c && c !== n && c.length >= 2) changed.push({ id: p.id, old: n, neu: c });
+      });
+      cleanHistoryDraft.value = { total: changed.length, changed: changed.slice(0, 20) };
+      showCleanHistoryModal.value = true;
+      if (changed.length === 0) showToast('现有名称都已是干净名称，无需整理');
+    }
+    function applyCleanHistory() {
+      let applied = 0;
+      products.value.forEach(p => {
+        const n = String(p.name || '').trim();
+        if (!n) return;
+        const c = cleanProductName(n);
+        if (c && c !== n && c.length >= 2) {
+          addRecord({ type: 'adjust', productId: p.id, productName: c, barcode: p.barcode || '', quantity: 0, detail: '名称清洗：' + n + ' → ' + c });
+          p.name = c;
+          applied++;
+        }
+      });
+      saveData();
+      showCleanHistoryModal.value = false;
+      showToast('已整理 ' + applied + ' 个商品名称（可在记录页查看调整明细）');
+    }
+
+    // ---- ③ 扫码配置同步（方案一：配置码直传） ----
+    const showConfigQr = ref(false);
+    const configQrText = ref('');
+    const configQrError = ref(false);
+    const configPending = ref(null);          // 待接入的解析结果 {binId, apiKey, name, ts}
+    const showConfigConfirm = ref(false);
+    let configQrTimer = null;
+    function buildConfigPayload() {
+      return 'foodin-sync://' + encodeURIComponent(JSON.stringify({ v: 1, type: 'foodin-sync', binId: settings.cloudBinId || '', apiKey: settings.cloudApiKey || '', ts: Date.now() }));
+    }
+    async function ensureQrLib() {
+      // v2.22.0 vendor 化：优先同源 vendor/qrcode.min.js（davidshimjs/qrcodejs），失败回退 pickCdnHost
+      if (window.QRCode) return Promise.resolve();
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = './vendor/qrcode.min.js';
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('local vendor load fail'));
+        document.head.appendChild(s);
+      }).catch(async () => {
+        await pickCdnHost('/npm/qrcodejs@1.0.0/qrcode.min.js');
+      });
+      if (window.QRCode) return Promise.resolve();
+      return Promise.reject(new Error('QRCode lib missing'));
+    }
+    function maskConfigBin(b) {
+      return String(b || '').length <= 8 ? String(b || '') : String(b).slice(0, 4) + '…' + String(b).slice(-4);
+    }
+    function paintConfigQr() {
+      const el = document.getElementById('qr-render');
+      if (!el) return;
+      // 先清空上一次的 canvas/table 子元素（qrcodejs 渲染方式）
+      el.innerHTML = '';
+      ensureQrLib().then(() => {
+        try {
+          new window.QRCode(el, {
+            text: configQrText.value,
+            width: 190,
+            height: 190,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: window.QRCode.CorrectLevel ? window.QRCode.CorrectLevel.M : 0
+          });
+          configQrError.value = false;
+        } catch (e) {
+          configQrError.value = true;
+          console.warn('[FoodIn] QR 渲染失败:', e);
+        }
+      }).catch(() => { configQrError.value = true; });
+    }
+    function openConfigQr() {
+      if (!settings.cloudApiKey || !settings.cloudBinId) { showToast('请先填写并保存 API Key 与 Bin ID'); return; }
+      configQrText.value = buildConfigPayload();
+      configQrError.value = false;
+      showConfigQr.value = true;
+      if (configQrTimer) clearTimeout(configQrTimer);
+      configQrTimer = setTimeout(() => {   // 含密钥：30 秒后自动关闭，降低留在屏幕上的泄露风险
+        showConfigQr.value = false;
+        configQrText.value = '';
+      }, 30000);
+      nextTick(() => paintConfigQr());
+    }
+    function closeConfigQr() {
+      if (configQrTimer) clearTimeout(configQrTimer);
+      showConfigQr.value = false;
+      configQrText.value = '';
+    }
+    async function copyConfigText() {
+      try {
+        await navigator.clipboard.writeText(configQrText.value);
+        showToast('配置文本已复制，可发给另一台设备手动粘贴');
+      } catch (e) {
+        const ta = document.getElementById('config-text-sel');
+        if (ta) { ta.focus(); ta.select(); document.execCommand('copy'); showToast('已复制'); }
+        else showToast('复制失败，请长按文本手动复制');
+      }
+    }
+    function handleConfigCodeText(text) {
+      let payload = null;
+      try {
+        const json = decodeURIComponent(String(text).slice('foodin-sync://'.length));
+        payload = JSON.parse(json);
+      } catch (e) { payload = null; }
+      if (!payload || payload.type !== 'foodin-sync' || !payload.binId || !payload.apiKey) {
+        showToast('不是有效的 FoodIn 配置码，请确认扫码对象');
+        return;
+      }
+      configPending.value = { binId: payload.binId, apiKey: payload.apiKey, name: payload.name || '', ts: payload.ts || 0 };
+      showConfigConfirm.value = true;
+    }
+    function openConfigScan() {
+      openScan('config');
+    }
+    function cancelConfigConfirm() {
+      configPending.value = null;
+      showConfigConfirm.value = false;
+    }
+    function applyConfigConfirm() {
+      const c = configPending.value;
+      if (!c) return;
+      settings.cloudApiKey = c.apiKey;
+      settings.cloudBinId = c.binId;
+      settings.cloudSyncEnabled = true;
+      cancelConfigConfirm();
+      saveCloudSettings();
+      showToast('已接入云端 Bin ' + maskConfigBin(c.binId) + '，正在拉取合并…');
+      setTimeout(() => { cloudSync(true); }, 300);
+    }
+
+    // ---- ④ 浪费复盘月报（自然月，与统计页时间范围选择器解耦） ----
+    const wasteReviewMonth = computed(() => {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+      const by = {};
+      let qty = 0, amount = 0, count = 0;
+      records.value.forEach(r => {
+        if (r.type !== 'waste') return;
+        const t = new Date(r.createdAt).getTime();
+        if (t < start || t >= end) return;
+        const q = Math.abs(r.quantity || 0);
+        const up = r.unitPrice || 0;
+        const key = WASTE_REASON_LABEL(r.reason);
+        if (!by[key]) by[key] = { label: key, qty: 0, amount: 0, count: 0 };
+        by[key].qty += q; by[key].amount += q * up; by[key].count++;
+        qty += q; amount += q * up; count++;
+      });
+      const rows = Object.keys(by).map(k => by[k]).sort((a, b) => (b.amount - a.amount) || (b.qty - a.qty));
+      const avoidableQty = rows.filter(x => x.label === '放过期了' || x.label === '变质了' || x.label === '买多了').reduce((s, x) => s + x.qty, 0);
+      return { count, qty, amount, rows, avoidableQty, hasData: count > 0 };
+    });
+
 
     // ===== Location list management =====
     function addLocation() {
@@ -6881,12 +8099,12 @@ createApp({
     });
 
     // 调试/自动化测试钩子（不影响正常运行）
-    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr };   // v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与手动引入本地模型
+    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; } };   // v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式
 
     return {
       currentPage, products, records, settings, barcodeCache,
       searchQuery, homeFilter, homeCategory, homeLocation, sortBy, homeDateStart, homeDateEnd, showFilterModal, sortOptions, hasActiveFilter, resetHomeFilters, toggleFilter, clearFilter, toggleArrayItem, parseSearchQuery, matchesProduct, toggleSearchToken, hasSearchToken, clearSearchTokens, recordSearchQuery, dateRangeStart, dateRangeEnd,
-      showDeleteConfirm, showExpiryReminder, showEditModal, showChangelog, showClearConfirm, showCloudSyncModal, showScanModal, scanContext,
+      showDeleteConfirm, showExpiryReminder, showEditModal, showChangelog, showClearConfirm, showDataManage, showCloudSyncModal, showScanModal, scanContext,
       cloudSyncing, cloudSyncStatus, serverChanPushing,
       deletingProduct, editingProduct, toast,
       scanForm, scanning, apiLoading, apiMessage, apiSuccess, cachedMode,
@@ -6904,7 +8122,7 @@ createApp({
       incrementStock, decrementStock, confirmDelete, executeDelete, executeDeleteDirect,
       openEditModal, deleteFromEdit, onEditDateChange, onEditExpiryChange, onEditShelfLifeChange, setEditShelfLifeUnit, unionTags, saveEdit,
       onScanDateChange, onScanExpiryChange, onScanShelfLifeChange, setShelfLifeUnit, submitProduct,
-      batchItems, addBatchItem, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, useBatchOcrLine, useBatchOcrBarcode,
+      batchItems, addBatchItem, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, useBatchOcrLine, useBatchOcrBarcode, useBatchOcrSingleLine, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices,
       showReceiptCamera, receiptVideoRef, receiptCamError, openReceiptCamera, closeReceiptCamera, switchReceiptCamera, captureReceiptShot,
       startScanning, stopScanning, openScan, lookupBarcode,
       scanMode, torchOn, torchSupported, toggleTorch, ocr, albumFileRef, captureAndOcr, ocrFromFile, useOcrText, useOcrBarcode,
@@ -6913,10 +8131,23 @@ createApp({
       saveServerChanSettings, serverChanPush,
       saveBarcodeSettings,
       saveOcrSettings,   // v2.21.5：OCR 引擎设置保存（之前漏在 return 外导致设置页保存按钮失效）
+      onClickOcr,   // v2.22.3：4 个 OCR 入口按钮统一守卫（关闭态点击立即 toast，不再绕到 hidden input click 后才拦截）
       cancelPaddleOcr,   // v2.21.5+：Paddle 加载期间用户主动取消（进度条上「取消并切 Tesseract」）
+      // v2.22.0：一键导出表格 / 名称清洗 / 扫码配置同步 / 浪费复盘
+      exportStockCsv, exportRecordsCsv, exportStatsCsv,
+      cleanProductName, cleanWithNotice, previewNameClean, nameCleanPreviewText, nameCleanPreviewOut, saveNameCleanSettings,
+      showCleanHistoryModal, cleanHistoryDraft, openCleanHistoryModal, applyCleanHistory,
+      showConfigQr, configQrText, configQrError, openConfigQr, closeConfigQr, copyConfigText, openConfigScan, maskConfigBin,
+      showConfigConfirm, configPending, cancelConfigConfirm, applyConfigConfirm,
+      eatingConfirmProduct, confirmLastEat, cancelLastEat,
+      showWasteReason, wasteReasonTarget, WASTE_REASONS, cancelWasteReason, executeWasteDeleteWithReason,
+      wasteReviewMonth,
     };
   }
-}).mount('#app');
+});
+
+app.component('toggle-setting', ToggleSetting);   // v2.22.4：全局注册开关组件，4 个卡片（云同步 / OCR 总开关 / 名称清洗 / 条码查询增强）共用
+app.mount('#app');
 </script>
 <script>
   // Service Worker registration
