@@ -1369,7 +1369,7 @@
                 class="input input-sm flex-1" @keyup.enter="addPlace">
               <button @click="addPlace" class="px-3 py-2 rounded-lg bg-teal-500 text-white text-xs font-medium flex-shrink-0">新增地点</button>
             </div>
-            <p v-if="!settings.places.length" class="text-[11px] text-gray-400 mb-3">还没有地点。点上方新增一个地点（如：冰箱）后即默认开启分区，在卡片内添加 冷藏/冷冻 等子分区即可；若不需要分区，直接离开设置页会自动变为「不分区」。</p>
+            <p v-if="!settings.places.length" class="text-[11px] text-gray-400 mb-3">还没有地点。点上方新增一个地点（如：冰箱），再在地点卡内点「分区」按钮添加 冷藏/冷冻 等分区；不需要分区的（如：厨房）保持「不分区」即可。</p>
 
             <!-- 地点卡列表（v2.23.4⑨：分区在上 / 虚线分割线 / 不分区在下；拖拽仅允许各自区域内排序） -->
             <div v-for="pl in placesWithZonesView" :key="'z-' + pl.name"
@@ -1392,9 +1392,9 @@
                   <label class="flex items-center gap-1 cursor-pointer select-none" @click.stop>
                     <span class="text-[11px] text-gray-500">分区</span>
                     <button @click="togglePlaceZones(settings.places.indexOf(pl))" :title="'关闭分区'"
-                      :class="pl.partitioned ? 'bg-teal-500' : 'bg-gray-200'"
+                      :class="pl.zones.length ? 'bg-teal-500' : 'bg-gray-200'"
                       class="w-8 h-[18px] rounded-full relative transition-colors">
-                      <span class="absolute top-0.5 w-[14px] h-[14px] bg-white rounded-full shadow transition-all" :class="pl.partitioned ? 'left-[16px]' : 'left-0.5'"></span>
+                      <span class="absolute top-0.5 w-[14px] h-[14px] bg-white rounded-full shadow transition-all" :class="pl.zones.length ? 'left-[16px]' : 'left-0.5'"></span>
                     </button>
                   </label>
                   <button @click.stop="removePlace(settings.places.indexOf(pl))" class="text-gray-300 hover:text-red-400 p-1" title="删除地点">
@@ -1443,9 +1443,9 @@
                   <label class="flex items-center gap-1 cursor-pointer select-none" @click.stop>
                     <span class="text-[11px] text-gray-500">不分区</span>
                     <button @click="togglePlaceZones(settings.places.indexOf(pl))" :title="'开启分区'"
-                      :class="pl.partitioned ? 'bg-teal-500' : 'bg-gray-200'"
+                      :class="pl.zones.length ? 'bg-teal-500' : 'bg-gray-200'"
                       class="w-8 h-[18px] rounded-full relative transition-colors">
-                      <span class="absolute top-0.5 w-[14px] h-[14px] bg-white rounded-full shadow transition-all" :class="pl.partitioned ? 'left-[16px]' : 'left-0.5'"></span>
+                      <span class="absolute top-0.5 w-[14px] h-[14px] bg-white rounded-full shadow transition-all" :class="pl.zones.length ? 'left-[16px]' : 'left-0.5'"></span>
                     </button>
                   </label>
                   <button @click.stop="removePlace(settings.places.indexOf(pl))" class="text-gray-300 hover:text-red-400 p-1" title="删除地点">
@@ -1454,7 +1454,7 @@
                 </div>
               </div>
             </div>
-            <p v-if="!settings.places.length" class="text-[11px] text-gray-400">还没有地点。点上方新增一个（如：冰箱）即默认开启分区；不需要分区的保持「不分区」即可</p>
+            <p v-if="!settings.places.length" class="text-[11px] text-gray-400">还没有地点。点上方新增一个（如：厨房保持不分区；冰箱可开启分区添加冷藏/冷冻）</p>
           </div>
         </div>
 
@@ -3373,17 +3373,6 @@ const app = createApp({
 
     // 导航逻辑：在指南页时点其他 tab，记录"来自指南"；之后点"设置"回到指南页（直到用户主动退出指南）
     const navigateTo = (pageId) => {
-      // v2.23.4⑩：离开设置页时，将「仅开启分区、未添加任何子分区」的地点自动降为不分区（避免空分区状态残留）
-      if (currentPage.value === 'settings' && pageId !== 'settings') {
-        let dirty = false;
-        (settings.places || []).forEach(p => {
-          if (p.partitioned === true && (!Array.isArray(p.zones) || p.zones.length === 0)) {
-            p.partitioned = false;
-            dirty = true;
-          }
-        });
-        if (dirty) saveData();
-      }
       if (currentPage.value === 'guide' && pageId !== 'settings') {
         // 从指南页跳到其他页面，标记来路
         cameFromGuide.value = true;
@@ -3446,7 +3435,6 @@ const app = createApp({
           '⑦ 筛选弹窗「储存位置」改为方案 C 卡片分组，卡片内所有 pill 单行平铺 flex-wrap（不强制分行）；大分区智能联动：点击大分区一键加入/移除全部子分区（全联动）；子分区手动全选时大分区自动点亮；部分选中时大分区不亮；筛选数据改为只放子分区 token（不再写地点名 token）',
           '⑧ 筛选弹窗：有分区的 place 画 teal-50 大分区卡片（含子分区 pill）；无小分区的大分区（zones=[] 的 place 名 + settings.locations 中未归入任何 place 的真实游离标签）统一并入独立标签 gray-50 卡片，按灰色筛选处理（选中 gray-500），平铺不单独成行',
           '⑨ 设置页「存储位置」撤销独立标签 UI 与区块：旧独立标签（settings.locations 中未归入任何 place 的标签）一次性迁移为「不分区」place；设置页地点卡列表改为「分区组在上 / 虚线分割线 / 不分区组在下」两段渲染，拖拽只允许各自区域内排序（不能跨组），跨组拖拽在 onDragMove 中通过 isPlaceZoned(from) === isPlaceZoned(target) 拒绝；录入/批量/编辑三页 chips 同步移除独立标签入口（与 places 重复）；filter 弹窗逻辑保持⑧不变',
-          '⑩ 新增地点默认识别为「已开启分区」(partitioned=true) 但不预填冷藏/冷冻（zones 保持空，由用户自行添加子分区）；分区开关从「zones 是否非空」解耦为独立布尔 `partitioned`——设置页分区/不分区两段视图、拖拽约束、toggle 圆钮显隐均改用 `partitioned`；离开设置页（navigateTo 从 settings 跳其他页）自动将「开启分区但未添加任何子分区」的地点降为不分区，回到设置页即显示为不分区；loadData 对旧数据按「有子分区→已分区」补齐 `partitioned`，migrateLooseLocationsToPlaces 生成的不分区 place 显式 partitioned=false',
         ],
       },
       {
@@ -5274,11 +5262,6 @@ const app = createApp({
         if (!Array.isArray(settings.places)) settings.places = [];
         // v2.23.4⑨：迁移独立标签（settings.locations 中未归入 place 的）→ 自动升级为「不分区」place
         if (migrateLooseLocationsToPlaces()) saveData();
-        // v2.23.4⑩：把「分区开关」从「zones 是否非空」解耦为独立布尔 `partitioned`；旧数据按「有子分区→已分区」补齐，保证行为不变
-        settings.places.forEach(p => {
-          if (!Array.isArray(p.zones)) p.zones = [];
-          if (typeof p.partitioned !== 'boolean') p.partitioned = p.zones.length > 0;
-        });
         const bc = localStorage.getItem('food_inventory_barcode_cache');
         if (bc) barcodeCache.value = JSON.parse(bc);
       } catch (e) { console.error('Load failed:', e); }
@@ -7615,13 +7598,12 @@ const app = createApp({
     // 筛选弹窗用：仅渲染有分区的 place 为 teal 大分区卡片；无分区 place（zones=[]）转入独立标签 gray 卡片
     const placesWithZones = computed(() => (settings.places || []).filter(p => Array.isArray(p.zones) && p.zones.length > 0));
     // v2.23.4⑨：设置页地点卡视图，按分区/不分区两个组渲染（拖拽约束在各自区域内）
-    // v2.23.4⑩：分组依据从 zones 非空改为独立布尔 partitioned（开启分区但未加子分区也属「分区」组）
-    const placesWithZonesView = computed(() => (settings.places || []).filter(p => p.partitioned === true));
-    const placesNoZonesView = computed(() => (settings.places || []).filter(p => p.partitioned !== true));
+    const placesWithZonesView = computed(() => (settings.places || []).filter(p => Array.isArray(p.zones) && p.zones.length > 0));
+    const placesNoZonesView = computed(() => (settings.places || []).filter(p => !Array.isArray(p.zones) || p.zones.length === 0));
     // 拖拽约束：判断 settings.places 下标是否属于「有分区」组；onDragMove 用此判断是否允许跨组
     function isPlaceZoned(idx) {
       const pl = settings.places[idx];
-      return !!(pl && pl.partitioned === true);
+      return !!(pl && Array.isArray(pl.zones) && pl.zones.length > 0);
     }
     // 主页筛选「储存位置」候选：全部分区 + 独立标签（地点名单独一行展示，见筛选弹窗）
     const locDetailFilterTags = computed(() => {
@@ -7713,7 +7695,7 @@ const app = createApp({
         const tag = String(t || '').trim();
         if (!tag || existing.has(tag)) return;
         if (!settings.places.find(p => p.name === tag)) {
-          settings.places.push({ name: tag, zones: [], partitioned: false, layout: '', newZoneInput: '' });
+          settings.places.push({ name: tag, zones: [], layout: '', newZoneInput: '' });
           existing.add(tag);
           changed = true;
         }
@@ -7725,10 +7707,10 @@ const app = createApp({
       const val = newPlaceInput.value.trim();
       if (!val) return;
       if (placeByName(val)) { showToast('该地点已存在'); return; }
-      settings.places.push({ name: val, zones: [], partitioned: true, layout: '', newZoneInput: '' });
+      settings.places.push({ name: val, zones: [], layout: '', newZoneInput: '' });
       newPlaceInput.value = '';
       saveData();
-      showToast('已新增地点：' + val + '（已开启分区，可在卡片内添加子分区；未添加分区就离开设置页将自动变为不分区）');
+      showToast('已新增地点：' + val + '（默认不需分区，可在卡片内开启分区）');
     }
     function removePlace(pi) {
       const pl = settings.places[pi];
@@ -7748,12 +7730,12 @@ const app = createApp({
       saveData();
       showToast('地点已重命名');
     }
-    // v2.23.4⑩：分区开关改为独立布尔 `partitioned`。开启 = 仅置 partitioned=true（不预设冷藏/冷冻，用户自行添加子分区）；关闭 = 清空 zones
+    // v2.23.3：toggle 圆钮回归 v2.22.4 行为。开启 = 给 ['冷藏','冷冻'] 默认示例（用户可改/增删），关闭 = 清空 zones
     function togglePlaceZones(pi) {
       const pl = settings.places[pi];
       if (!pl) return;
-      if (pl.partitioned) { pl.partitioned = false; pl.zones = []; }
-      else { pl.partitioned = true; }   // 开启分区，zones 保持空（不预设冷藏/冷冻）
+      if (Array.isArray(pl.zones) && pl.zones.length) pl.zones = [];
+      else pl.zones = ['冷藏', '冷冻'];
       saveData();
     }
     function addZoneToPlace(pi) {
