@@ -33,6 +33,10 @@ jobs:
           cp icon-180.png _site/
           cp icon-192.png _site/
           cp icon-512.png _site/
+          # v2.22.4 fix：vendor/ 是 v2.22.0 起本地化的核心 JS（vue / html5-qrcode / qrcodejs），
+          # 但 cp 列表忘了它，导致 Pages 部署后永远 404。先确认目录存在再 copy，避免 runner 没
+          # 拉到 vendor 时整个 build fail。
+          if [ -d vendor ]; then cp -r vendor _site/; fi
           # 若以后有 build 产物目录再补充拷贝
 
       - name: 上传构建产物
