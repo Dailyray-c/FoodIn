@@ -392,7 +392,7 @@
       <div class="flex items-center gap-2">
         <div class="relative flex-1">
           <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input v-model="recordSearchQuery" type="text" placeholder="搜索商品名/条码/操作详情/类型"
+          <input v-model="recordSearchQuery" type="text" placeholder="搜索商品名/条码/操作详情"
             class="input pl-10 pr-10" style="padding-left:2.5rem; padding-right:2.5rem;">
           <button @click="openScan('records')" title="扫码搜索"
             class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 active:text-orange-500 active:scale-90 transition-all">
@@ -468,7 +468,7 @@
           <div class="grid grid-cols-3 gap-2">
             <button @click="incrementStock(product)"
               :class="isLeftoverCategory(product.category)
-                ? 'py-1.5 rounded-lg text-xs font-medium bg-amber-500 text-white active:bg-amber-600 transition-colors'
+                ? (isLeftoverUrgent(product) ? 'py-1.5 rounded-lg text-xs font-medium bg-amber-500 text-white active:bg-amber-600 transition-colors ring-2 ring-red-400' : 'py-1.5 rounded-lg text-xs font-medium bg-amber-500 text-white active:bg-amber-600 transition-colors')
                 : 'py-1.5 rounded-lg text-xs font-medium bg-orange-500 text-white active:bg-orange-600 transition-colors'">{{ isLeftoverCategory(product.category) ? '🔥 加热一次' : '+1 入库' }}</button>
             <button @click="decrementStock(product)" :disabled="product.quantity <= 0"
               class="py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200 active:bg-green-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">-1 吃完</button>
@@ -585,7 +585,7 @@
           <div class="text-sm font-semibold text-gray-700 mb-2 pt-2 border-t border-gray-100">日期信息</div>
           <div>
             <label class="text-xs text-gray-500 mb-1.5 block">生产日期</label>
-            <input v-model="scanForm.productionDate" type="date" @change="onScanDateChange(scanForm)" class="input">
+            <input v-model="scanForm.productionDate" type="date" @change="onScanDateChange" class="input">
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
@@ -811,7 +811,7 @@
                 <button type="button" @click="item.category = []"
                   :class="item.category.length === 0 ? 'bg-gray-500 border-gray-500 text-white' : 'bg-white border-gray-200 text-gray-600'"
                   class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors">待设置</button>
-                <button type="button" v-for="cat in settings.categories" :key="cat" @click="toggleCategoryWithLeftover(item, cat)"
+                <button type="button" v-for="cat in settings.categories" :key="cat" @click="toggleArrayItem(item.category, cat)"
                   :class="item.category.includes(cat) ? 'bg-purple-500 border-purple-500 text-white' : 'bg-white border-gray-200 text-gray-600'"
                   class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors">{{ cat }}</button>
                 <span v-if="!settings.categories.length" class="text-[11px] text-gray-300">请到设置页添加分类</span>
@@ -1376,22 +1376,20 @@
           </div>
         </div>
         <!-- v2.24.0：剩菜默认保质期设置 -->
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                <span class="text-base">🔥</span>
-              </div>
-              <div>
-                <div class="text-sm text-gray-700">剩菜默认保质期</div>
-                <div class="text-[11px] text-gray-400">标记「剩菜剩饭」时自动填入（默认 {{ settings.leftoverDefaultDays }} 天）</div>
-              </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+              <span class="text-base">🔥</span>
             </div>
-            <div class="flex items-center gap-1">
-              <input v-model.number="settings.leftoverDefaultDays" type="number" min="1" max="30" @change="saveLeftoverDays"
-                class="input input-sm w-14 text-center">
-              <span class="text-xs text-gray-400">天</span>
+            <div>
+              <div class="text-sm text-gray-700">剩菜默认保质期</div>
+              <div class="text-[11px] text-gray-400">标记「剩菜剩饭」时自动填入（默认 {{ settings.leftoverDefaultDays }} 天）</div>
             </div>
+          </div>
+          <div class="flex items-center gap-1">
+            <input v-model.number="settings.leftoverDefaultDays" type="number" min="1" max="30" @change="saveLeftoverDays"
+              class="input input-sm w-14 text-center">
+            <span class="text-xs text-gray-400">天</span>
           </div>
         </div>
 
@@ -2164,10 +2162,10 @@
             <div>
               <ul class="space-y-1.5 text-[13px] text-gray-600 leading-relaxed">
                 <li><b class="text-gray-800">快捷筛选</b>：顶部「在库 / 入库 / 消耗 / 浪费」一键切换对应记录。</li>
-                <li><b class="text-gray-800">搜索定位</b>：搜索框全字段模糊匹配（商品名 / 条码 / 操作详情 / 类型），或点相机图标扫码定位某条码的所有记录。</li>
+                <li><b class="text-gray-800">搜索定位</b>：搜索框全字段模糊匹配（商品名 / 条码 / 操作详情），或点相机图标扫码定位某条码的所有记录。</li>
                 <li><b class="text-gray-800">高级筛选</b>：点「筛选」按 记录类型 + 日期范围 组合过滤（激活后按钮变橙并带圆点）。</li>
                 <li><b class="text-gray-800">分组展示</b>：记录按 今天 / 昨天 / 具体日期 分组，每组显示条数。</li>
-                <li><b class="text-gray-800">记录内容</b>：类型徽章（入库黄 / 吃完绿 / 浪费红 / 调整蓝 / 🔥加热橙）+ 商品名 + 数量 + 时间 + 备注；加热不改变库存故不显示件数。</li>
+                <li><b class="text-gray-800">记录内容</b>：类型徽章（入库橙/吃完绿/浪费红/调整蓝）+ 商品名 + 数量 + 时间 + 备注。</li>
                 <li><b class="text-gray-800">撤销</b>：每条右侧「撤销」可移除该记录并回滚库存（弹窗预览数量 from→to），撤销后到首页补填缺失信息即可。</li>
               </ul>
               <div class="mt-3 bg-orange-50 rounded-xl p-3 text-[12px] text-[#9a4a12]"><b class="text-orange-600">提示</b>：撤销会同时影响统计与库存，误撤可在首页用 +1/−1 补回。</div>
@@ -3191,7 +3189,7 @@ const app = createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.24.1';   // v2.24.1：修复 5 个 bug（设置卡格式、内置分类云同步覆盖丢失、单条录入生产日期不重算到期、批量录入剩菜未自动填保质期、版本号）；版本 2.24.1 / SW v89
+    const CURRENT_VERSION = '2.24.0';   // v2.24.0：新增「剩菜剩饭」内置标签（默认存在、不可删除）；标签为剩菜剩饭的条目「+1 入库」改为「🔥 加热一次」（累计加热次数、不增库存）；录入选剩菜自动切保质期到「天」并按默认天数填入（设置页可改 1~30 天）；统计页新增「🔥 剩菜统计」卡；内置分类/剩菜默认保质期纳入云同步；版本 2.24.0 / SW v88
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', serverChanKey: '', serverChanPushEnabled: false, barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', ocrEnabled: true, baiduApiKey: '', baiduSecretKey: '', locations: ['冰箱冷藏', '冰箱冷冻', '橱柜'], categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0, ocrGroupMode: true, ocrImageEnhance: true, nameCleanEnabled: true, nameCleanCase: 'smart', nameCleanMarketing: true, nameCleanCustom: '', nameCleanWhitelist: '', places: [], builtinCategories: ['剩菜剩饭'], leftoverDefaultDays: 3 });   // v2.21.5：+ocrEngine 识别引擎（paddle 默认 / tesseract），+baiduApiKey/baiduSecretKey 百度云入口预留；v2.21.16：+ocrGroupMode 批量 OCR 智能分组开关（持久化，默认 true，首次加载迁移）+ocrImageEnhance 识别前图像增强开关（灰度+OTSU 二值化，Tesseract 路径生效，默认 true）；v2.22.0：+nameClean* 名称清洗规则库（默认开：去营销词 / 大小写 smart / 全半角）；v2.22.2：+ocrEnabled 文字识别总开关（默认 true；关闭后所有 OCR 入口按钮变灰并提示）
 
     const searchQuery = ref('');
@@ -3366,8 +3364,7 @@ const app = createApp({
       { value: 'in', label: '入库' },
       { value: 'eat', label: '吃完' },
       { value: 'waste', label: '浪费' },
-      { value: 'adjust', label: '调整' },
-      { value: 'reheat', label: '🔥 加热' }   // v2.24.1：补回筛选选项
+      { value: 'adjust', label: '调整' }
     ];
     const showRecordFilterModal = ref(false);   // 记录页日期筛选弹层
     const statsRange = ref('month');            // 统计页时间范围预设：today | week | month | year（v2.20.2 标签书面化：今日/近一周/近一月/本年度）
@@ -3572,19 +3569,6 @@ const app = createApp({
     };
 
     const changelog = [
-      {
-        version: '2.24.1',
-        date: '2026-09-08',
-        items: [
-          '修复：设置页「剩菜默认保质期」卡片未套用其他板块的通用卡片格式（白底圆角阴影边框），改为与其它设置卡片一致。',
-          '修复：云同步（applyLegacyUnion）用云端 categories 覆盖本地时未重新并入内置分类，导致「剩菜剩饭」标签在部分情况下消失；现覆盖后强制把 builtinCategories 重新并入 categories。',
-          '修复：单条录入选「剩菜剩饭」自动填 3 天保质期后、再输入生产日期不自动计算到期日（保存后显示「无到期日」）；现生产日期 `@change` 正确把 scanForm 传入 onScanDateChange 重算到期日。',
-          '修复：批量录入选「剩菜剩饭」chip 未触发自动切「天」并填默认保质期；现改用 toggleCategoryWithLeftover(item, cat) 与单条/编辑录入一致。',
-          '记录页「🔥 加热」类型补完：badge/数量/色条统一橙色调（amber-100/#f59e0b），去掉右侧「-0 件」误显（加热不改变库存），筛选弹层新增「🔥 加热」选项，记录搜索匹配类型（输入「加热」「reheat」即可定位）。',
-          '修复：商品卡「🔥 加热一次」按钮在临期/过期时附加的 pinkish ring-2 ring-red-400 外框去除（用户反馈影响视觉一致性），保留 isLeftoverUrgent() 函数以备扩展。',
-          'SW 缓存 v88 → v89；CURRENT_VERSION 2.24.0 → 2.24.1',
-        ],
-      },
       {
         version: '2.24.0',
         date: '2026-09-08',
@@ -4865,14 +4849,11 @@ const app = createApp({
       let result = records.value;
       if (recordSearchQuery.value) {
         // v2.18.2：升级为商品名/条码/操作详情 三字段全匹配
-        // v2.24.1：再补 类型（让「加热」「入库」「reheat」等关键词能直接找到）
         const q = recordSearchQuery.value.toLowerCase();
         result = result.filter(r =>
           (r.productName || '').toLowerCase().includes(q) ||
           (r.barcode || '').toLowerCase().includes(q) ||
-          (r.detail || '').toLowerCase().includes(q) ||
-          (recordTypeLabel(r.type) || '').toLowerCase().includes(q) ||
-          (r.type || '').toLowerCase().includes(q)   // 也支持英文类型 id（in / eat / waste / adjust / reheat）
+          (r.detail || '').toLowerCase().includes(q)
         );
       }
       if (recordTypeFilter.value) {
@@ -5379,20 +5360,19 @@ const app = createApp({
 
     // ===== Record helpers =====
     function recordBadgeClass(type) {
-      return { 'in': 'bg-yellow-100 text-yellow-700', 'eat': 'bg-green-100 text-green-700', 'waste': 'bg-red-100 text-red-700', 'adjust': 'bg-blue-100 text-blue-700', 'reheat': 'bg-amber-100 text-amber-700' }[type] || 'bg-gray-100 text-gray-700';
+      return { 'in': 'bg-yellow-100 text-yellow-700', 'eat': 'bg-green-100 text-green-700', 'waste': 'bg-red-100 text-red-700', 'adjust': 'bg-blue-100 text-blue-700' }[type] || 'bg-gray-100 text-gray-700';
     }
     function recordNumberClass(type) {
-      return { 'in': 'text-yellow-600', 'eat': 'text-green-600', 'waste': 'text-red-600', 'adjust': 'text-blue-600', 'reheat': 'text-amber-600' }[type] || 'text-gray-600';
+      return { 'in': 'text-yellow-600', 'eat': 'text-green-600', 'waste': 'text-red-600', 'adjust': 'text-blue-600' }[type] || 'text-gray-600';
     }
     function recordTypeLabel(type) {
-      return { 'in': '入库', 'eat': '吃完', 'waste': '浪费', 'adjust': '调整', 'reheat': '🔥 加热' }[type] || type;
+      return { 'in': '入库', 'eat': '吃完', 'waste': '浪费', 'adjust': '调整' }[type] || type;
     }
     function recordBarColor(type) {
-      return { 'in': '#EF9F27', 'eat': '#97C459', 'waste': '#E24B4A', 'adjust': '#378ADD', 'reheat': '#f59e0b' }[type] || '#D3D1C7';
+      return { 'in': '#EF9F27', 'eat': '#97C459', 'waste': '#E24B4A', 'adjust': '#378ADD' }[type] || '#D3D1C7';
     }
     function recordQuantityLabel(r) {
       if (r.type === 'adjust') return '—';
-      if (r.type === 'reheat') return '';   // v2.24.1：加热不改变库存数量，右侧不再显示 -0 件
       const q = Math.abs(r.quantity || 0);
       return (r.quantity > 0 ? '+' : '-') + q + ' 件';
     }
@@ -8656,8 +8636,6 @@ const app = createApp({
         if (typeof cs.nameCleanMarketing === 'boolean') settings.nameCleanMarketing = cs.nameCleanMarketing;
         if (typeof cs.nameCleanCustom === 'string') settings.nameCleanCustom = cs.nameCleanCustom;
         if (typeof cs.nameCleanWhitelist === 'string') settings.nameCleanWhitelist = cs.nameCleanWhitelist;
-        // v2.24.1：内置分类必须始终保留在 categories 列表（云同步覆盖后重新并入，防止「剩菜剩饭」标签丢失）
-        settings.builtinCategories.forEach(b => { if (!settings.categories.includes(b)) settings.categories.push(b); });
       }
       if (rec.barcodeCache && typeof rec.barcodeCache === 'object') {
         for (const key in rec.barcodeCache) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-inventory-v89';   // v2.24.1 修复设置卡格式/内置分类云同步覆盖丢失/单条录入生产日期不重算到期/批量录入剩菜未自动填保质期；缓存号递增使旧 SW 失效重新预缓存
+const CACHE_NAME = 'food-inventory-v88';   // v2.24.0 剩菜剩饭内置标签+加热一次+录入引导+剩菜统计；缓存号递增使旧 SW 失效重新预缓存
 
 // 仅预缓存同域静态资源（GitHub Pages 加载快、体积小；不再阻塞等待慢速第三方 CDN）
 const PRECACHE_ASSETS = [
