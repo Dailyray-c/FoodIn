@@ -31,5 +31,7 @@ _*.py
 _*.png
 _*.txt
 _*.log
+_*.json
+_*.html
 _extracted.js
 *.bak

@@ -96,6 +96,12 @@ def get_expiry_status(expiry_date_str, expiring_days):
     Returns (status, days_diff) where:
       status = 'expired' | 'expiring' | 'normal'
       days_diff = days until expiry (negative = already expired)
+
+    v2.26.1 修复（与 App 端对齐）：分界改为 diff <= 0 → expired。
+    此前这里用 diff < 0 → expired、diff <= expiring_days → expiring，导致「今天到期」的商品
+    在本脚本里算「临期」（推送「剩 0 天 · 优先食用」），而 App 内 getExpiryStatus 把它算
+    expired（首页红色「今天到期」）。同一天、同一商品两边结论相反，推送计数与统计页必然对不上。
+    现与 App 对齐：今天是到期日即视为过期（App 既有约定），文案侧再对 0 天单独措辞。
     """
     if not expiry_date_str:
         return ("normal", None)
@@ -105,7 +111,7 @@ def get_expiry_status(expiry_date_str, expiring_days):
         return ("normal", None)
     today = datetime.now(BJT).replace(hour=0, minute=0, second=0, microsecond=0)
     diff = (expiry - today).days
-    if diff < 0:
+    if diff <= 0:
         return ("expired", diff)
     elif diff <= expiring_days:
         return ("expiring", diff)
@@ -151,8 +157,14 @@ def build_message(products, expiring_days):
             name = p.get("name", "未知商品")
             location = p.get("location", "未分类")
             qty = p.get("quantity", 1)
+            # v2.26.1：diff==0（今天到期）也归入 expired（与 App 对齐），但文案区分开，
+            # 避免出现「已过期 0 天」这种自相矛盾的表述
+            if days == 0:
+                note = "今天到期 · 建议今日处理"
+            else:
+                note = f"已过期 {abs(days)} 天 · 建议丢弃"
             desp += f"**{name}** x{qty}\n\n"
-            desp += f"> {location} · 已过期 {abs(days)} 天 · 建议丢弃\n\n"
+            desp += f"> {location} · {note}\n\n"
         desp += "---\n\n"
 
     if expiring_items:
