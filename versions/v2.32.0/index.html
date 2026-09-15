@@ -17,16 +17,11 @@
     <!-- 核心 JS：本地化优先（vendor/ 同源加载，避开 CDN 受限网络），onerror 时回退到 unpkg/jsdelivr/fastly 多源 -->
     <script src="./vendor/vue.global.prod.js"
             onerror="var s=document.createElement('script');s.src='https://unpkg.com/vue@3/dist/vue.global.prod.js';s.onerror=function(){var t=document.createElement('script');t.src='https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js';document.head.appendChild(t)};document.head.appendChild(s);this.remove()"></script>
-  <!-- ===== v2.33.0：扫码相关两个库改为「按需加载」，不再放 <head> =====
-       html5-qrcode.min.js 375KB + qrcode.min.js 20KB，合计占首屏 604KB 的 61%，
-       但它们只在「打开扫码相机 / 打开配置码」时才用到。原先放在 <head> 是同步阻塞脚本，
-       浏览器必须下载+解析+执行完才能开始渲染首屏。
-       现在改为：
-         ① 打开扫码前由 ensureScanLib() 注入（并 await 完成后再启摄像头）；
-         ② 配置码生成走原有的 ensureQrLib()（本就有，head 那份是重复）；
-         ③ 首屏渲染完成后由 requestIdleCallback 在浏览器空闲时后台预取，
-            所以真正点开扫码时通常已就绪，体验与之前一致，只是不再拖累首屏。
-       两者的多源回退（本地 vendor → unpkg → jsdelivr）保留在各自 helper 内部。 -->
+  <script src="./vendor/html5-qrcode.min.js"
+            onerror="var s=document.createElement('script');s.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';s.onerror=function(){var t=document.createElement('script');t.src='https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(t)};document.head.appendChild(s);this.remove()"></script>
+  <!-- v2.22.0：本地化 qrcodejs（davidshimjs/qrcodejs@1.0.0），同源加载避开 jsdelivr 受限网络；用于「扫码配置同步」生成配置码 QR -->
+  <script src="./vendor/qrcode.min.js"
+            onerror="var s=document.createElement('script');s.src='https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js';s.onerror=function(){var t=document.createElement('script');t.src='https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';document.head.appendChild(t)};document.head.appendChild(s);this.remove()"></script>
   <style>
     [v-cloak] { display: none; }
     /* ==========================================================================
@@ -667,17 +662,7 @@
 
     <!-- ===== Header ===== -->
     <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0 z-10 safe-top lg:px-6">
-      <!-- v2.33.0：手机版「应用内应用名展示」——图标 + FoodIn 词标，当前页名降为下方灰色小字（.fi-hint）。
-           桌面版左侧侧栏已有同一组「图标 + FoodIn」，故本块整体 lg:hidden，顶栏在桌面版继续只显示页名，
-           避免同一屏出现两个品牌。字号沿用侧栏词标同款 text-lg，保证手机/桌面品牌观感一致。 -->
-      <div class="flex items-center gap-2.5 min-w-0">
-        <img src="./icon-180.png" alt="FoodIn" class="lg:hidden w-8 h-8 rounded-lg object-cover shadow-sm shrink-0">
-        <div class="min-w-0">
-          <div class="lg:hidden text-lg font-bold text-gray-800 leading-tight">FoodIn</div>
-          <div class="lg:hidden fi-hint leading-tight truncate mt-0.5">{{ pageTitleMobile }}</div>
-          <h1 class="hidden lg:block text-lg font-bold text-gray-800">{{ pageTitle }}</h1>
-        </div>
-      </div>
+      <h1 class="text-lg font-bold text-gray-800">{{ pageTitle }}</h1>
       <div class="flex items-center gap-2">
         <button v-if="currentPage === 'home'" @click="showExpiryReminder = true; showLocationPanel = false" title="过期提醒"
           class="relative w-9 h-9 flex items-center justify-center rounded-full bg-orange-50 text-orange-600 border border-orange-200 active:scale-90 transition-all">
@@ -4052,7 +4037,7 @@ const app = createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.33.0';   // v2.33.0：首屏加载优化（html5-qrcode 375KB 改为按需加载，首屏 604KB→217KB）/ 手机版顶栏加「图标+FoodIn」品牌展示 / 导览示例数据不再进入云同步（修 P1 云端残留）/ 导览启动时机改为等字体+两帧渲染 / SW 预缓存逐资源 allSettled 不再静默吞、失败静态资源返回 504 而非首页 HTML / 63 处裸 showToast 收敛到 5 个构造函数；SW v114
+    const CURRENT_VERSION = '2.32.0';   // v2.32.0：调整撤销只回退「本条记录改动过的字段」并改为「当前→撤销后」格式 / 撤销弹窗删掉「本机快照」提示 / 删掉储存位置 chip 的 hover 绿边 / 电脑版商品卡按钮底部对齐 / 修复编辑弹窗分类 chip 选中后顺序错乱；SW v113
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', ocrEnabled: true, baiduApiKey: '', baiduSecretKey: '', categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0, ocrGroupMode: true, ocrImageEnhance: true, nameCleanEnabled: true, nameCleanCase: 'smart', nameCleanMarketing: true, nameCleanCustom: '', nameCleanWhitelist: '', places: [], builtinCategories: ['剩菜剩饭'], leftoverDefaultDays: 3, simpleMode: false, fontScale: 'normal', tourDone: false });   // v2.28.4：+tourDone 首次实景导览是否已完成（仅本机，同 simpleMode 不进云同步 schema——否则云端旧快照会把「已完成」覆盖回来）；v2.25.0：+simpleMode 简洁模式（大字号 + 精简功能，默认关）+fontScale 字号档位（normal 标准 / large 大 / xlarge 超大，独立于简洁模式，切换即时生效、跨设备同步，默认 large 即大字号）；v2.21.16：+ocrGroupMode 批量 OCR 智能分组开关（持久化，默认 true，首次加载迁移）+ocrImageEnhance 识别前图像增强开关（灰度+OTSU 二值化，Tesseract 路径生效，默认 true）；v2.22.0：+nameClean* 名称清洗规则库（默认开：去营销词 / 大小写 smart / 全半角）；v2.22.2：+ocrEnabled 文字识别总开关（默认 true；关闭后所有 OCR 入口按钮变灰并提示）
 
     // v2.26.0：location/category 统一「数组 ↔ 字符串」转换（商品模型落库为逗号字符串，表单态为数组）
@@ -4467,7 +4452,7 @@ const app = createApp({
       applyFontScale();
       saveData();
       const labels = { normal: '标准', large: '大', xlarge: '超大' };
-      toastDone('切换字号为', labels[v]);
+      showToast('字号已切换为「' + (labels[v] || v) + '」');
     }
     function toggleSimpleMode() {
       const turningOn = !settings.simpleMode;
@@ -4863,18 +4848,6 @@ const app = createApp({
     //   同时删除 `.actSel` 的 click 转发用途 —— `.actSel` 现仅用于「阶段二把该控件滚动到远离悬浮条的一侧」。
 
     const changelog = [
-      {
-        version: '2.33.0',
-        date: '2026-09-15',
-        items: [
-          '优化（首屏加载提速 64%）：扫码用的 html5-qrcode 库有 375KB，却一直放在页面头部当同步脚本——浏览器必须把它下载、解析、执行完才肯开始渲染首屏，而它实际上只有你点开「扫条码」时才用得上。现改为**打开扫码时才按需加载**，并在首屏画完之后趁浏览器空闲提前把它偷偷下载好，所以你点开扫码时通常已经就绪、感觉不到差别。同时删掉了一份早就多余、代码里另有按需加载的二维码生成库（20KB）。首屏需下载的资源从 **604KB 降到 217KB**。',
-          '新增（手机版顶栏显示应用名）：手机版顶部原来只有当前页面的名字（首页 / 录入 / 记录…），看不出这是什么应用。现改为左侧常驻「图标 + FoodIn」，当前页名降为它下方的一行灰色小字。桌面版左侧栏本来就有同款品牌，故桌面版顶栏保持原样（仍只显示页名），不会出现两个品牌。',
-          '修（导览示例数据会被同步到云端，且残留无法清除 · 重要）：新手导览为了让你「有东西可点」，会往库里放 5 件演示商品（土鸡蛋、全脂牛奶…）和 7 条流水，并在导览结束时收回。但原实现把这些演示数据一起纳入了云同步的差额计算：导览途中你一旦真的操作了一下（比如按提示点「−1」），演示数据就会在 15 秒后**被推到云端**；如果你中途直接关掉页面，endTour 没机会跑，演示数据就留在了云上——而下次启动时本地的清理发生在同步引擎初始化**之前**，云端那几条永远等不到删除指令，于是「云端有、本地删」反复拉扯，家人的手机还会突然多出土鸡蛋、全脂牛奶这些根本不存在的商品。现在把演示数据从同步引擎里**彻底排除**：既不推它、也不为它生成任何事件，它只是导览期间的本机临时数据。',
-          '优化（新手导览启动时机）：原来写死「等 700 毫秒再亮起聚光灯」，这是个经验值——快机上白等 0.7 秒，慢机上 700 毫秒可能还没排完布局和字体，聚光灯量出的高亮框会偏（而且之后不会重测）。现改为等「字体度量就绪 → 两帧渲染完成 → 一小段稳定期」，位置一定量得准，典型设备上也能更早进入导览。',
-          '修（离线缓存的两个隐患 · Service Worker）：① 预缓存原本是「要么全成功、要么全失败」，只要有一个图标漏传或没部署，**整批预缓存全部作废**（应用退化为完全无缓存），而且失败被静默吞掉、控制台毫无线索；现改为逐个文件独立处理，个别失败不影响其余，失败项会明确打日志。② 资源加载失败时的兜底原本会返回**首页 HTML**——如果是 JS 文件拿到一份 HTML，浏览器会报「Unexpected token \'<\'」这种看着像代码语法错误、实际是缓存喂错内容的疑难问题；现改为明确返回 504，让浏览器按「资源加载失败」正常处理。同时把两个扫码库移出预缓存（它们已改为按需加载），避免安装时白下 395KB 跟首屏抢带宽。',
-          '改（提示文案统一到规范句式）：把 63 处直接拼接的提示话术统一收敛到项目既有的 5 个构造函数（成功 / 失败 / 引导 / 失败含原因 / 重复校验），句式与措辞风格一致，例如「云同步失败：HTTP 500」「请稍候，正在识别…」「「剩菜剩饭」无法删除，请改用其他分类」。全部为文案层面调整，不改变任何功能行为。',
-        ]
-      },
       {
         version: '2.32.0',
         date: '2026-09-15',
@@ -6380,11 +6353,6 @@ const app = createApp({
     const pageTitle = computed(() => {
       return { home: '食品库存', scan: '扫码录入', records: '操作记录', stats: '数据统计', settings: '设置', guide: '使用指南', batch: '批量录入' }[currentPage.value];
     });
-    // v2.33.0：手机版顶栏「品牌下方那行小字」用的页名。
-    // 首页的 pageTitle 原值就是应用中文名「食品库存」，若直接复用会与上方的 FoodIn 词标重复
-    // （同一个应用名连着出现两次），故首页单独显示「首页」。
-    // ❗桌面版顶栏仍用 pageTitle（首页保持「食品库存」不变），避免影响桌面观感。
-    const pageTitleMobile = computed(() => (currentPage.value === 'home' ? '首页' : pageTitle.value));
 
     const filteredProducts = computed(() => {
       let result = products.value;
@@ -7000,7 +6968,7 @@ const app = createApp({
 
     // 查看商品图片（全屏预览，仅存链接不存图）；带 loading/error 状态与重试
     function previewImage(url) {
-      if (!url) { toastGuide('先为该商品添加图片'); return; }
+      if (!url) { showToast('暂无图片'); return; }
       previewImageUrl.value = url;
       previewLoading.value = true;
       previewError.value = false;
@@ -7395,7 +7363,7 @@ const app = createApp({
             // 最后一条入库 → 删商品 + 删该商品全部记录（同"直接删除"语义）
             removeProduct(id, { keepRecords: false });
             dropUndoSnapshot(r.id);
-            toastDone('撤销「' + recordTypeLabel(r.type) + '」记录，「' + r.productName + '」已移出库存');
+            showToast('已撤销「' + recordTypeLabel(r.type) + '」记录，「' + r.productName + '」已移出库存');
             revokingRecord.value = null;
             saveData();
             return;
@@ -7471,7 +7439,7 @@ const app = createApp({
       if (restoredFull) { toastDone('按本机快照完整恢复', r.productName); return; }
       if (adjustDiff > 0) { toastDone('撤销调整、还原 ' + adjustDiff + ' 项商品信息', r.productName); return; }
       if (restoredMissing.length) {
-        toastDone('恢复商品，缺少 ' + restoredMissing.join('、') + '，请到首页编辑补充');
+        showToast('商品已恢复，缺少 ' + restoredMissing.join('、') + '，请到首页编辑补充');
         return;
       }
       if (filledFields > 0) { toastDone('撤销' + recordTypeLabel(r.type) + '记录并补回 ' + filledFields + ' 项信息', r.productName); return; }
@@ -7501,7 +7469,7 @@ const app = createApp({
         const rec = addRecord({ type: 'reheat', productId: product.id, productName: product.name, barcode: product.barcode, quantity: 0, detail: '加热一次（第 ' + product.reheatCount + ' 次）' });
         saveUndoSnapshot(rec && rec.id, snap);
         saveData();
-        toastDone('加热「' + product.name + '」🔥（累计 ' + product.reheatCount + ' 次）');
+        showToast('「' + product.name + '」已加热 🔥（累计 ' + product.reheatCount + ' 次）');
         return;
       }
       applyStockDelta(product, 1);   // v2.18.0：数量走 delta 增量事件（多设备并发各自扣减按全序累加收敛）
@@ -7530,7 +7498,7 @@ const app = createApp({
       saveUndoSnapshot(rec && rec.id, snap);
       if (product.quantity <= 0) {
         removeProduct(product, { keepRecords: true });
-        toastDone('吃完「' + product.name + '」' + (isLeft ? '一份' : '') + '，自动移出库存');
+        showToast('「' + product.name + '」' + (isLeft ? '已吃完一份，自动移出库存' : '已吃完，自动移出库存'));
       }
       eatingConfirmProduct.value = null;
       saveData();
@@ -7714,7 +7682,7 @@ const app = createApp({
       wasteReasonTarget.value = null;
       showDeleteConfirm.value = false;
       deletingProduct.value = null;
-      toastDone('删除「' + p.name + '」（记为浪费）');
+      showToast('已删除「' + p.name + '」（记为浪费）');
     }
 
     function executeDeleteDirect() {
@@ -7725,7 +7693,7 @@ const app = createApp({
       saveData();
       showDeleteConfirm.value = false;
       deletingProduct.value = null;
-      toastDone('直接删除「' + p.name + '」（含入库记录）');
+      showToast('已直接删除「' + p.name + '」（含入库记录）');
     }
 
     // ===== Edit =====
@@ -7827,15 +7795,15 @@ const app = createApp({
 
       // ===== 数据校验（字符串比较，避免 UTC/本地时区误判；允许生产/到期为当天） =====
       if (editForm.productionDate && editForm.productionDate > todayStr) {
-        toastErr('保存', '生产日期不能晚于今天');
+        showToast('生产日期不能晚于今天，无法保存');
         return;
       }
       if (editForm.productionDate && editForm.expiryDate && editForm.expiryDate < editForm.productionDate) {
-        toastErr('保存', '到期日期不能早于生产日期');
+        showToast('到期日期不能早于生产日期，无法保存');
         return;
       }
       if (editForm.shelfLife && parseShelfLifeToDays(editForm.shelfLife) <= 0) {
-        toastErr('保存', '保质期格式无效，支持如 365、12个月、2年');
+        showToast('保质期格式无效，支持如：365、12个月、2年');
         return;
       }
 
@@ -7949,7 +7917,7 @@ const app = createApp({
       if (!form.quantity || form.quantity < 1) missing.push('有效初始数量');
       const dateCount = [form.productionDate, form.shelfLife, form.expiryDate].filter(v => v).length;
       if (dateCount < 2) missing.push('生产日期/保质期/到期日期（至少填两项）');
-      if (missing.length) { toastGuide('填写：' + missing.join('、')); return false; }
+      if (missing.length) { showToast('请填写：' + missing.join('、')); return false; }
       return true;
     }
 
@@ -7957,11 +7925,11 @@ const app = createApp({
       if (!validateScanForm()) return;
       // v2.21.14：日期非法组合拦截（与编辑弹窗一致）——生产日期不能晚于今天；到期日期不能早于生产日期
       if (scanForm.productionDate && scanForm.productionDate > getTodayStr()) {
-        toastErr('保存', '生产日期不能晚于今天');
+        showToast('生产日期不能晚于今天，无法保存');
         return;
       }
       if (scanForm.productionDate && scanForm.expiryDate && scanForm.expiryDate < scanForm.productionDate) {
-        toastErr('保存', '到期日期不能早于生产日期');
+        showToast('到期日期不能早于生产日期，无法保存');
         return;
       }
       const productName = cleanWithNotice(scanForm.name.trim());   // v2.22.0：名称清洗（回填仍显示原文，提交时整理并提示）
@@ -7993,7 +7961,7 @@ const app = createApp({
         barcodeCache.value[product.barcode] = { name: product.name, shelfLife: product.shelfLife || '', brand: product.brand, spec: product.spec, netContent: product.netContent, manufacturer: product.manufacturer, imageUrl: product.imageUrl, updatedAt: new Date().toISOString() };
       }
       saveData();
-      toastDone('入库', product.name);
+      showToast('入库成功：' + product.name);
       // Reset form but stay on scan page
       Object.assign(scanForm, { barcode: '', name: '', location: [], _locPlace: '', category: [], stockInDate: getTodayStr(), productionDate: '', shelfLife: '', shelfLifeUnit: 'month', expiryDate: '', quantity: 1, brand: '', spec: '', netContent: '', manufacturer: '', price: '', imageUrl: '', note: '' });   // v2.21.4：重置时一并清空备注；v2.23.0：+_locPlace
       apiMessage.value = '';
@@ -8005,11 +7973,11 @@ const app = createApp({
       if (!validateScanForm(item)) return false;
       // v2.21.14：日期非法组合拦截（与单个录入一致）
       if (item.productionDate && item.productionDate > getTodayStr()) {
-        toastErr('保存', '商品「' + (item.name || '未命名') + '」生产日期不能晚于今天');
+        showToast('商品「' + (item.name || '未命名') + '」生产日期不能晚于今天，无法保存');
         return false;
       }
       if (item.productionDate && item.expiryDate && item.expiryDate < item.productionDate) {
-        toastErr('保存', '商品「' + (item.name || '未命名') + '」到期日期不能早于生产日期');
+        showToast('商品「' + (item.name || '未命名') + '」到期日期不能早于生产日期，无法保存');
         return false;
       }
       const productName = cleanWithNotice(item.name.trim());   // v2.22.0：名称清洗（批量条目同样整理）
@@ -8051,7 +8019,7 @@ const app = createApp({
         if (submitBatchItem(item)) ok++;
       }
       if (ok > 0) {
-        toastDone('批量入库 ' + ok + ' 件商品');
+        showToast('已批量入库 ' + ok + ' 件商品');
         batchItems.value = [];
         batchActiveItem = null;
         currentPage.value = 'scan';
@@ -8062,20 +8030,6 @@ const app = createApp({
     let html5QrCode = null;
     let scanLock = false;  // Prevent multiple callback firings
 
-    // v2.33.0：html5-qrcode 懒加载器。该库 375KB、原先是 <head> 里的同步阻塞脚本，
-    // 是首屏最大的单笔开销，却只在打开扫码相机时才用到 —— 改为打开扫码前按需注入。
-    // 多源回退与原来 head 上的 onerror 链一致：本地 vendor → unpkg → jsdelivr。
-    let scanLibPromise = null;
-    function ensureScanLib() {
-      if (window.Html5Qrcode) return Promise.resolve();
-      if (scanLibPromise) return scanLibPromise;   // 并发调用共用同一份 Promise，避免重复注入
-      scanLibPromise = loadScriptOnce('./vendor/html5-qrcode.min.js')
-        .catch(() => pickCdnHost('/npm/html5-qrcode@2.3.8/html5-qrcode.min.js'))
-        .then(() => { if (!window.Html5Qrcode) throw new Error('Html5Qrcode lib missing'); })
-        .catch((e) => { scanLibPromise = null; throw e; });   // 失败后清空，允许用户重试
-      return scanLibPromise;
-    }
-
     async function openScan(context, targetItem) {
       scanContext = context || 'scan';
       if (scanContext === 'batch') batchActiveItem = targetItem || batchActiveItem || null;   // 批量录入扫码回填目标
@@ -8085,15 +8039,6 @@ const app = createApp({
       resetOcrState();
       showScanModal.value = true;
       await nextTick();   // 等待 #qr-reader 渲染后再启动摄像头
-      try {
-        // v2.33.0：扫码库改为按需加载（375KB，通常已被首屏后的空闲预取备好，这里是秒过）。
-        // 失败必须关掉弹层并给明确提示，绝不能留一个黑屏取景框让用户以为卡死。
-        await ensureScanLib();
-      } catch (e) {
-        showScanModal.value = false;
-        toastErr('加载扫码组件', '网络不可用，请检查网络后重试');
-        return;
-      }
       try {
         await startScanning();
       } catch (e) {
@@ -8143,7 +8088,7 @@ const app = createApp({
             // v2.22.0：扫码配置同步——识别到 foodin-sync:// 前缀直接走配置接入，绝不当条码查询
             if (typeof decodedText === 'string' && decodedText.indexOf('foodin-sync://') === 0) {
               if (navigator.vibrate) navigator.vibrate(60);
-              toastDone('识别到 FoodIn 配置码');
+              showToast('识别到 FoodIn 配置码');
               await nextTick();
               await stopScanning();
               handleConfigCodeText(decodedText);
@@ -8152,7 +8097,7 @@ const app = createApp({
             if (navigator.vibrate) navigator.vibrate(60);  // 振动反馈
             // Clean barcode: remove non-numeric chars (some scanners add prefix)
             const cleaned = decodedText.replace(/\D/g, '');
-            toastDone('扫码', cleaned);
+            showToast('扫码成功：' + cleaned);
             // Wait for Vue to flush DOM update before stopping camera
             await nextTick();
             await stopScanning();
@@ -8228,7 +8173,7 @@ const app = createApp({
         await html5QrCode.applyVideoConstraints({ advanced: [{ torch: !torchOn.value }] });
         torchOn.value = !torchOn.value;
       } catch (e) {
-        toastErr('切换手电筒', '当前设备不支持');
+        showToast('无法切换手电筒');
       }
     }
 
@@ -8713,9 +8658,9 @@ const app = createApp({
     // 拍摄当前取景画面并识别
     function captureAndOcr() {
       if (!settings.ocrEnabled) { toastOcrOff(); return; }
-      if (!scanning.value) { toastGuide('先开启相机，或从相册选图'); return; }
+      if (!scanning.value) { showToast('相机未开启，可从相册选图'); return; }
       const video = document.querySelector('#qr-reader video');
-      if (!video || video.readyState < 2) { toastErr('拍摄', '取景未就绪，请稍后再试'); return; }
+      if (!video || video.readyState < 2) { showToast('取景未就绪，请稍后再试'); return; }
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth || 1280;
       canvas.height = video.videoHeight || 720;
@@ -8742,7 +8687,7 @@ const app = createApp({
         URL.revokeObjectURL(img.src);
         runOcr(canvas);
       };
-      img.onerror = () => toastErr('读取图片', '文件无法解析');
+      img.onerror = () => showToast('无法读取图片');
       img.src = URL.createObjectURL(file);
     }
 
@@ -8844,7 +8789,7 @@ const app = createApp({
       // 而绕过按钮的入口（单条扫码页 / 批量页隐藏 input 的 change → ocrFromFile·batchOcrFromFile、
       // 以及 window.__foodin.runOcr）不受约束；并发时先结束的流程会在 finally 里把 processing 置 false，
       // 进度面板与结果区提前卸载，后结束的流程再把结果写进同一份 ocr 状态 → 结果串台 / 进度跳变。
-      if (ocr.processing) { toastGuide('稍候，正在识别…'); return; }
+      if (ocr.processing) { showToast('正在识别，请稍候…'); return; }
       resetOcrState();
       ocr.processing = true;
       paddleAborted = false;
@@ -8858,7 +8803,7 @@ const app = createApp({
           await tryTesseractOcr(canvas);
           // v2.21.10：回退原因不再静默——提示用户「为什么选了 Paddle 却出 Tesseract 结果」
           // （识别无结果=图形环境受限 / 模型加载失败=模型源不可达；设置页仍显示 Paddle 属预期，下次仍会先试 Paddle）
-          if (pNote && !ocr.error) toastDone('改用 Tesseract 出结果（Paddle ' + pNote + '）');
+          if (pNote && !ocr.error) showToast('Paddle ' + pNote + '，本单已用 Tesseract 出结果');
         } else {
           await tryTesseractOcr(canvas);
         }
@@ -8884,7 +8829,7 @@ const app = createApp({
         settings.ocrEngine = 'tesseract';
         saveData();
       }
-      toastDone('取消 Paddle 加载，切换 Tesseract 识别');
+      showToast('已取消 Paddle 加载，切换 Tesseract 识别…');
     }
 
     // v2.21.0：点击识别到的条码 → 填入条码框（批量录入填当前条目，其他填单条表单）
@@ -8919,7 +8864,7 @@ const app = createApp({
         URL.revokeObjectURL(img.src);
         runOcr(canvas);
       };
-      img.onerror = () => toastErr('读取图片', '文件无法解析');
+      img.onerror = () => showToast('无法读取图片');
       img.src = URL.createObjectURL(file);
     }
 
@@ -8985,7 +8930,7 @@ const app = createApp({
 
     function captureReceiptShot() {
       const video = receiptVideoRef.value;
-      if (!video || !video.videoWidth) { toastErr('拍照', '画面未就绪，请稍候再试'); return; }
+      if (!video || !video.videoWidth) { showToast('画面未就绪，请稍候再拍'); return; }
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -9208,7 +9153,7 @@ const app = createApp({
       if (group.barcode) item.barcode = group.barcode;
       batchItems.value.push(item);
       batchActiveItem = item;
-      toastDone('添加整组：' + (item.name || '商品') + (group.spec ? '（' + group.spec + '）' : ''));
+      showToast('已添加整组：' + (item.name || '商品') + (group.spec ? '（' + group.spec + '）' : ''));
     }
 
     // v2.21.16：把指定分组「拆开」——从 groups 中移除该组，对应行下标进入 splitIndices，由 UI 在「单行 fallback」区展示
@@ -9248,7 +9193,7 @@ const app = createApp({
       }
       batchItems.value.push(item);
       batchActiveItem = item;
-      toastDone('添加：' + (item.name || '商品'));
+      showToast('已添加：' + (item.name || '商品'));
     }
 
     // v2.21.0 批量录入：点击条码 → 填入当前条目（无当前条目则新增一条）
@@ -9259,7 +9204,7 @@ const app = createApp({
         batchActiveItem = item;
       }
       batchActiveItem.barcode = bc;
-      toastDone('填入条码', bc);
+      showToast('已填入条码：' + bc);
       if (bc.startsWith('69')) lookupBarcode(bc, false, batchActiveItem);
     }
 
@@ -9465,7 +9410,7 @@ const app = createApp({
             settings.version = CURRENT_VERSION;
           }
           saveData();
-          toastDone('导入数据，变更将在下次云同步时合并到云端');
+          showToast('数据导入成功，变更将在下次云同步时合并到云端');
         } catch (err) {
           toastErr('导入', '文件格式错误');
         }
@@ -9486,14 +9431,14 @@ const app = createApp({
       if (!settings.expiringDays || settings.expiringDays < 1) settings.expiringDays = 7;
       if (settings.expiringDays > 90) settings.expiringDays = 90;
       saveData();
-      toastDone('设置临期判定为 ' + settings.expiringDays + ' 天');
+      showToast('已设置临期判定为 ' + settings.expiringDays + ' 天');
     }
 
     function saveLeftoverDays() {
       if (!settings.leftoverDefaultDays || settings.leftoverDefaultDays < 1) settings.leftoverDefaultDays = 3;
       if (settings.leftoverDefaultDays > 30) settings.leftoverDefaultDays = 30;
       saveData();
-      toastDone('设置剩菜默认保质期为 ' + settings.leftoverDefaultDays + ' 天');
+      showToast('剩菜默认保质期已设为 ' + settings.leftoverDefaultDays + ' 天');
     }
 
     function saveCloudSettings() {
@@ -9549,7 +9494,7 @@ const app = createApp({
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-      toastDone('导出 ' + rows.length + ' 行表格');
+      showToast('已导出 ' + rows.length + ' 行表格');
     }
     const csvToday = () => new Date().toISOString().split('T')[0];
 
@@ -9695,7 +9640,7 @@ const app = createApp({
       if (!settings.nameCleanEnabled) return raw;
       const cleaned = cleanProductName(raw);
       if (cleaned !== raw && cleaned) {
-        toastDone('整理名称：' + (raw || '') + ' → ' + cleaned);
+        showToast('名称已按规则整理：' + (raw || '') + ' → ' + cleaned);
       }
       return cleaned;
     }
@@ -9723,7 +9668,7 @@ const app = createApp({
       });
       cleanHistoryDraft.value = { total: changed.length, changed: changed.slice(0, 20) };
       showCleanHistoryModal.value = true;
-      if (changed.length === 0) toastDone('跳过整理，现有名称都是干净名称');
+      if (changed.length === 0) showToast('现有名称都已是干净名称，无需整理');
     }
     function applyCleanHistory() {
       let applied = 0;
@@ -9741,7 +9686,7 @@ const app = createApp({
       });
       saveData();
       showCleanHistoryModal.value = false;
-      toastDone('整理 ' + applied + ' 个商品名称（可在记录页查看调整明细）');
+      showToast('已整理 ' + applied + ' 个商品名称（可在记录页查看调整明细）');
     }
 
     // ---- ③ 扫码配置同步（方案一：配置码直传） ----
@@ -9814,11 +9759,11 @@ const app = createApp({
     async function copyConfigText() {
       try {
         await navigator.clipboard.writeText(configQrText.value);
-        toastDone('复制配置文本，可发给另一台设备手动粘贴');
+        showToast('配置文本已复制，可发给另一台设备手动粘贴');
       } catch (e) {
         const ta = document.getElementById('config-text-sel');
         if (ta) { ta.focus(); ta.select(); document.execCommand('copy'); toastDone('复制'); }
-        else toastErr('复制', '请长按文本手动复制');
+        else showToast('复制失败，请长按文本手动复制');
       }
     }
     function handleConfigCodeText(text) {
@@ -9828,7 +9773,7 @@ const app = createApp({
         payload = JSON.parse(json);
       } catch (e) { payload = null; }
       if (!payload || payload.type !== 'foodin-sync' || !payload.binId || !payload.apiKey) {
-        toastErr('接入', '不是有效的 FoodIn 配置码，请确认扫码对象');
+        showToast('不是有效的 FoodIn 配置码，请确认扫码对象');
         return;
       }
       configPending.value = { binId: payload.binId, apiKey: payload.apiKey, name: payload.name || '', ts: payload.ts || 0 };
@@ -9844,8 +9789,6 @@ const app = createApp({
       if (!el) return;
       el.innerHTML = '';
       try {
-        // v2.33.0：配置码相机扫描同样依赖 html5-qrcode，先确保库就绪（已从 <head> 移出）
-        await ensureScanLib();
         configScanQr = new Html5Qrcode('qr-reader-config', {
           formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
         });
@@ -9862,7 +9805,7 @@ const app = createApp({
               const now = Date.now();
               if (now - lastNonConfigScanToast > 2000) {
                 lastNonConfigScanToast = now;
-                toastErr('识别', '不是 FoodIn 配置码，请对准配置码');
+                showToast('不是 FoodIn 配置码，请对准配置码');
               }
             }
           },
@@ -9909,7 +9852,7 @@ const app = createApp({
       settings.cloudSyncEnabled = true;
       cancelConfigConfirm();
       saveCloudSettings();
-      toastDone('接入云端 Bin ' + maskConfigBin(c.binId) + '，正在拉取合并');
+      showToast('已接入云端 Bin ' + maskConfigBin(c.binId) + '，正在拉取合并…');
       setTimeout(() => { cloudSync(true); }, 300);
     }
 
@@ -10049,9 +9992,9 @@ const app = createApp({
       return sortP(base.filter(p => splitLocTags(p.location).includes(zone)));
     }
     // 联动主页：写入搜索框 @token 筛选（与筛选弹窗同一机制）
-    function focusPlaceByName(name) { currentPage.value = 'home'; searchQuery.value = '@' + name; showLocationPanel.value = false; toastDone('筛选位置：' + name); }
-    function focusZoneByName(zone) { currentPage.value = 'home'; searchQuery.value = '@' + zone; showLocationPanel.value = false; toastDone('筛选分区：' + zone); }
-    function focusLooseTag(tag) { currentPage.value = 'home'; searchQuery.value = '@' + tag; showLocationPanel.value = false; toastDone('筛选位置：' + tag); }
+    function focusPlaceByName(name) { currentPage.value = 'home'; searchQuery.value = '@' + name; showLocationPanel.value = false; showToast('已筛选位置：' + name); }
+    function focusZoneByName(zone) { currentPage.value = 'home'; searchQuery.value = '@' + zone; showLocationPanel.value = false; showToast('已筛选分区：' + zone); }
+    function focusLooseTag(tag) { currentPage.value = 'home'; searchQuery.value = '@' + tag; showLocationPanel.value = false; showToast('已筛选位置：' + tag); }
     function goSettingsFromLoc() { showLocationPanel.value = false; currentPage.value = 'settings'; }
     // 编辑弹窗补充候选：商品当前值既不在任何地点/分区、也不在游离池的（如旧标签被从池删除过）→ 补显可反选
     const editExtraLocTags = computed(() => (editForm.location || []).filter(t => !placeOfTag(t) && !looseLocationTags.value.includes(t)));
@@ -10085,7 +10028,7 @@ const app = createApp({
       settings.places.push({ name: val, zones: [], partitioned: true, layout: '', newZoneInput: '' });
       newPlaceInput.value = '';
       saveData();
-      toastDone('新增地点：' + val + '（已开启分区，可在卡片内添加子分区；未添加分区就离开设置页将自动变为不分区）');
+      showToast('已新增地点：' + val + '（已开启分区，可在卡片内添加子分区；未添加分区就离开设置页将自动变为不分区）');
     }
     function removePlace(pi) {
       const pl = settings.places[pi];
@@ -10093,7 +10036,7 @@ const app = createApp({
       // v2.23.0：只删地点定义，不动商品 location——使用该地点/分区的商品自动落入「独立标签」展示
       settings.places.splice(pi, 1);
       saveData();
-      toastDone('删除地点：' + pl.name + '（使用中的商品保留原位置值）');
+      showToast('已删除地点：' + pl.name + '（使用中的商品保留原位置值）');
     }
     // v2.23.5⑮：地点重命名已并入 startRename/confirmRename 统一机制（renaming 对象），与分类重命名对齐；原 renamePlace 删除
     // v2.23.4⑩：分区开关改为独立布尔 `partitioned`。开启 = 仅置 partitioned=true（不预设冷藏/冷冻，用户自行添加子分区）；关闭 = 清空 zones
@@ -10121,7 +10064,7 @@ const app = createApp({
       pl.zones.splice(zi, 1);
       // 分区被删后，原存该分区的商品 location 不变 → 转为独立标签展示（商品原值仍在，无需回写任何池）
       saveData();
-      toastDone('移除分区：' + z + '（使用中的商品保留原位置值）');
+      showToast('已移除分区：' + z + '（使用中的商品保留原位置值）');
     }
     function setPlaceLayout(pi, layout) {
       const pl = settings.places[pi];
@@ -10165,7 +10108,7 @@ const app = createApp({
           form.expiryDate = calcExpiryDateFromParts(form.productionDate, form.shelfLife, 'day');
         }
         if (!localStorage.getItem('foodin_leftover_tip_v2240')) {
-          toastDone('标记「剩菜剩饭」：保质期自动设为 ' + settings.leftoverDefaultDays + ' 天，可手动调整');
+          showToast('已标记「剩菜剩饭」：保质期自动设为 ' + settings.leftoverDefaultDays + ' 天，可手动调整');
           try { localStorage.setItem('foodin_leftover_tip_v2240', '1'); } catch (e) {}
         }
       }
@@ -10178,12 +10121,12 @@ const app = createApp({
       settings.categories.push(val);
       newCategoryInput.value = '';
       saveData();
-      toastDone('添加分类：' + val);
+      showToast('已添加分类：' + val);
     }
 
     function removeCategory(index) {
       const target = settings.categories[index];
-      if (settings.builtinCategories.includes(target)) { toastFail('「' + target + '」', '删除', '改用其他分类'); return; }
+      if (settings.builtinCategories.includes(target)) { showToast('「' + target + '」是内置分类，不可删除'); return; }
       const removed = settings.categories.splice(index, 1)[0];
       // 同步清空使用该分类的商品的 category 字段（商品本身保留，显示为「待设置」）
       let count = 0;
@@ -10196,7 +10139,7 @@ const app = createApp({
         homeCategory.value = next;
       }
       saveData();
-      toastDone('移除分类：' + removed + (count ? '，' + count + ' 个商品已改为待设置' : ''));
+      showToast('已移除分类：' + removed + (count ? '，' + count + ' 个商品已改为待设置' : ''));
     }
 
     // ===== Rename location / category（单击标签重命名，改名同步更新商品数据） =====
@@ -10230,7 +10173,7 @@ const app = createApp({
         pl.name = val;
         cancelRename();
         saveData();
-        toastDone('重命名地点' + (count > 0 ? '，' + count + ' 个商品已同步' : ''));
+        showToast('地点已重命名' + (count > 0 ? '，' + count + ' 个商品已同步' : ''));
         return;
       }
       const list = settings.categories;
@@ -10251,7 +10194,7 @@ const app = createApp({
       }
       cancelRename();
       saveData();
-      toastDone('重命名' + (count > 0 ? '，' + count + ' 个商品已同步' : ''));
+      showToast('已重命名' + (count > 0 ? '，' + count + ' 个商品已同步' : ''));
     }
 
     // ===== Drag reorder for locations & categories & zones =====
@@ -10363,16 +10306,9 @@ const app = createApp({
     const tabNonce = Math.random().toString(36).slice(2, 6);
 
     function captureState() {
-      // ❗v2.33.0 修复（P1）：新手导览注入的示例数据（DEMO_MARK）对云同步引擎**完全不可见**。
-      //   原实现把示例商品/流水一起纳入差分 → 用户中途关掉页面（endTour 没跑、示例没收回）时，
-      //   示例数据的 upsert 事件已经推上云，而下次启动的本地清理发生在 initSyncEngine **之前**，
-      //   baseState 里根本没有这些示例 id → **永远生成不出 delete 事件**，云端残留无法收敛。
-      //   后果：其他设备会同步出「土鸡蛋 / 全脂牛奶」等演示商品；本机则「拉下来 → 启动扫掉 → 再拉下来」反复拉扯。
-      //   在这里统一剔除后，diffToEvents 既不会推示例数据、也不会为它们生成 upsert/delete，
-      //   示例数据彻底变成「纯本机、导览期间临时」的数据。
       return {
-        products: JSON.parse(JSON.stringify(products.value.filter(p => !p[DEMO_MARK]))),
-        records: JSON.parse(JSON.stringify(records.value.filter(r => !r[DEMO_MARK]))),
+        products: JSON.parse(JSON.stringify(products.value)),
+        records: JSON.parse(JSON.stringify(records.value)),
         // v2.26.0：设置项由 SETTINGS_SYNC_SCHEMA 统一驱动（新增字段只改 schema 一处）
         settings: Object.fromEntries(SETTINGS_SYNC_SCHEMA.map(f => [f.key, snapSetting(f, settings[f.key])]))
       };
@@ -10484,10 +10420,6 @@ const app = createApp({
       const newQ = Math.max(0, oldQ + delta);
       product.quantity = newQ;
       product.updatedAt = new Date().toISOString();
-      // ❗v2.33.0：示例商品（新手导览注入）只在本地生效，不发同步事件。
-      //   导览的「试一下」步骤会引导用户真的去点 −1，若不拦，演示商品的数量 delta 会被推上云。
-      //   captureState() 已把示例数据排除在差分之外，但 delta 事件是直接入队的独立通道，必须单独拦。
-      if (product[DEMO_MARK]) return;
       emitStockDelta(product.id, newQ - oldQ, newQ);
     }
 
@@ -10692,7 +10624,7 @@ const app = createApp({
         const pull = await fetchCloudRecord();
         if (!pull.ok) {
           cloudSyncStatus.value = '同步失败：' + pull.reason + '（已中止，未覆盖云端）';
-          if (showMsg) toastErr('同步', pull.reason + '，未覆盖云端数据');
+          if (showMsg) showToast('同步失败：' + pull.reason + '，未覆盖云端数据');
           scheduleSyncRetry();   // v2.18.0：失败退避重试
           return { ok: false };
         }
@@ -10907,7 +10839,7 @@ const app = createApp({
             if (showMsg) {
               if (put.status === 401) toastErr('云同步', 'API Key 无效或已过期');
               else if (put.status === 413) toastErr('云同步', '数据超出 jsonbin 单 Bin 容量');
-              else toastErr('云同步', 'HTTP ' + put.status);
+              else showToast('云同步失败：HTTP ' + put.status);
             }
           }
         }
@@ -10920,19 +10852,19 @@ const app = createApp({
           resetSyncRetry();   // v2.18.0：成功后重置退避
         } else if (partialPush) {
           cloudSyncStatus.value = '部分变更已上云，剩余保留待自动重试';
-          if (showMsg) toastDone('同步部分变更，剩余稍后自动重试');
+          if (showMsg) showToast('部分变更已上云，剩余稍后自动重试');
           scheduleSyncRetry();
         } else if (needPush) {
           cloudSyncStatus.value = '推送未确认，本地变更已保留，稍后自动重试';
-          if (showMsg) toastErr('推送', '未完成，本地变更已保留，稍后自动重试');
+          if (showMsg) showToast('推送未完成，本地变更已保留，稍后自动重试');
           scheduleSyncRetry();
         } else if (changed) {
           cloudSyncStatus.value = '已拉取最新数据';
-          if (showMsg) toastDone('更新为云端最新数据');
+          if (showMsg) showToast('同步成功：已更新为云端最新数据');
           resetSyncRetry();
         } else {
           cloudSyncStatus.value = '数据已是最新';
-          if (showMsg) toastDone('跳过同步，数据已是最新');
+          if (showMsg) showToast('数据已是最新，无需同步');
           resetSyncRetry();
         }
         return { ok: true, changed };
@@ -10940,7 +10872,7 @@ const app = createApp({
         console.error('Cloud sync failed:', e);
         const errMsg = (e && e.name === 'AbortError') ? '网络超时（15 秒）' : '网络错误';
         cloudSyncStatus.value = '同步失败：' + errMsg;
-        if (showMsg) toastErr('同步', errMsg);
+        if (showMsg) showToast('同步失败：' + errMsg);
         scheduleSyncRetry();   // v2.18.0：网络异常退避重试
         return { ok: false };
       } finally {
@@ -11002,18 +10934,15 @@ const app = createApp({
     watch(products, () => { purgeGhostProducts(); });
 
     onMounted(() => {
-      let demosCleanedAtBoot = false;   // v2.33.0：启动扫到示例数据 → 同步引擎就绪后立刻落盘（见下方 saveData）
       migrateFilterArrays();   // 兼容旧版本：homeFilter 等可能是字符串，统一为数组
       loadData();
       // v2.28.5：兜底清理「导览中途被关掉」残留的示例数据——用户没点完就关页面时 endTour 没机会跑，
       // 示例商品/记录会留在 localStorage。这里在启动时无条件扫一遍，带 DEMO_MARK 的一律收回。
       // （正常流程下 endTour 已清干净，这里只是兜底，不会影响真实数据——真实数据不带 DEMO_MARK。）
-      // ❗v2.33.0：这一步只改内存。**不能**在这里调 saveData() —— 此刻 initSyncEngine 还没跑，
-      //   baseState 为 null，diffToEvents 会把「全部商品」当成新增整包推上云。落盘推迟到同步引擎就绪之后。
       {
         const dp = products.value.some(p => p[DEMO_MARK]);
         const dr = records.value.some(r => r[DEMO_MARK]);
-        if (dp || dr) { demoSeeded.value = true; clearDemoData(); demosCleanedAtBoot = true; }
+        if (dp || dr) { demoSeeded.value = true; clearDemoData(); }
       }
       applyFontScale();   // v2.25.0：启动即按 settings.fontScale 应用字号档位（normal/large/xlarge）
       // v2.21.9：Paddle 本地模型自动探测 + 静默预加载——页面由 start_paddle_host.bat 的 http://127.0.0.1:8765 服务打开时，
@@ -11032,39 +10961,13 @@ const app = createApp({
           settings.tourDone = true;
           saveData();
         } else {
-          // v2.33.0：原来是写死的 `setTimeout(() => startTour(), 700)` —— 一个「等首屏渲染完」的经验值。
-          // 它两头都不准：快机上白等 0.7 秒才出聚光灯；慢机上 700ms 可能还没排完布局/字体，
-          // 聚光灯量出的高亮矩形会偏（而这一步之后不会自动重测）。
-          // 改为「等字体度量就绪 → 两帧渲染（确保布局与首帧已绘制）→ 一小段稳定期」：
-          // 位置一定量得准，且典型设备上比 700ms 更早进入导览。
-          (async () => {
-            try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) { /* 忽略 */ }
-            requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => startTour(), 240)));
-          })();
+          setTimeout(() => startTour(), 700);   // 等首屏渲染完再起聚光灯
         }
       }
       initSyncEngine();
       purgeGhostProducts();   // v2.30.0：同步引擎就绪后先清一遍启动时就存在的幽灵商品（数量 ≤ 0），此时 baseState 已有值，delete 事件能正确生成
-      if (demosCleanedAtBoot) {
-        // v2.33.0：现在 baseState 已就绪，落盘不会把全量误判成新增；
-        // 且 captureState 已把示例数据排除在同步之外，所以这次 saveData 只写本地、不推云端，
-        // 纯粹把「示例数据已收回」这个事实持久化，免得每次启动都要重扫一遍。
-        demosCleanedAtBoot = false;
-        saveData();
-      }
       loadUndoCache();        // v2.31.0：载入本机撤销快照（localStorage-only，不参与云同步），并顺手修剪孤儿条目
       setupAutoSave();
-      // v2.33.0：首屏渲染完成后，趁浏览器空闲把「扫码库（375KB）+ 配置码生成库（20KB）」后台预取。
-      // 它们已从 <head> 移出以解除首屏渲染阻塞；这里补下载，使真正点开扫码时通常已就绪，
-      // 使用体验与优化前一致，但首屏不再为它们等待。
-      // ❗先留 2.5s 让位期：requestIdleCallback 在挂载后往往「立刻」就空闲，
-      //   于是预取的 395KB 会在首屏刚画完时就开跑、跟云同步拉取抢带宽（慢网下可感知）。
-      //   让位期结束后再等空闲触发，保证「首屏 217KB」这个结果稳定可复现，也让首屏优先拿到带宽。
-      const warmScanLibs = () => { ensureScanLib().catch(() => {}); ensureQrLib().catch(() => {}); };
-      setTimeout(() => {
-        if (typeof requestIdleCallback === 'function') requestIdleCallback(warmScanLibs, { timeout: 2000 });
-        else warmScanLibs();
-      }, 2500);
       if (settings.cloudSyncEnabled && settings.cloudApiKey && settings.cloudBinId) {
         // v2.17.0：有未上云的本地变更（事件队列非空）启动即推；否则沿用 10 分钟节流拉取
         const lastSyncMs = settings.cloudLastSync ? new Date(settings.cloudLastSync).getTime() : 0;
@@ -11097,7 +11000,7 @@ const app = createApp({
     });
 
     // 调试/自动化测试钩子（不影响正常运行）
-    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, ensureScanLib, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
+    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
 
     return {
       // v2.26.1 修复（P0-01）：设置页 5 个开关的 @update:model-value 处理器直接调用 saveData() / showToast()，
@@ -11129,7 +11032,7 @@ const app = createApp({
       pages, changelog, cameFromGuide, navigateTo, enterGuide, exitGuide, jumpTo, openGuideSection, guideOpen, toggleGuideDetail, revokingRecord, revokePreview, confirmRevoke, executeRevoke,
       TOUR_STEPS, tourActive, tourStep, tourRect, tourCardStyle, tourCurrent, startTour, startTourFromModule, nextTourStep, prevTourStep, endTour, tourDemoOwned,
       tourFree, tourPrimary, tourPrimaryLabel, tourNavRects, tourFreeHint, tourBarTop, tourDimClip,   // v2.29.0/2.29.1/2.29.3：两阶段导览 + clip-path 挖洞——❗必须在这份「模板可见」清单里，漏了不会报错只会静默失效（tourHitClick 已于 v2.29.1 删除）
-      pageTitle, pageTitleMobile, sortedProducts, expiringProducts, expiredProducts, filteredRecords, recordGroups, stats, statsPage,
+      pageTitle, sortedProducts, expiringProducts, expiredProducts, filteredRecords, recordGroups, stats, statsPage,
       recordTypeFilter, recordTypeOptions, showRecordFilterModal, statsRange, statsRangeOptions, statsDateStart, statsDateEnd, hasStatsCustom, setStatsRangePreset, clearStatsCustom, goToHomeWithFilter, goHomeWithStatus, goCategory, goLocation,
       recordBadgeClass, recordNumberClass, recordTypeLabel, recordBarColor, recordQuantityLabel, recordMetaLabel, recordTimeLabel, expiryBadgeClass, expiryLabel, expiryDays, statusColor, formatDateTime,
       incrementStock, decrementStock, confirmDelete, executeDelete, executeDeleteDirect,

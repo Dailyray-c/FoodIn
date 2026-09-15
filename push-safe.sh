@@ -72,10 +72,12 @@ git checkout -- backups/ 2>/dev/null || true
 
 echo "[3/6] 暂存发布文件 ..."
 git add "${PUBLISH_FILES[@]}"
-LATEST_V="$(ls -1d versions/v* 2>/dev/null | sort -V | tail -1)"
-if [ -n "$LATEST_V" ]; then
-  git add "$LATEST_V"
-  echo "      版本副本: $LATEST_V"
+# 版本副本：一次把 versions/ 下全部纳入跟踪（幂等）。
+# 先前只 add「最新一个」，导致 v2.24.4–v2.32.0 共 19 个历史副本始终没进远程档案，
+# 回退时拿不到对应版本的三件套。改为整体 add，此后每次推送都会自动补齐新副本。
+if compgen -G "versions/v*" >/dev/null 2>&1; then
+  git add versions/
+  echo "      版本副本: $(ls -1d versions/v* | wc -l) 个（versions/ 全量）"
 fi
 
 echo ""
@@ -110,7 +112,7 @@ else
      && [ -n "$FETCH_OID2" ] \
      && git reset --mixed "$FETCH_OID2" \
      && git add "${PUBLISH_FILES[@]}" \
-     && [ -n "$LATEST_V" ] && git add "$LATEST_V" \
+     && git add versions/ \
      && git commit -m "$MSG" \
      && git_remote push origin master; then
     echo ""
