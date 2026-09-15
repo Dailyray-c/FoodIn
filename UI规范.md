@@ -657,7 +657,59 @@ function ensureScanLib() {
 
 ---
 
-## 八、变更记录
+## 八、版本号与发布规范
+
+> 本节是「版本号如何迭代、发版必须联动哪些位置」的唯一硬规则。改动版本号前先读本节。
+
+### 8.1 版本号格式（语义化三位）
+- 格式：`主版本.次版本.修订号` = `X.Y.Z`，三位必填，禁止缺位（如 `2.33` 不合法，必须 `2.33.0`）。
+- 当前锚点：`CURRENT_VERSION = '2.33.0'`（2026-09-15）；SW `CACHE_NAME = 'food-inventory-v114'`。
+
+### 8.2 三类 bump 的判定（核心规律）
+| 位 | 名称 | bump 时机 | 归零规则 | 示例 |
+|----|------|-----------|----------|------|
+| X 主版本 | 破坏性变更 | **仅在向后不兼容**时：同步引擎/事件溯源算法重写、本地存储数据模型破坏性变更、运行时大版本替换 | X+1，Y=0，Z=0 | 2.33.0 → 3.0.0 |
+| Y 次版本 | 功能/重要优化 | 完成一个**可发布的功能集群**或显著性能/体验优化（新功能、首屏提速、导览重构） | Y+1，Z=0 | 2.33.0 → 2.34.0 |
+| Z 修订号 | 修复/小调整 | **仅** Bug 修复、文案修正、规范同步、小幅度调整，不含功能增量 | Z+1 | 2.33.0 → 2.33.1 |
+
+判定铁律：
+- 纯 Bug 修复 **绝不** bump Y，只能 bump Z。
+- 若一次变更同时含「功能 + 该功能的修复」，并入本次 Y bump，**不要**再单独发 Z。
+- X 几乎不 bump；只要旧数据能无损迁移、云事件结构不变，就只在 Y/Z 上走。
+
+### 8.3 SW CACHE_NAME 独立计数（最易漏）
+- SW 版本号（`vNNN`）**与功能版本 X.Y.Z 独立计数**，但**每次发版（X/Y/Z 任意一种 bump）都必须 +1**。
+- 触发 +1 的资源：`index.html` / `styles.css` / `service-worker.js` / `vendor/` 下任意文件（vue、qrcode、html5-qrcode）变动。
+- 即使只改 `index.html` 里的 JS 逻辑（无新类、无新资源），SW 也**必须** bump——用户端缓存的是旧 `index.html`。
+- 纯仓库文档变更（README、本规范、经验总览）**不**触发 SW bump（不影响运行时缓存）。
+- 公式：发版时 `CACHE_NAME = 'food-inventory-v' + (上次 vNNN 数值 + 1)`。
+
+### 8.4 发版必做：版本四处联动（bump 时一个都不能少）
+1. `index.html` 内 `CURRENT_VERSION` 改值；
+2. `service-worker.js` 内 `CACHE_NAME` 改值（数值 +1）；
+3. `index.html` 内 changelog 新增对应条目（日期、版本、要点）；
+4. 备份三件套到 `versions/vX.Y.Z/`：
+   ```bash
+   mkdir -p versions/vX.Y.Z
+   cp index.html service-worker.js styles.css versions/vX.Y.Z/
+   ```
+   `versions/` 是历史档案，**永不删**；回退用 `cp versions/vX.Y.Z/* .`（若版本间无新增类可跳过重编译 styles.css）。
+
+### 8.5 发布前 Gate（与 §6.3 配套）
+- `_chk_exports.py` 校验模板引用 ↔ `return{}` 导出配对；
+- `_ui_diff` 计算样式零差异（新增类必须已重编译 Tailwind）；
+- Playwright 回归全绿。
+- 验收姿势见 §6.4：先截图交用户确认，**用户点头后才跑测试/push/部署**。
+
+### 8.6 changelog 条目格式
+```
+### vX.Y.Z — 一句话标题（YYYY-MM-DD）
+- 要点 1
+- 要点 2
+- 版本联动：CURRENT_VERSION A → B；SW CACHE_NAME vN → vN+1；归档 versions/vB/
+```
+
+## 九、变更记录
 
 ### v2.33.0 — 首屏加载提速 64% / 手机版应用名展示 / 导览示例数据不再上云（2026-09-15）
 - **① 首屏关键路径 604 KB → 217 KB（−64%）**：`vendor/html5-qrcode.min.js`（367 KB）原是 `<head>` 同步阻塞脚本，

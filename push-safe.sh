@@ -40,7 +40,7 @@ git_remote() {
 }
 
 # 仅发布这些文件（绝不包含 _ 前缀调试产物 / versions 历史副本以外的杂项）。
-PUBLISH_FILES=(index.html service-worker.js styles.css UI规范.md push-safe.sh .gitignore scripts/daily_expiry_check.py)
+PUBLISH_FILES=(index.html service-worker.js styles.css UI规范.md push-safe.sh README.md .gitignore scripts/daily_expiry_check.py)
 
 echo "[1/6] 拉取远程最新 ..."
 if ! git_remote fetch origin master; then

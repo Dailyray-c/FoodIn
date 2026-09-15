@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="rzwRoGK9lkp5ABdvnER3Hr">
+<head data-page-node-id="b3PauoIxIS69W0CZYnGB5R">
+<meta charset="UTF-8" data-page-node-id="IMBQhSJkJT13XfvDJXp3iW" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="L4WgiNXDQN169MUfkBjajQ" />
+<title>存放位置 · 两级 + 冰箱剪影 演示 v2（未集成主项目）</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .safe-top { padding-top: max(0.75rem, env(safe-area-inset-top)); }
+  .simple-scroll::-webkit-scrollbar { width: 6px; }
+  .simple-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+  @keyframes pop { 0% { transform: scale(.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .badge-pop { animation: pop .25s ease-out; }
+  .demo-toast { position: fixed; left: 50%; bottom: 2rem; transform: translateX(-50%); z-index: 60; }
+  .fade-enter-active, .fade-leave-active { transition: opacity .2s; }
+  .fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-800" data-page-node-id="Nfjg3QBqtKUxGdLbXiq5l1">
+<div id="app" class="min-h-screen" data-page-node-id="k5X5Clz0oZ3n9njofRSV0T">
+
+  <!-- 顶部说明条（仅示例有，主项目不会有） -->
+  <div class="bg-teal-50 text-teal-700 text-[11px] text-center py-1 px-3" data-page-node-id="XBFMdx9n75HYfuJDMxZpsf">
+    独立演示 v2 · 两级结构（地点 → 分区）+ 冰箱剪影 · 商品单分区 · 未集成主项目
+  </div>
+
+  <!-- ===== Header（复刻主项目，冰箱钮在铃铛旁） ===== -->
+  <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0 z-10 safe-top lg:px-6 sticky top-0" data-page-node-id="3n5mDn3a7rqBA1H0quUIy3">
+    <h1 class="text-lg font-bold text-gray-800" data-page-node-id="1qmnEYv6lzFhIeRiYUCuJF">{{ pageTitle }}</h1>
+    <div class="flex items-center gap-2" data-page-node-id="91z90aacdqCZ6HjdfVjHE0">
+      <button @click="showExpiryReminder = true" title="过期提醒"
+        class="relative w-9 h-9 flex items-center justify-center rounded-full bg-orange-50 text-orange-600 border border-orange-200 active:scale-90 transition-all" data-page-node-id="Pz5sx37KAIDUwBtoBCYPN5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="Q9vFue6nZYgUOf0cDrAZet"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" data-page-node-id="FF3SI1DZYbWjt9wkb0zLcg"/><path d="M13.73 21a2 2 0 0 1-3.46 0" data-page-node-id="8XHTdpdHX2zVg9JAFvrDGx"/></svg>
+        <span v-if="expiredCount + expiringCount data-page-node-id="bMkRkdTtXskmMpyeb5XsSR" > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[11px] rounded-full flex items-center justify-center badge-pop">{{ expiredCount + expiringCount }}</span>
+      </button>
+
+      <!-- 冰箱钮：位置总览（两级地点卡） -->
+      <button @click="showLocationPanel = true" title="存放位置"
+        class="relative w-9 h-9 flex items-center justify-center rounded-full bg-teal-50 text-teal-600 border border-teal-200 active:scale-90 transition-all" data-page-node-id="fcAE0QfgDyvoSmDqD63lBA">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="HGNmtmhEbg9GuMHPyQmYsB"><rect x="6" y="2" width="12" height="20" rx="2" data-page-node-id="EVRccTH6dJcrFHJ3ODxLxq"/><line x1="6" y1="10" x2="18" y2="10" data-page-node-id="0xqMsuNF8CRynFNjwkabwi"/><line x1="10" y1="5" x2="10" y2="7" data-page-node-id="PqiKmIDQSNhU3VGPgl3684"/><line x1="10" y1="13" x2="10" y2="17" data-page-node-id="uZJyiAQHESQOKvfC4i2GgJ"/></svg>
+        <span v-if="alertCount data-page-node-id="D5uItDSifdyriI1uk6cd8J" > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[11px] rounded-full flex items-center justify-center badge-pop">{{ alertCount }}</span>
+      </button>
+
+      <button title="云同步" class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 active:scale-90 transition-all" data-page-node-id="gFPthnq7Lazun9xEiHVBDe">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="IQrEYRMJ0oOCwbSTeFJpQ9"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-page-node-id="Hdk5BtqR0RTyS2qPdVEOZR"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== 主页 mock：概览 + 当前筛选 chips + 商品卡 ===== -->
+  <main class="max-w-3xl mx-auto px-4 py-4" data-page-node-id="78KRnTJwRylGY2mNLYDwBg">
+    <div class="grid grid-cols-3 gap-2 mb-4" data-page-node-id="VWjChZsNtD7Kyzeo3PkVqn">
+      <div class="bg-white rounded-xl border border-gray-100 p-3 text-center" data-page-node-id="j655sYw80qhkAGqb7t7FfX">
+        <div class="text-2xl font-semibold text-gray-800" data-page-node-id="2UWA4pAjZdZ6cEW5g70lG6">{{ products.length }}</div>
+        <div class="text-[11px] text-gray-400 mt-0.5" data-page-node-id="yQeiLV7FtMy19j6l37QUkc">库存总数</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 p-3 text-center" data-page-node-id="tIlFVl6d3dUxMWj16YsGT3">
+        <div class="text-2xl font-semibold text-amber-600" data-page-node-id="Bzg26lJPXCMNkkNZiXOA55">{{ expiringCount }}</div>
+        <div class="text-[11px] text-gray-400 mt-0.5" data-page-node-id="iMvbumeJQfdQBcRUMIOf4n">即将到期</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 p-3 text-center" data-page-node-id="H3L9P6312o4TMNWvP7iPly">
+        <div class="text-2xl font-semibold text-red-600" data-page-node-id="JlwFYSnPiqXhzZsx6sL227">{{ expiredCount }}</div>
+        <div class="text-[11px] text-gray-400 mt-0.5" data-page-node-id="hs5zLxq4EbDjcbTWWIPPzo">已过期</div>
+      </div>
+    </div>
+
+    <div v-if="homeFilter" class="flex items-center gap-2 mb-3 text-xs" data-page-node-id="BYQ5DFR1FK5TpriqzhA780">
+      <span class="text-gray-400" data-page-node-id="ZTY87kt7dDeWBFfkybnfDu">当前筛选：</span>
+      <span class="inline-flex items-center gap-1 bg-teal-50 text-teal-700 border border-teal-200 rounded-full px-2.5 py-1" data-page-node-id="oic7kIl598qZqZvyhoXUBV">
+        {{ homeFilter }}
+        <button @click="clearHomeFilter" class="text-teal-500 hover:text-teal-700" data-page-node-id="WviSH8vshDgdVdWaOSRQtA">✕</button>
+      </span>
+      <span class="text-gray-300" data-page-node-id="XxIFr1BnlB5DBzn0Occgck">（来自位置浮层，演示联动）</span>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" data-page-node-id="JpkNbE2UHQMap7mNNFy4mS">
+      <div v-for="p in filteredProducts" :key="p.id"
+        class="bg-white rounded-xl border border-gray-100 border-l-4 p-3"
+        :class="{ 'border-l-red-500': statusOf(p) === 'expired', 'border-l-amber-500': statusOf(p) === 'expiring', 'border-l-green-500': statusOf(p) === 'ok' }" data-page-node-id="H1hRDTu8X5RXQB1Y0x4Q6m">
+        <div class="text-sm font-medium text-gray-800 leading-snug break-words" data-page-node-id="kW4j7vAe1NiC25mbqvWx36">{{ p.name }}</div>
+        <div class="mt-1.5 flex flex-wrap gap-1" data-page-node-id="3SYuFZUXImDALNpomwNDke">
+          <span v-if="p.zone" class="text-[10px] px-1.5 py-0.5 rounded bg-teal-50 text-teal-600" data-page-node-id="XyaJGARTH3daPcc4oBkQdA">{{ p.zone }}</span>
+          <span v-else class="text-[10px] px-1.5 py-0.5 rounded bg-gray-50 text-gray-300" data-page-node-id="0xKBfGsSG1npVBqB6eW6gc">未设置位置</span>
+        </div>
+        <div class="mt-2 flex items-baseline gap-1" data-page-node-id="WwWA0Hym3rF1LQZ5DTUouh">
+          <span class="text-lg font-medium leading-none" :class="statusTextClass(statusOf(p))" data-page-node-id="Hmik5kjamEFzcmKqNLlBOh">{{ Math.abs(p.daysLeft) }}</span>
+          <span class="text-[11px]" :class="statusTextClass(statusOf(p))" data-page-node-id="XeAaBmPe2Ka8ZuVf4vDXJC">天{{ p.daysLeft < 0 ? '前' : '后' }}</span>
+        </div>
+      </div>
+    </div>
+    <p v-if="filteredProducts.length === 0" class="text-center text-gray-400 text-sm py-10" data-page-node-id="LHQoeGc4o5VLs9uV1ZMhEN">该位置暂无商品</p>
+  </main>
+
+  <!-- ===== 位置总览浮层（② 两级地点卡 + ④ 剪影） ===== -->
+  <div v-if="showLocationPanel" class="fixed inset-0 z-40 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showLocationPanel = false" data-page-node-id="0Y50uJV2Q76RkKElXmxR8n">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 max-h-[82vh] overflow-y-auto simple-scroll" data-page-node-id="gk79PidGeH1e8rXtK6nLWT">
+      <div class="flex items-center justify-between mb-1" data-page-node-id="FKA8GhsQRIlnMPfgtBl0xm">
+        <h3 class="text-base font-semibold text-gray-800" data-page-node-id="6A0jHCEC68YBEyfBldjo0p">存放位置</h3>
+        <button @click="showLocationPanel = false" class="text-gray-400" data-page-node-id="vmxE1t9r63WDht4uT6xNBK">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="AFtBg7Gi8ukr9UTs2OkAaU"><line x1="18" y1="6" x2="6" y2="18" data-page-node-id="Stwa39AiGnda2QBqDv0jYe"/><line x1="6" y1="6" x2="18" y2="18" data-page-node-id="hh7Efw1J2oJOosQGHzdVMI"/></svg>
+        </button>
+      </div>
+      <p class="text-[11px] text-gray-400 mb-4" data-page-node-id="ZipEZoJoUAtH2FyjXKYBZb">先看地点（冰箱 / 餐边柜），点开看分区与剪影</p>
+
+      <!-- 地点卡列表 -->
+      <div class="space-y-3" data-page-node-id="ofwyutPTvnoySrvetFdhhl">
+        <div v-for="pl in places" :key="pl.name" class="rounded-xl border border-gray-200 overflow-hidden" data-page-node-id="ZbDLtX9DsfaPMLhV0wQ3xH">
+          <!-- 地点卡头（点击展开/收起） -->
+          <button @click="expandedPlace = expandedPlace === pl.name ? '' : pl.name"
+            class="w-full flex items-center justify-between px-3 py-3 bg-white active:bg-gray-50 transition-colors" data-page-node-id="ispru6jEM4ZIHqsTPzGRkk">
+            <div class="flex items-center gap-2 min-w-0" data-page-node-id="mAKMUczwGqjAE0g7CzjJaA">
+              <span class="w-2.5 h-2.5 rounded-full" :class="placeDot(pl)" data-page-node-id="BReB86FnPc3q16EB0LmpOO"></span>
+              <span class="text-sm font-medium text-gray-800" data-page-node-id="AIYqhBXsNfzYErKoxj6CTV">{{ pl.name }}</span>
+              <span class="text-[11px] text-gray-400 whitespace-nowrap" data-page-node-id="a4SsG7l7bdpHWu8i7vvf11">{{ placeItemCount(pl) }} 件</span>
+              <span v-if="pl.zones.length" class="text-[10px] text-gray-300 hidden sm:inline" data-page-node-id="NbwUYZAAEdsvyN8d9umwcy">{{ pl.zones.join(' / ') }}</span>
+            </div>
+            <span class="text-xs text-gray-400 flex-shrink-0" data-page-node-id="4wVvSrrTlXJjD5BfaxNg56">{{ expandedPlace === pl.name ? '收起 ▴' : '展开 ▾' }}</span>
+          </button>
+
+          <!-- 展开内容：剪影优先，无布局预设则清单 -->
+          <div v-if="expandedPlace === pl.name" class="px-3 pb-3 bg-white border-t border-gray-100" data-page-node-id="aKgvKybkTPMenVPZ0XyZAG">
+            <!-- ④ 冰箱剪影：预设布局 fridge-single / fridge-double -->
+            <template v-if="pl.layout && pl.layout.startsWith('fridge')" data-page-node-id="oIoXE3vGC3fmMHErfEtuPi">
+              <div class="rounded-xl border border-gray-200 bg-gray-50/60 p-2" data-page-node-id="0vaghrHvYo8g155hv911C0">
+                <div class="flex gap-1.5 items-stretch" v-if="pl.layout === 'fridge-single'" data-page-node-id="To9LEvJhnZaxbLCBFVXLhA">
+                  <!-- 左：门架 -->
+                  <div class="w-[27%] rounded-lg bg-white border border-gray-100 p-1.5 flex flex-col gap-1" data-page-node-id="oLQSvo46Do98AvdMqcQv3M">
+                    <div class="text-[10px] text-gray-400 text-center pb-0.5 border-b border-gray-100" data-page-node-id="ZWUqnYF0pz6KDr9WiK8krf">门架</div>
+                    <div v-for="p in itemsOfSlot(pl, '门架')" :key="p.id" class="text-[11px] bg-teal-50/50 rounded px-1 py-0.5" data-page-node-id="3nQVcxYuatZXxv441Pf5Ny">
+                      <div class="text-gray-700 truncate" data-page-node-id="fCDwlGTIS6ERJB2rmlycIz">{{ p.name }}</div>
+                      <div class="text-[10px]" :class="statusTextClass(statusOf(p))" data-page-node-id="qQfme4F9mUui4lTC1iYO6d">{{ daysLabel(p) }}</div>
+                    </div>
+                  </div>
+                  <!-- 右：冷藏上 / 冷藏下 / 冷冻抽屉 -->
+                  <div class="flex-1 flex flex-col gap-1.5" data-page-node-id="4mHSFW9DHtscXIvhfkW2aM">
+                    <div class="rounded-lg bg-white border border-gray-100 p-1.5" data-page-node-id="YLhURqeayfMAAWnPEjAJjf">
+                      <div class="text-[10px] text-gray-400 pb-0.5 flex justify-between border-b border-gray-100" data-page-node-id="wdEzCaRBGPKEGC1q2V112h"><span data-page-node-id="9EhcEI1rczKQ4xtMuWParC">冷藏</span><span class="text-gray-300" data-page-node-id="JawOtiLocyN1UWKvnAbTC3">{{ itemsOfSlot(pl, '冷藏').length }} 件</span></div>
+                      <div v-for="p in itemsOfSlot(pl, '冷藏')" :key="p.id" class="flex justify-between text-[11px] px-1 py-0.5" data-page-node-id="uxdje1Q9Tbd7oGM6RU21Kn">
+                        <span class="text-gray-700 truncate" data-page-node-id="amextZ2u8zBxm1iXnM1UeS">{{ p.name }}</span>
+                        <span class="text-[10px] flex-shrink-0" :class="statusTextClass(statusOf(p))" data-page-node-id="Zz7gWgr9I18me92JmgXYg6">{{ daysLabel(p) }}</span>
+                      </div>
+                    </div>
+                    <div class="rounded-lg bg-white border border-gray-100 p-1.5" data-page-node-id="TAUhZwUe6yeOFBvtTApakF">
+                      <div class="text-[10px] text-gray-400 pb-0.5 flex justify-between border-b border-gray-100" data-page-node-id="2QoNvBVLux5rn9QnoeYIfu"><span data-page-node-id="ipM1i9yxxkdflAWtpABpls">冷藏下层</span><span class="text-gray-300" data-page-node-id="lawworyhbqqKOvapkpUI0c">{{ itemsOfSlot(pl, '冷藏下层').length }} 件</span></div>
+                      <div v-for="p in itemsOfSlot(pl, '冷藏下层')" :key="p.id" class="flex justify-between text-[11px] px-1 py-0.5" data-page-node-id="Cgd4PISr0RCFezhpmW3Cyg">
+                        <span class="text-gray-700 truncate" data-page-node-id="QYKz3jbKOzw82ZprF4A7JH">{{ p.name }}</span>
+                        <span class="text-[10px] flex-shrink-0" :class="statusTextClass(statusOf(p))" data-page-node-id="YvpBTMKtfI4omiobp5mMNC">{{ daysLabel(p) }}</span>
+                      </div>
+                    </div>
+                    <div class="rounded-lg bg-teal-50 border border-teal-100 p-1.5" data-page-node-id="9BxTnHIh4NIbiXvHIBEtSe">
+                      <div class="text-[10px] text-teal-500 pb-0.5 flex justify-between border-b border-teal-100" data-page-node-id="wgYXYXTVrDtqiA6Uq6lXlB"><span data-page-node-id="GbTIlKazHypVeePPsSyaaX">冷冻抽屉</span><span class="text-teal-300" data-page-node-id="P9dcCVxtohxD4WfjHMweml">{{ itemsOfSlot(pl, '冷冻抽屉').length }} 件</span></div>
+                      <div v-for="p in itemsOfSlot(pl, '冷冻抽屉')" :key="p.id" class="flex justify-between text-[11px] px-1 py-0.5" data-page-node-id="qh5Hui80QoAVUSYEfAHHHr">
+                        <span class="text-gray-700 truncate" data-page-node-id="NXhrr1BmkcYDYRAVeQjFgy">{{ p.name }}</span>
+                        <span class="text-[10px] flex-shrink-0" :class="statusTextClass(statusOf(p))" data-page-node-id="okXiOG23wOGEec5At5tjcP">{{ daysLabel(p) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- fridge-double 简化：左右两列 -->
+                <div class="grid grid-cols-2 gap-1.5" v-else data-page-node-id="PsWdByUEPAMD9fqq1deYOA">
+                  <div v-for="slot in pl.slots" :key="slot" class="rounded-lg bg-white border border-gray-100 p-1.5" data-page-node-id="H4jDobtid5woKh3JkNx3Xk">
+                    <div class="text-[10px] text-gray-400 pb-0.5 border-b border-gray-100" data-page-node-id="vWnXpI8X5NFzkQ8Zb9B0mn">{{ slot }}</div>
+                    <div v-for="p in itemsOfSlot(pl, slot)" :key="p.id" class="flex justify-between text-[11px] px-1 py-0.5" data-page-node-id="j9GS3FPGugUYeKmddETe9z">
+                      <span class="text-gray-700 truncate" data-page-node-id="XHkDzvzRFSeeKqTnDKTHxL">{{ p.name }}</span>
+                      <span class="text-[10px] flex-shrink-0" :class="statusTextClass(statusOf(p))" data-page-node-id="ePwRyEIzHIS2AJEBy8pbr4">{{ daysLabel(p) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 剪影底部：只看整个地点 -->
+              <div class="flex justify-end mt-2" data-page-node-id="80MQ2mr8Fvw72huFKXiFPm">
+                <button @click="focusPlace(pl)" class="text-[11px] text-teal-600 border border-teal-200 bg-teal-50 rounded-full px-2.5 py-1" data-page-node-id="1tcYM6CKbCNHwczaBpegKA">只看「{{ pl.name }}」全部 →</button>
+              </div>
+            </template>
+
+            <!-- 非剪影地点（餐边柜等）：分区清单（当前先不做物理图） -->
+            <template v-else data-page-node-id="Pm6NzJXkLaF6Hw9ZBCRiiF">
+              <div class="space-y-1.5" data-page-node-id="ujCxbwi0DaDnEM4p6UfGkQ">
+                <div v-for="zone in pl.zones" :key="zone" class="flex items-center justify-between bg-gray-50 rounded-lg px-2.5 py-2" data-page-node-id="2I1vgFZ3KYb6mKM8ZtkVHG">
+                  <div class="min-w-0" data-page-node-id="kS3jwE3FwtYsWaF2JQy6fX">
+                    <div class="text-[12px] text-gray-500" data-page-node-id="rphVnlWdm3Erh9ZsKXXAe6">{{ zone }} · {{ itemsOfZone(zone).length }} 件</div>
+                    <div v-for="p in itemsOfZone(zone)" :key="p.id" class="text-[13px] text-gray-800 truncate mt-0.5" data-page-node-id="HVYNWDOnL4gEIyhxv2867B">
+                      {{ p.name }} <span class="text-[11px]" :class="statusTextClass(statusOf(p))" data-page-node-id="gacDaEVXHN7AqU00FHL2z8">({{ daysLabel(p) }})</span>
+                    </div>
+                  </div>
+                  <button @click="focusZone(zone)" class="text-[11px] text-teal-600 flex-shrink-0" data-page-node-id="z8KSScLIE9CfqCqTo8ZBLf">只看此分区 →</button>
+                </div>
+              </div>
+              <div class="flex justify-end mt-2" data-page-node-id="Vp9NsnbeJh5gp4aGdEPemQ">
+                <button @click="focusPlace(pl)" class="text-[11px] text-teal-600 border border-teal-200 bg-teal-50 rounded-full px-2.5 py-1" data-page-node-id="ETKUzXREDSEX1A9ydrn6Bp">只看「{{ pl.name }}」全部 →</button>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- 未分组 / 未设置位置 -->
+        <div v-if="unsetProducts.length data-page-node-id="HnBjMr42DArApOgDwyEgbw" > 0" class="rounded-xl border border-dashed border-gray-200 p-3 bg-gray-50/40">
+          <div class="flex items-center justify-between mb-1.5" data-page-node-id="08gXpvKr7fkMWkEI3BeXdq">
+            <div class="flex items-center gap-2" data-page-node-id="N37yGHz6Kb63zL3s6pKH1q">
+              <span class="w-2.5 h-2.5 rounded-full bg-gray-300" data-page-node-id="1RgBJ6HE4BRmLJtk6g0MBP"></span>
+              <span class="text-sm font-medium text-gray-500" data-page-node-id="EzCQwjUnO7a1qhjACucYbw">未设置位置</span>
+              <span class="text-[11px] text-gray-400" data-page-node-id="GNwRBkkcYv3fwpAFDkn0Ys">{{ unsetProducts.length }} 件</span>
+            </div>
+            <button @click="toast('演示：跳设置页归位')" class="text-[11px] text-orange-600 border border-orange-200 bg-orange-50 rounded-full px-2.5 py-1" data-page-node-id="klQoG3VctifSlE1DyA0hzR">去设置 →</button>
+          </div>
+          <div class="flex flex-wrap gap-1.5" data-page-node-id="bCpwlK4zGMWBORuD8L5jUi">
+            <span v-for="p in unsetProducts" :key="p.id" class="text-[11px] bg-white border border-gray-100 rounded px-2 py-1 text-gray-500" data-page-node-id="LfsTTx0OVhlmGeML19uVni">{{ p.name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-400" data-page-node-id="EvuREnHm28HHfBVRJax4cY">
+        <span class="flex items-center gap-1" data-page-node-id="XQTCVqsFQ4WhzNhNEWwerG"><span class="w-2 h-2 rounded-full bg-green-500" data-page-node-id="OqVJYv5MngBXDY4DDW4AJ9"></span>正常</span>
+        <span class="flex items-center gap-1" data-page-node-id="Jnof35rLttdPntBrDaq3aV"><span class="w-2 h-2 rounded-full bg-amber-500" data-page-node-id="ZM9bqBUyQ1BHCvefABa3vY"></span>临期</span>
+        <span class="flex items-center gap-1" data-page-node-id="V9hAql1rh3sIlFLmx179VZ"><span class="w-2 h-2 rounded-full bg-red-500" data-page-node-id="JZmveQpfFhWOC8xcbZizXZ"></span>过期</span>
+        <span class="ml-auto text-gray-300" data-page-node-id="dv77LTWDOhbI4DtcCwvwvK">剪影=演示预设布局</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 过期提醒浮层（保持与铃铛对称，仅演示） ===== -->
+  <div v-if="showExpiryReminder" class="fixed inset-0 z-40 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showExpiryReminder = false" data-page-node-id="KYl9EKf6KvZQDfjEKkEDXO">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 max-h-[75vh] overflow-y-auto simple-scroll" data-page-node-id="wdRQeln8SKvqH3IRUkng4k">
+      <div class="flex items-center justify-between mb-4" data-page-node-id="aKNV9SvkZFBuUjbeEcNDsS">
+        <h3 class="text-base font-semibold text-gray-800" data-page-node-id="ANCpJ2oRSlaKWCjnz9coVp">过期提醒</h3>
+        <button @click="showExpiryReminder = false" class="text-gray-400" data-page-node-id="F70WLvamDNVpJCKpZfgWHD">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="ueIQmDw87H1hrHbPfGE2lt"><line x1="18" y1="6" x2="6" y2="18" data-page-node-id="3VrXPO8HhQgnecbfy1sKHk"/><line x1="6" y1="6" x2="18" y2="18" data-page-node-id="GXHZLj7ZX5fxP3b2BVm9YY"/></svg>
+        </button>
+      </div>
+      <div v-if="expiredProducts.length + expiringProducts.length === 0" class="py-8 text-center text-gray-400" data-page-node-id="Bv4SS4wVEAndQRvRI4PJER"><p class="text-sm" data-page-node-id="K4I9mjyDEBiwFnEGVEE21Q">暂无临期 / 过期</p></div>
+      <div v-if="expiredProducts.length data-page-node-id="5JQ2AkvrF5z6jIZUFnGKRv" > 0" class="mb-3">
+        <h4 class="text-xs font-semibold text-red-600 mb-1.5" data-page-node-id="lmxyz0dSE0cGdibkVNcMe9"><span class="w-2 h-2 rounded-full bg-red-500 inline-block mr-1" data-page-node-id="Uo7AcaTfJ3LgGdmsHLUWcI"></span>已过期 ({{ expiredProducts.length }})</h4>
+        <div v-for="p in expiredProducts" :key="p.id" class="flex justify-between bg-white border border-gray-100 border-l-4 border-l-red-500 rounded-lg px-3 py-2 mb-1.5 text-[13px]" data-page-node-id="XOGj1XKMjRfCRbVk6ICzwk">
+          <span class="text-gray-800" data-page-node-id="FEHlEt6EuCT8Jf4tf5wY8F">{{ p.name }}</span><span class="text-red-600 text-[12px]" data-page-node-id="DkfQE6eXrW3HzglpQ2axBN">过期 {{ Math.abs(p.daysLeft) }} 天</span>
+        </div>
+      </div>
+      <div v-if="expiringProducts.length data-page-node-id="LpukMbbXvYdY0TPbKF1GYQ" > 0">
+        <h4 class="text-xs font-semibold text-amber-600 mb-1.5" data-page-node-id="Ix8ZuFH97Ww7dwDA87dDgN"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block mr-1" data-page-node-id="YZbmPTZJBzPQK4O5JMASwU"></span>即将过期 ({{ expiringProducts.length }})</h4>
+        <div v-for="p in expiringProducts" :key="p.id" class="flex justify-between bg-white border border-gray-100 border-l-4 border-l-amber-500 rounded-lg px-3 py-2 mb-1.5 text-[13px]" data-page-node-id="Oq2Z494j1sESVELgSKGwPX">
+          <span class="text-gray-800" data-page-node-id="V7XnG3XyIStH2vLQtTSmVy">{{ p.name }}</span><span class="text-amber-600 text-[12px]" data-page-node-id="MY03aqb9rD5TFWwUourvu8">剩 {{ p.daysLeft }} 天</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <transition name="fade" data-page-node-id="HZWoGFuEYBvx3JZP7eEzqs">
+    <div v-if="toastMsg" class="demo-toast bg-gray-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg" data-page-node-id="q6fayRHxyQnmzQHWw4dZcC">{{ toastMsg }}</div>
+  </transition>
+</div>
+
+<script>
+const { createApp } = Vue;
+createApp({
+  data() {
+    return {
+      pageTitle: 'FoodIn 库存',
+      expiringDays: 3,
+      // ② 数据：places（地点 → zones），product 只存 zone（单分区）
+      places: [
+        { name: '冰箱', layout: 'fridge-single', zones: ['门架', '冷藏', '冷藏下层', '冷冻抽屉'] },
+        { name: '餐边柜', layout: '', zones: ['左柜', '右柜'] },
+      ],
+      products: [
+        { id: 1,  name: '鲜牛奶',     zone: '冷藏',     daysLeft: 2 },
+        { id: 2,  name: '原味酸奶',   zone: '冷藏',     daysLeft: 1 },
+        { id: 3,  name: '鸡蛋',       zone: '门架',     daysLeft: 18 },
+        { id: 4,  name: '冷冻牛排',   zone: '冷冻抽屉', daysLeft: -1 },
+        { id: 5,  name: '速冻水饺',   zone: '冷冻抽屉', daysLeft: 120 },
+        { id: 6,  name: '黄油',       zone: '冷藏下层', daysLeft: 5 },
+        { id: 7,  name: '番茄',       zone: '冷藏',     daysLeft: 6 },
+        { id: 8,  name: '饼干',       zone: '左柜',     daysLeft: 90 },
+        { id: 9,  name: '茶叶',       zone: '右柜',     daysLeft: 200 },
+        { id: 10, name: '备用调料',   zone: '',         daysLeft: 30 },
+      ],
+      expandedPlace: '冰箱',   // 默认展开一个地点演示
+      showLocationPanel: false,
+      showExpiryReminder: false,
+      homeFilter: '',          // 联动主页筛选：'地点:冰箱' / '分区:冷藏'
+      toastMsg: '',
+    };
+  },
+  computed: {
+    expiredProducts() { return this.products.filter(p => p.daysLeft < 0).sort((a, b) => a.daysLeft - b.daysLeft); },
+    expiringProducts() { return this.products.filter(p => p.daysLeft >= 0 && p.daysLeft <= this.expiringDays).sort((a, b) => a.daysLeft - b.daysLeft); },
+    expiredCount() { return this.expiredProducts.length; },
+    expiringCount() { return this.expiringProducts.length; },
+    alertCount() { return this.expiredProducts.length; },   // 冰箱钮角标 = 过期数（演示简化）
+    allZones() { return this.places.flatMap(pl => pl.zones); },
+    unsetProducts() { return this.products.filter(p => !p.zone || !this.allZones.includes(p.zone)); },
+    filteredProducts() {
+      if (!this.homeFilter) return this.products;
+      const [type, val] = this.homeFilter.split(':');
+      if (type === '地点') {
+        const pl = this.places.find(x => x.name === val);
+        return pl ? this.products.filter(p => p.zone && pl.zones.includes(p.zone)) : [];
+      }
+      if (type === '分区') return this.products.filter(p => p.zone === val);
+      return this.products;
+    },
+  },
+  methods: {
+    statusOf(p) {
+      if (!p || p.daysLeft === undefined) return 'ok';
+      if (p.daysLeft < 0) return 'expired';
+      if (p.daysLeft <= this.expiringDays) return 'expiring';
+      return 'ok';
+    },
+    statusTextClass(s) { return { expired: 'text-red-600', expiring: 'text-amber-600', ok: 'text-green-600' }[s]; },
+    daysLabel(p) { return p.daysLeft < 0 ? '过期' + Math.abs(p.daysLeft) + '天' : '剩' + p.daysLeft + '天'; },
+    placeItemCount(pl) { return this.products.filter(p => p.zone && pl.zones.includes(p.zone)).length; },
+    placeDot(pl) {
+      const items = this.products.filter(p => p.zone && pl.zones.includes(p.zone));
+      if (items.some(p => p.daysLeft < 0)) return 'bg-red-500';
+      if (items.some(p => p.daysLeft >= 0 && p.daysLeft <= this.expiringDays)) return 'bg-amber-500';
+      return 'bg-green-500';
+    },
+    itemsOfZone(zone) { return this.products.filter(p => p.zone === zone).sort((a, b) => a.daysLeft - b.daysLeft); },
+    itemsOfSlot(pl, slot) {
+      // 槽位 → zones 映射（fridge-single 预设：门架→门架，冷藏→冷藏，冷藏下层→冷藏下层，冷冻抽屉→冷冻抽屉）
+      return this.products.filter(p => p.zone === slot && pl.zones.includes(slot)).sort((a, b) => a.daysLeft - b.daysLeft);
+    },
+    focusPlace(pl) { this.homeFilter = '地点:' + pl.name; this.showLocationPanel = false; this.toast('已筛选地点：' + pl.name); },
+    focusZone(zone) { this.homeFilter = '分区:' + zone; this.showLocationPanel = false; this.toast('已筛选分区：' + zone); },
+    clearHomeFilter() { this.homeFilter = ''; },
+    toast(msg) { this.toastMsg = msg; clearTimeout(this._t); this._t = setTimeout(() => { this.toastMsg = ''; }, 1600); },
+  },
+}).mount('#app');
+</script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="EQLGf2MrxxqTLK1I612ve3">
+<head data-page-node-id="dfh2WHnqbBLaKEbugnKHXf">
+<meta charset="UTF-8" data-page-node-id="5hs231sYq7evivL1aDbcH8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="Fe0iKHzo8eOMESu7ceBz1I" />
+<title>录入界面 · 两级位置单选 演示（未集成主项目）</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .safe-top { padding-top: max(0.75rem, env(safe-area-inset-top)); }
+  .simple-scroll::-webkit-scrollbar { width: 6px; }
+  .simple-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+  @keyframes pop { 0% { transform: scale(.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .badge-pop { animation: pop .25s ease-out; }
+  .demo-toast { position: fixed; left: 50%; bottom: 2rem; transform: translateX(-50%); z-index: 60; }
+  .fade-enter-active, .fade-leave-active { transition: opacity .15s; }
+  .fade-enter-from, .fade-leave-to { opacity: 0; }
+  .flip-enter-active { transition: all .2s ease; }
+  .flip-enter-from { opacity: 0; transform: translateY(-4px); }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-800" data-page-node-id="DPKHNmF5CteRNS72Qon50S">
+<div id="app" class="min-h-screen" data-page-node-id="2CSU0acQdJIpZ8LnS14NSh">
+
+  <!-- 顶部说明条（仅示例有，主项目不会有） -->
+  <div class="bg-teal-50 text-teal-700 text-[11px] text-center py-1 px-3" data-page-node-id="bX13rAVOcvBYQHJVFMsfTJ">
+    独立演示 · 录入界面「储存位置」两级单选：地点 → 分区 · 部分地点不需要分区（如厨房）· 未集成主项目
+  </div>
+
+  <!-- ===== 简化 App 顶栏 ===== -->
+  <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0 z-10 safe-top lg:px-6" data-page-node-id="adOt7c5aYVFopaqQXET47t">
+    <h1 class="text-lg font-bold text-gray-800" data-page-node-id="VWS07e4yJzMfH2ipQ8mAvi">录入页 · 储存位置设计</h1>
+    <div class="flex items-center gap-1.5 text-[11px] text-gray-400" data-page-node-id="GvFUViKRMFfuHDyvn7xPCG">
+      <span class="px-2 py-1 rounded-full bg-gray-100" data-page-node-id="JKL482JAASIKdLOliP86L6">三页共用同一位置控件</span>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-4" data-page-node-id="Vm2Zon7bG8SoaHutK93NzJ">
+
+    <!-- Tab 切换 -->
+    <div class="flex items-center gap-2 mb-4" data-page-node-id="IATJus1FHG7WQGmj89xni2">
+      <button v-for="t in tabs" :key="t.id" @click="tab = t.id"
+        :class="tab === t.id ? 'bg-teal-500 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200'"
+        class="px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors active:scale-95" data-page-node-id="UXCbPGWUYUvi0PqfTYIs10">
+        {{ t.label }}
+      </button>
+    </div>
+
+    <!-- ============ Tab1 / Tab3：录入卡（编辑商品时复用同款控件） ============ -->
+    <div v-if="tab === 'entry' || tab === 'list'" class="grid lg:grid-cols-5 gap-4 items-start" data-page-node-id="6Mk1TN46LVUVZoeFPpkb3H">
+
+      <!-- 左：录入卡（代表 单个录入/批量录入/主页编辑弹窗 三处共同结构） -->
+      <section class="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-4" data-page-node-id="IQ3eOgyC5YTXZDXBh82f22">
+        <div class="flex items-center justify-between mb-3" data-page-node-id="0ZexQCKbjPnGL3kN58g6bo">
+          <h2 class="text-sm font-semibold text-gray-700" data-page-node-id="NADXkFZF15DshtmVBO1WgF">{{ editingId ? '编辑商品' : '录入新商品' }}</h2>
+          <span class="text-[11px] text-gray-400" data-page-node-id="FKM61yuRSkypBblcGgFeTh">{{ editingId ? '改完点保存生效' : '演示：保存后进右侧列表' }}</span>
+        </div>
+
+        <!-- 商品名称（示意，交互与主项目一致） -->
+        <div class="mb-3" data-page-node-id="hhlGbUzLzefkiVvkW2TERz">
+          <label class="text-xs text-gray-500 mb-1.5 block" data-page-node-id="3dQjDlKOP3oVZq6aOtyuql">商品名称</label>
+          <input v-model="form.name" type="text" placeholder="如：鲜牛奶"
+            class="w-full text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition-all" data-page-node-id="brsRNcvPSOVemX96T19zjP">
+        </div>
+
+        <!-- ===== ★ 储存位置（本次设计的核心） ===== -->
+        <div class="mb-3" data-page-node-id="wONZ2mzQItHgWADOZqwQ6R">
+          <div class="flex items-baseline justify-between" data-page-node-id="xoyKH1TtpF59Oex4PlUfHz">
+            <label class="text-xs text-gray-500 mb-1.5 block" data-page-node-id="1ruwyvNcaIkyHbKpC0tx4w">储存位置</label>
+            <button v-if="form.place" @click="form.place = ''; form.zone = ''" class="text-[11px] text-gray-300 hover:text-gray-400 mb-1.5" data-page-node-id="G7GfXKug8pszbdC8sRfpAH">清空</button>
+          </div>
+
+          <!-- ① 地点单选 chips（所有地点平级一排） -->
+          <div class="flex flex-wrap gap-1.5 mb-2" data-page-node-id="P6JIDukGi2BFosTjPXSh0y">
+            <button type="button" @click="pickPlace('')"
+              :class="form.place === '' ? 'bg-gray-500 border-gray-500 text-white' : 'bg-white border-gray-200 text-gray-600'"
+              class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors" data-page-node-id="zGe04F99D7qFZ4WxiGywFY">待设置</button>
+            <button type="button" v-for="pl in places" :key="pl.name" @click="pickPlace(pl.name)"
+              :class="form.place === pl.name ? 'bg-teal-500 border-teal-500 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:border-teal-300'"
+              class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors" data-page-node-id="XKYplc0Rm7z6jNZIVZEYQ0">
+              {{ pl.name }}<span v-if="pl.zones.length" class="opacity-60 ml-0.5 text-[10px]" data-page-node-id="ncvbAI1O292512Z2eAtBq0">▾</span>
+            </button>
+          </div>
+
+          <!-- ② 分区单选：选中「有分区地点」才出现（无分区地点如厨房：选完即完成，不出现此行） -->
+          <transition name="flip" data-page-node-id="0l2OuLNGjFvkFDVZ4s2GOA">
+            <div v-if="selPlace && selPlace.zones.length"
+              class="bg-teal-50/60 border border-teal-100 rounded-xl px-3 py-2.5" data-page-node-id="DdvHxAzGbAjOesPC9g5qsj">
+              <div class="text-[11px] text-teal-600/70 font-medium mb-1.5 flex items-center gap-1" data-page-node-id="cIGdwKN87mceox3zpYBFMm">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" data-page-node-id="xkqcOwgJijXaANcEWWhBjW"><path d="M3 7v10l7-5z" data-page-node-id="dAIBMHMLycbJxTDRQPgpHI"/><path d="M14 7v10l7-5z" data-page-node-id="QE3IFKz5ILosVlvohLD1bC"/></svg>
+                分区（{{ selPlace.name }}内）
+              </div>
+              <div class="flex flex-wrap gap-1.5" data-page-node-id="PEr1rQuS4WWlsu8JareAzp">
+                <button type="button" v-for="z in selPlace.zones" :key="z" @click="form.zone = z"
+                  :class="form.zone === z ? 'bg-teal-600 border-teal-600 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-teal-300'"
+                  class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors" data-page-node-id="u0wEjyvMlmQuBb2L1N5XVF">{{ z }}</button>
+              </div>
+            </div>
+          </transition>
+
+          <!-- 选中态提示：无分区地点直接完成 / 有分区未选分区给弱提示 -->
+          <p v-if="selPlace && !selPlace.zones.length" class="text-[11px] text-gray-400 mt-1.5" data-page-node-id="yMf0VHA8ZfnzgkhXBWdXJE">
+            「{{ selPlace.name }}」不需要分区，选择即完成
+          </p>
+          <p v-else-if="selPlace && selPlace.zones.length && !form.zone" class="text-[11px] text-amber-500 mt-1.5" data-page-node-id="DvYYVL4VxsAFp26oDOPidW">
+            该位置有分区，请选择具体分区
+          </p>
+          <p v-else-if="form.place && form.zone" class="text-[11px] text-teal-600 mt-1.5" data-page-node-id="TV9SFsuoWEOywTFFtBAKcD">
+            将保存为：{{ finalLocationLabel }}
+          </p>
+        </div>
+
+        <!-- 数量（示意） -->
+        <div class="grid grid-cols-2 gap-3 mb-3" data-page-node-id="fkQxS5X8XRPvjMy0G84EBW">
+          <div data-page-node-id="lNndifpC6kjvqaTKMVABG1">
+            <label class="text-xs text-gray-500 mb-1.5 block" data-page-node-id="2VlkKnMaB4gHJgCREJcsq9">初始数量</label>
+            <input v-model.number="form.qty" type="number" min="1"
+              class="w-full text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition-all" data-page-node-id="48DwQkDfnH3cGweYn1CzFy">
+          </div>
+          <div data-page-node-id="1VCd0Ucky6HBCDLrJGLlWf">
+            <label class="text-xs text-gray-500 mb-1.5 block" data-page-node-id="2oj1347EKkZBEe1MDWf5PG">剩余天数（演示用）</label>
+            <input v-model.number="form.days" type="number"
+              class="w-full text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition-all" data-page-node-id="jOhVaBaPsXGdYgO2ACSmU4">
+          </div>
+        </div>
+
+        <button @click="saveProduct"
+          class="w-full py-2.5 rounded-lg bg-teal-500 text-white text-xs font-medium active:bg-teal-600 active:scale-[.99] transition-all shadow-sm" data-page-node-id="stpHsM5Br8kHeFim7I9kJc">
+          {{ editingId ? '保存修改' : '保存' }}
+        </button>
+      </section>
+
+      <!-- 右：已保存商品（tab==='list' 时全量；tab==='entry' 时也实时可见） -->
+      <section class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-4" data-page-node-id="hNg9IVU6NFpaCyHPLLFTsp">
+        <div class="flex items-center justify-between mb-3" data-page-node-id="KDvM1RtzwwXcQfDcHSPpDx">
+          <h2 class="text-sm font-semibold text-gray-700" data-page-node-id="qiKwDDERHuM89qg9J1SfBE">已保存（{{ products.length }}）</h2>
+          <span class="text-[11px] text-gray-400" data-page-node-id="A8YxvrQvhXVLpspYVs3WN3">点商品可回左边编辑</span>
+        </div>
+        <div class="space-y-2 max-h-[420px] overflow-y-auto simple-scroll pr-1" data-page-node-id="DBesLcPthxsuaJ4nuzZdGO">
+          <div v-for="p in products" :key="p.id"
+            @click="openEdit(p)"
+            class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 cursor-pointer hover:border-teal-200 transition-colors" data-page-node-id="DWGqpc3bo9eX4W9INVPkzv">
+            <div class="min-w-0" data-page-node-id="aw3Wr5H06YDUWoyW8wYiZ7">
+              <div class="text-sm font-medium text-gray-800 truncate" data-page-node-id="Vlgtk8NIlvTSL2WJlPmlby">{{ p.name }}</div>
+              <div class="mt-1 flex flex-wrap gap-1" data-page-node-id="bg3tUKP6QbkDo9cClHyCm6">
+                <span v-if="p.zone" class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-teal-100 text-teal-700" data-page-node-id="AM2McFQ8ty6DvWd74OCzRk">
+                  <span class="font-medium" data-page-node-id="b2hLBRbU9xWP14KMUIBKmi">{{ placeNameOf(p) }}</span>·{{ p.zone }}
+                </span>
+                <span v-else-if="p.placeName" class="text-[10px] px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-100" data-page-node-id="qO3havYsek2wuXCE4FhPGz">{{ p.placeName }}</span>
+                <span v-else class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400" data-page-node-id="J9NQMKPwouwfP4r6Iv6VwK">未设置位置</span>
+                <span v-if="p.qty data-page-node-id="ubkMpL2tFggUyONjLvrYSP" > 1" class="text-[10px] text-gray-400">×{{ p.qty }}</span>
+              </div>
+            </div>
+            <div class="text-right flex-shrink-0 ml-2" data-page-node-id="XNWKALmfGyWhP4w4XuZYH3">
+              <div class="text-xs font-medium" :class="daysClass(p.days)" data-page-node-id="g6ZjhGaRXibSvGwjLiSbHU">{{ p.days >= 0 ? p.days + '天' : '过期' }}</div>
+            </div>
+          </div>
+          <p v-if="!products.length" class="text-center text-gray-300 text-xs py-8" data-page-node-id="rB9q2g1g9APiPCZZyADHRc">还没有商品，左边录一个试试</p>
+        </div>
+        <!-- 存值说明 -->
+        <div class="mt-3 pt-3 border-t border-gray-100 space-y-1" data-page-node-id="RnIL0qox8vrjZHDxYEWZyS">
+          <p class="text-[11px] text-gray-400" data-page-node-id="KW76gKZLPX481x9cohiRLN">存值规则（商品只存一个位置，单选）：</p>
+          <p class="text-[11px] text-gray-400" data-page-node-id="TDk7qBF0vL4o7XZJyTKFvA">· 有分区地点 → 存分区名（<span class="text-teal-600" data-page-node-id="7yvoT2bOH1Fz7IMWH0Koli">冷藏</span>），展示时反查地点变「<span class="text-teal-600" data-page-node-id="XDEloRXS6Un8bA6tBeLXpY">冰箱·冷藏</span>」</p>
+          <p class="text-[11px] text-gray-400" data-page-node-id="EI3eF9tjFeGn7Pv412CCJg">· 无分区地点 → 直接存地点名（<span class="text-teal-600" data-page-node-id="4bWuLer0GBv5DQ7c34Cuwy">厨房</span>）</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ Tab2：设置 · 地点管理（升级版：两级 + 是否需要分区可配） ============ -->
+    <div v-if="tab === 'setup'" class="max-w-2xl mx-auto space-y-3" data-page-node-id="aQTOLGaePtjgoPhLlexsTe">
+      <p class="text-[11px] text-gray-400" data-page-node-id="BqRVsRsIl2jCcYIE2pEDDY">设置页「存储位置列表」升级为两级管理：每个地点可配「是否需要分区」。这里的修改会立刻反映到录入页。</p>
+
+      <!-- 每个地点一卡 -->
+      <div v-for="(pl, pi) in places" :key="pl.name" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" data-page-node-id="N2VdcawodOG0NkFTMuMvKa">
+        <div class="px-4 py-3 flex items-center justify-between" data-page-node-id="3vBdvdik1e4SWZUswYFkdx">
+          <div class="flex items-center gap-2.5" data-page-node-id="mpskD2DElVLJHj5Z56YMGS">
+            <span class="text-sm font-medium text-gray-700" data-page-node-id="w4gWA5NltIyWEL7aEbAt1h">{{ pl.name }}</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400" data-page-node-id="uacEgxfeC8EB5xZc7cbKlg">{{ layoutBadge(pl) }}</span>
+          </div>
+          <div class="flex items-center gap-3" data-page-node-id="LaPe45LGLSSz8I46Mjwbvx">
+            <!-- 是否需要分区 toggle（真实主项目可复用 toggle-setting 组件） -->
+            <label class="flex items-center gap-1.5 cursor-pointer select-none" data-page-node-id="7dMcC3bvORD8rCFvKPxgXZ">
+              <span class="text-[11px] text-gray-400" data-page-node-id="x0NxIL6AacstJ3GZHddpND">{{ pl.zones.length ? '需要分区' : '不需要分区' }}</span>
+              <button @click="toggleZoneMode(pi)"
+                :class="pl.zones.length ? 'bg-teal-500' : 'bg-gray-200'"
+                class="w-8 h-[18px] rounded-full relative transition-colors flex-shrink-0" data-page-node-id="61fFycfeFDsUwDH3keCndA">
+                <span class="absolute top-0.5 w-[14px] h-[14px] bg-white rounded-full shadow transition-all" :class="pl.zones.length ? 'left-[16px]' : 'left-0.5'" data-page-node-id="cSnXnsRZmV1KUQ92IDGNoa"></span>
+              </button>
+            </label>
+            <button @click="removePlace(pi)" class="text-gray-300 hover:text-red-400 p-1 -m-1" title="删除地点" data-page-node-id="87Kd4zHANunTa05xs0yDOo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="JjSOAMjHhC9IquoUBsPhnz"><line x1="18" y1="6" x2="6" y2="18" data-page-node-id="e7go2mcndB0LIUBMrEaV5Z"/><line x1="6" y1="6" x2="18" y2="18" data-page-node-id="CC5xieCH5BtE7JesXxjRCJ"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 分区编辑区：仅在“需要分区”时出现 -->
+        <div v-if="pl.zones.length" class="px-4 pb-3.5" data-page-node-id="FGJZRUFq7aFqfE4ETJJhCD">
+          <div class="flex flex-wrap gap-1.5 mb-2" data-page-node-id="7IvkrHSaXzP7RPG4zvFclP">
+            <span v-for="(z, zi) in pl.zones" :key="z"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-100 text-xs" data-page-node-id="n2v9fUCs0Gi77ibipoouUE">
+              {{ z }}
+              <button @click="removeZone(pi, zi)" class="text-teal-300 hover:text-teal-600" data-page-node-id="zBQb8lGZn3WWAq9KTJpKL1">✕</button>
+            </span>
+            <span v-if="!pl.zones.length" class="text-[11px] text-gray-300" data-page-node-id="lAz5RANDdfpnSylDahz7Zw">无分区</span>
+          </div>
+          <div class="flex gap-2" data-page-node-id="ergpyb0c3cOW82MQKRhdEo">
+            <input v-model="pl._newZone" type="text" placeholder="添加分区（如：冷藏）" @keyup.enter="addZone(pi)"
+              class="input-sm flex-1 text-xs bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:border-teal-400" data-page-node-id="Z8svSz3NG6Zz7PEDXpjReC">
+            <button @click="addZone(pi)" class="px-3 py-1.5 rounded-lg bg-teal-500 text-white text-xs font-medium" data-page-node-id="MgGOJAKkoc6CdRSxQsIBUz">添加分区</button>
+          </div>
+        </div>
+        <div v-else class="px-4 pb-3.5 text-[11px] text-gray-400" data-page-node-id="uqmxeF3Sa7xE4qfUgp48Yt">该地点不需要分区：商品直接归到「{{ pl.name }}」，录入页选它即完成</div>
+      </div>
+
+      <!-- 新增地点 -->
+      <div class="bg-white rounded-2xl border border-dashed border-gray-200 p-3 flex gap-2" data-page-node-id="O5QlyiOg3Bh6FfOF6IJnhl">
+        <input v-model="newPlaceName" type="text" placeholder="新增地点（如：阳台储物柜）" @keyup.enter="addPlace"
+          class="flex-1 text-xs bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-teal-400" data-page-node-id="CJZaYwzMnmgKmt9XJ5qJKg">
+        <button @click="addPlace" class="px-3.5 py-2 rounded-lg bg-teal-500 text-white text-xs font-medium" data-page-node-id="GE5TlAWEL9pgxNyk923FZz">新增地点</button>
+      </div>
+
+      <!-- 数据模型接口说明 -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4" data-page-node-id="oxlgSShog3FYOWFYtAWjXn">
+        <h3 class="text-xs font-semibold text-gray-700 mb-2" data-page-node-id="qtYCsFJfZigRuqciQkel7R">数据模型（预留接口）</h3>
+        <pre class="text-[10px] leading-relaxed text-gray-500 bg-gray-50 rounded-lg p-3 overflow-x-auto simple-scroll" data-page-node-id="EeTynyZSVmy9GIHSIBxEZQ">places: [
+  { name: '冰箱',   zones: ['门架','冷藏','冷藏下层','冷冻'], layout: 'fridge' },  // 剪影
+  { name: '餐边柜', zones: ['左柜','右柜'],                     layout: ''       },  // 分区清单（预留 layout）
+  { name: '厨房',   zones: [],                                  layout: ''       },  // 无分区：直接商品清单
+]</pre>
+        <p class="text-[11px] text-gray-400 mt-2" data-page-node-id="AM7EvN3ssRgELOsuoDRptK">
+          layout 字段 = 展示形态接口：<span class="text-teal-600" data-page-node-id="gSS9CrvXDpr0MHxdm8FMpE">fridge</span>=冰箱剪影（已定稿）｜空=分区清单｜后续其它地点要画剪影只加一种 layout 值即可，商品数据与录入控件零改动。
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- toast -->
+  <transition name="fade" data-page-node-id="EIBiztfMrQLEZc8QBcaIrA">
+    <div v-if="toast" class="demo-toast bg-gray-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg" data-page-node-id="7aXmP0M0hLyjiQiLAMOdUP">{{ toast }}</div>
+  </transition>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data() {
+    return {
+      tab: 'entry',
+      tabs: [
+        { id: 'entry', label: '① 录入界面' },
+        { id: 'setup', label: '② 地点管理' },
+        { id: 'list',  label: '③ 已存商品' },
+      ],
+      places: [
+        { name: '冰箱',   zones: ['门架', '冷藏', '冷藏下层', '冷冻'], layout: 'fridge', _newZone: '' },
+        { name: '餐边柜', zones: ['左柜', '右柜'],                    layout: '',       _newZone: '' },
+        { name: '厨房',   zones: [],                                   layout: '',       _newZone: '' },
+      ],
+      newPlaceName: '',
+      form: { name: '', place: '', zone: '', qty: 1, days: 30 },
+      editingId: null,
+      products: [
+        { id: 1, name: '鲜牛奶',   placeName: '冰箱',   zone: '冷藏',   qty: 2, days: 2 },
+        { id: 2, name: '鸡蛋',     placeName: '冰箱',   zone: '冷藏',   qty: 10, days: 18 },
+        { id: 3, name: '冷冻牛排', placeName: '冰箱',   zone: '冷冻',   qty: 1, days: -1 },
+        { id: 4, name: '食用油',   placeName: '厨房',   zone: '',       qty: 1, days: 200 },
+        { id: 5, name: '备用调料', placeName: '',       zone: '',       qty: 1, days: 30 },
+      ],
+      _seq: 10,
+      toast: '',
+      _t: null,
+    };
+  },
+  computed: {
+    selPlace() {
+      return this.places.find(p => p.name === this.form.place) || null;
+    },
+    finalLocationLabel() {
+      if (!this.form.place) return '';
+      const pl = this.places.find(p => p.name === this.form.place);
+      if (!pl) return '';
+      if (pl.zones.length) return this.form.zone ? `${pl.name}·${this.form.zone}` : '';
+      return pl.name;
+    },
+  },
+  methods: {
+    showToast(msg) {
+      this.toast = msg;
+      clearTimeout(this._t);
+      this._t = setTimeout(() => { this.toast = ''; }, 1800);
+    },
+    // 地点单选：切换时若已选分区不属于新地点 → 清空分区
+    pickPlace(name) {
+      this.form.place = name;
+      const pl = this.places.find(p => p.name === name);
+      if (!pl || !pl.zones.includes(this.form.zone)) this.form.zone = '';
+    },
+    saveProduct() {
+      const name = (this.form.name || '').trim();
+      if (!name) { this.showToast('请填写商品名称'); return; }
+      const pl = this.places.find(p => p.name === this.form.place) || null;
+      if (pl && pl.zones.length && !this.form.zone) { this.showToast('请选择具体分区'); return; }
+
+      const record = {
+        id: this.editingId || ++this._seq,
+        name,
+        placeName: this.form.place || '',
+        zone: pl && pl.zones.length ? this.form.zone : '',
+        qty: this.form.qty || 1,
+        days: this.form.days || 30,
+      };
+      if (this.editingId) {
+        const i = this.products.findIndex(p => p.id === this.editingId);
+        if (i > -1) this.products.splice(i, 1, record);
+      } else {
+        this.products.unshift(record);
+      }
+      this.resetForm();
+      this.showToast(this.editingId ? '已保存修改' : '已保存');
+      this.editingId = null;
+    },
+    resetForm() {
+      this.form = { name: '', place: '', zone: '', qty: 1, days: 30 };
+    },
+    openEdit(p) {
+      this.editingId = p.id;
+      this.form = { name: p.name, place: p.placeName, zone: p.zone, qty: p.qty, days: p.days };
+      this.tab = 'entry';
+    },
+    placeNameOf(p) { return p.placeName; },
+    daysClass(d) {
+      if (d < 0) return 'text-red-500';
+      if (d <= 3) return 'text-amber-500';
+      return 'text-gray-500';
+    },
+    // ---- 设置页操作 ----
+    toggleZoneMode(pi) {
+      // 关闭分区模式：清空 zones（该地点商品保留原分区值；重开分区时手动加回分区名即可重新匹配）
+      this.places[pi].zones = this.places[pi].zones.length ? [] : ['冷藏', '冷冻'];
+      this.places[pi]._newZone = '';
+    },
+    addZone(pi) {
+      const z = (this.places[pi]._newZone || '').trim();
+      if (!z) return;
+      if (this.places[pi].zones.includes(z)) { this.showToast('分区已存在'); return; }
+      this.places[pi].zones.push(z);
+      this.places[pi]._newZone = '';
+    },
+    removeZone(pi, zi) { this.places[pi].zones.splice(zi, 1); },
+    removePlace(pi) {
+      const pl = this.places[pi];
+      if (!confirm(`删除地点「${pl.name}」？（已存商品位置保留原值，不受影响）`)) return;
+      this.places.splice(pi, 1);
+    },
+    addPlace() {
+      const n = (this.newPlaceName || '').trim();
+      if (!n) return;
+      if (this.places.some(p => p.name === n)) { this.showToast('地点已存在'); return; }
+      this.places.push({ name: n, zones: [], layout: '', _newZone: '' });
+      this.newPlaceName = '';
+      this.showToast(`已新增「${n}」，默认不需要分区`);
+    },
+    layoutBadge(pl) {
+      if (pl.layout === 'fridge') return '剪影 layout=fridge';
+      if (pl.zones.length) return '分区清单';
+      return '直接清单';
+    },
+  },
+}).mount('#app');
+</script>
+</body>
+</html>
