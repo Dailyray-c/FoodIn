@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-inventory-v116';   // v2.34.0–2.34.3：阶段性功能改进与 bug 修复（百度云 OCR 三引擎 + 高级设置独立页 + 记录类型多选 + 保质期单位反算修复 + 重复 id 自愈与流水归属修复）。递增 → 旧 SW 失效，activate 时删除旧缓存
+const CACHE_NAME = 'food-inventory-v114';   // v2.33.0：预缓存改为逐资源 allSettled（不再静默吞 + 不再因单个失败丢整批）/ 失败静态资源返回 504 而非首页 HTML / 扫码库移出预缓存改由应用空闲预取 / 首屏懒加载 html5-qrcode。递增 → 旧 SW 失效，activate 时删除旧缓存
 
 // 仅预缓存「首屏必需」的同域静态资源。
 // ❗v2.33.0：html5-qrcode.min.js（375KB）与 qrcode.min.js 已移出这里 ——

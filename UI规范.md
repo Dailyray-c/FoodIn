@@ -711,6 +711,33 @@ function ensureScanLib() {
 
 ## 九、变更记录
 
+### v2.34.0 — 新增百度云 OCR 引擎（苹果设备可用）/ Paddle 能力探测自动降级 / 修复日期反算与空白商品（2026-09-16）
+- **① 新增「百度云」识别引擎（第三个选项）**：Paddle 依赖 WebGL，iOS Safari 必然初始化失败 → 苹果设备此前只能退回精度较低的 Tesseract。
+  现新增云端通道，精度最高且不受设备限制。设置页「识别引擎」由两列改三列（`grid-cols-3`）。
+  - **AK/SK 不进前端**：百度接口不返回 CORS 头（实测预检 400 / POST 401 均无 `Access-Control-Allow-Origin`）+ 官方禁止客户端硬编码密钥，
+    故新增 `proxy/server.js`（Node 单文件、零依赖），密钥只存在于服务端环境变量。前端只填 `settings.ocrProxyUrl`（新增字段）。
+  - 新增 `tryBaiduOcr()`：canvas 压到长边 1600 + JPEG 0.85（百度上限 10M，原图直传既慢又易超限）→ `POST {proxy}/baidu-ocr`；
+    失败按设备能力回退（能跑 Paddle 就 Paddle，否则 Tesseract），且**不静默** —— toast 说明回退原因。
+  - 新增 `verifyBaiduProxy()`：点「保存设置」时探 `/health`（只读、不耗百度额度），把「地址填错 / 服务没起 / 没配 AK」在配置阶段就暴露。
+  - `accurate_basic`（高精度版）而非 `general_basic`，中文小票识别率更好；免费额度 1000 次/月。
+  - ⚠️ `baiduApiKey` / `baiduSecretKey` 为遗留字段：仅兼容读取，**无 UI 入口、不进 `SETTINGS_SYNC_SCHEMA`**（密钥不上云）。
+    `ocrEngine`（`localFirst`）/ `ocrProxyUrl`（`allowEmpty:true`，否则清空后同步失效）已登记 schema。
+- **② Paddle 能力探测 + 自动降级**：新增 `detectPaddleCapability()`（UA 判 iOS，含 `MacIntel + maxTouchPoints>1` 的新 iPad；
+  再探 WebGL 上下文与 `OES_texture_float`）。不支持时：`tryPaddleOcr` 开头短路、跳过 30s 模型下载、
+  `runOcr` 静默切 Tesseract 并提示一次、设置页给如实文案（原来是「不可用时自动回退」的模糊说法）。
+- **③ 修复：输入生产/到期日期无法反算保质期**（`backfillShelfLifeByDays`）：旧实现仅在保质期框已有值时按当前单位反算，
+  真实操作顺序「先填生产日期 → 再填到期日期」走 else 分支，**无条件按天回填并强改单位为「日」**（实测 1/1→7/1 得「181 天」，应为「6 个月」）。
+  改为一律用 `calcShelfLifeParts(productionDate, expiryDate, unit)` 按表单当前单位生成。
+- **④ 修复：云同步产生无名称空白商品且无法删除**（`replayState` 的 `apply()`）：旧实现
+  `Object.assign(st.products.get(key) || {}, patch)` —— 快照无该 id + 收到部分 patch（如 `{quantity:3}`）时会造出无名称残片；
+  而 `purgeGhostProducts` 只清 `quantity ≤ 0`，故清不掉。现丢弃「孤儿且无名称」的事件（带 warn 日志），并把「无名称」纳入幽灵判定。
+- **⑤ 修复：导入备份时 `ocrEngine` 被静默改写**：原白名单只认 `tesseract`，其余一律回落 `paddle` —— 备份里存 `baidu` 会被改成 `paddle`。
+  改为三值白名单。
+- **⑥ 结果区引擎标签改三值 computed**（`ocrEngineLabel`）：原模板 `ocr.engine === 'paddle' ? 'Paddle 本地' : 'Tesseract'` 会把 baidu 误显示成 Tesseract。
+- 验证：`_verify_baidu.js` 18/18 全绿（含假代理端到端：确认请求体真带图片 base64、无坐标时启发式分组、代理不可达 2.1s 快速放弃）；
+  `_cmp_err.js` 对照 v2.33.0 确认**本次新增未捕获异常 0 个**；`_shot_baidu.js` 桌面 + 手机（390px）三引擎几何无换行无溢出。
+- 版本联动：CURRENT_VERSION 2.33.0 → 2.34.0；SW CACHE_NAME v114 → v115；归档 `versions/v2.34.0/`。
+
 ### v2.33.0 — 首屏加载提速 64% / 手机版应用名展示 / 导览示例数据不再上云（2026-09-15）
 - **① 首屏关键路径 604 KB → 217 KB（−64%）**：`vendor/html5-qrcode.min.js`（367 KB）原是 `<head>` 同步阻塞脚本，
   占首屏资源 61%，却只在打开扫码时用；`vendor/qrcode.min.js`（20 KB）是冗余（代码已有 `ensureQrLib` 懒加载）。

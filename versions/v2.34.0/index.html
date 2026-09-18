@@ -130,22 +130,6 @@
        类内只锁「纵向内边距 + 配色 + 字号」，避免再次分化出三套尺寸。 */
     .fi-btn-2nd { padding: 0.5rem 0; border-radius: var(--fi-r-ctl); background: var(--fi-fill); color: var(--fi-ink-600); font-size: 0.75rem; line-height: 1rem; font-weight: 500; text-align: center; transition: background-color .15s ease; }
     .fi-btn-2nd:active { background: var(--fi-fill-hover); }
-    /* ===== v2.35.0：分段选择按钮（字号三档 / OCR 引擎三选一 等「N 选 1」控件）=====
-       ❗与 .fi-btn-2nd 的关键差别：分段按钮**必须有 1px 边框**（选中态也是同色实心边框，
-       否则两态盒模型差 2px，「选中的那个看起来大一圈」）；且**纵向内边距要显式登记到
-       fontScale 层**，否则大字号下文字被放大、框高不变 → 文字撑破按钮。
-       ❗❗**必须 nowrap + 不换行**：N 选 1 的分段按钮文案长度不等（如「Paddle 本地」vs「百度云」），
-       大字号下窄格里的长文案会折成两行 → 撑高整行 grid，且**只有选中那个填满行高**，
-       未选中的停在自身固有高度 → 出现「选中的看起来大一圈」。用 nowrap 强制单行消灭高度源。 */
-    .fi-seg-btn { padding: 0.5rem 0.75rem; border-radius: var(--fi-r-ctl); border: 1px solid var(--fi-line); background: var(--fi-surface); font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; text-align: center; white-space: nowrap; transition: color .15s ease, background-color .15s ease, border-color .15s ease; }
-    /* 小号分段按钮（如 OCR 引擎三选一，卡体内容里空间更紧）——❗必须自带 border / 纵向 padding /
-       transition，因为它**不叠 .fi-seg-btn**（那套字号更大），单独用时不能依赖继承。
-       ❗文案长度不等（「Paddle 本地」远长于「百度云」），超大字号下窄格内必然折行 →
-       这里**允许折行**，但由调用处给 label 加 `grid` + 按钮加 `h-full`，让三个始终等高，
-       避免「只有选中那个填满行高、其余停在固有高度」的观感差异。 */
-    .fi-seg-btn-sm { padding: 0.5rem 0.25rem; border-radius: var(--fi-r-ctl); border: 1px solid var(--fi-line); background: var(--fi-surface); font-size: 0.75rem; line-height: 1.1rem; font-weight: 500; text-align: center; word-break: break-word; transition: color .15s ease, background-color .15s ease, border-color .15s ease; }
-    /* 圆角变体（字号三档沿用圆角更大的观感） */
-    .fi-seg-btn-round { border-radius: var(--fi-r-card); }
     .fi-btn-primary { width: 100%; padding: 0.75rem 0; border-radius: var(--fi-r-card); background: var(--fi-brand); color: #fff; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; transition: background-color .15s ease; }
     .fi-btn-primary:active { background: var(--fi-brand-dark); }
     .fi-btn-primary:disabled { opacity: .4; }
@@ -643,14 +627,6 @@
     body.fs-xlarge .fi-btn-2nd { font-size: 18px !important; padding-top: 0.65rem !important; padding-bottom: 0.65rem !important; }
     body.fs-large .fi-btn-primary { font-size: 17px !important; }    /* ← .text-sm */
     body.fs-xlarge .fi-btn-primary { font-size: 20px !important; }
-    /* v2.35.0：分段选择按钮（← .text-sm + .py-2）。❗字号与纵向内边距必须一起登记：
-       只放大字号不加高，文字会撑破按钮（原本 38px 固定高、文字涨到 17/20px 就会挤压）。
-       数值与 .fi-btn-2nd 保持同档（0.6rem / 0.65rem），保证同屏控件高度观感一致。 */
-    body.fs-large .fi-seg-btn { font-size: 17px !important; padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; }
-    body.fs-xlarge .fi-seg-btn { font-size: 20px !important; padding-top: 0.65rem !important; padding-bottom: 0.65rem !important; }
-    /* 小号分段按钮（← .text-xs + .py-2）：同上，字号与纵向内边距成对登记 */
-    body.fs-large .fi-seg-btn-sm { font-size: 16px !important; padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; }
-    body.fs-xlarge .fi-seg-btn-sm { font-size: 18px !important; padding-top: 0.65rem !important; padding-bottom: 0.65rem !important; }
     /* 底部 Tab Bar / 桌面侧栏：图标与文字同步放大 */
     body.fs-large .app-nav svg, body.fs-large .app-sidebar svg { width: 26px !important; height: 26px !important; }
     body.fs-xlarge .app-nav svg, body.fs-xlarge .app-sidebar svg { width: 28px !important; height: 28px !important; }
@@ -782,13 +758,29 @@
     <!-- 记录页：在库/入库/消耗/浪费 + 搜索/筛选 -->
     <div v-if="currentPage === 'records' && !settings.simpleMode" class="flex-shrink-0 px-4 pt-2 pb-2 bg-gray-50 border-b border-gray-100 lg:px-6">
       <div data-tour="records-filter" class="grid grid-cols-4 gap-2 mb-3">
-        <!-- v2.36.0 三次调整：四张卡由 recordCards（CARD_PRESETS 派生）统一驱动，模板只负责渲染。
-             ❗不再手写 label / 颜色类 / 数字 —— 想加一张卡，只往 CARD_PRESETS 数组里加一行。 -->
-        <button v-for="c in recordCards" :key="c.key" @click="applyCardFilter(c.key)"
-          :class="c.active ? c.onCls : 'bg-white border-gray-200'"
+        <button @click="recordTypeFilter = ''"
+          :class="recordTypeFilter === '' ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-200'"
           class="rounded-xl border py-2 flex flex-col items-center leading-none transition-colors">
-          <span class="text-[11px]" :class="c.active ? 'text-white' : c.textCls">{{ c.label }}</span>
-          <span class="text-sm font-bold mt-1.5" :class="c.active ? 'text-white' : c.textCls">{{ c.count }}<span class="text-[11px] font-normal ml-0.5" :class="c.active ? 'text-white' : c.textCls">{{ c.unit }}</span></span>
+          <span class="text-[11px]" :class="recordTypeFilter === '' ? 'text-white' : 'text-blue-600'">在库</span>
+          <span class="text-sm font-bold mt-1.5" :class="recordTypeFilter === '' ? 'text-white' : 'text-blue-600'">{{ products.length }}<span class="text-[11px] font-normal ml-0.5" :class="recordTypeFilter === '' ? 'text-white' : 'text-blue-600'">件</span></span>
+        </button>
+        <button @click="recordTypeFilter = recordTypeFilter === 'in' ? '' : 'in'"
+          :class="recordTypeFilter === 'in' ? 'bg-amber-500 border-amber-500' : 'bg-white border-gray-200'"
+          class="rounded-xl border py-2 flex flex-col items-center leading-none transition-colors">
+          <span class="text-[11px]" :class="recordTypeFilter === 'in' ? 'text-white' : 'text-amber-600'">入库</span>
+          <span class="text-sm font-bold mt-1.5" :class="recordTypeFilter === 'in' ? 'text-white' : 'text-amber-600'">{{ stats.totalIn }}<span class="text-[11px] font-normal ml-0.5" :class="recordTypeFilter === 'in' ? 'text-white' : 'text-amber-600'">件</span></span>
+        </button>
+        <button @click="recordTypeFilter = recordTypeFilter === 'eat' ? '' : 'eat'"
+          :class="recordTypeFilter === 'eat' ? 'bg-green-500 border-green-500' : 'bg-white border-gray-200'"
+          class="rounded-xl border py-2 flex flex-col items-center leading-none transition-colors">
+          <span class="text-[11px]" :class="recordTypeFilter === 'eat' ? 'text-white' : 'text-green-600'">消耗</span>
+          <span class="text-sm font-bold mt-1.5" :class="recordTypeFilter === 'eat' ? 'text-white' : 'text-green-600'">{{ stats.totalEat + stats.totalWaste }}<span class="text-[11px] font-normal ml-0.5" :class="recordTypeFilter === 'eat' ? 'text-white' : 'text-green-600'">件</span></span>
+        </button>
+        <button @click="recordTypeFilter = recordTypeFilter === 'waste' ? '' : 'waste'"
+          :class="recordTypeFilter === 'waste' ? 'bg-red-500 border-red-500' : 'bg-white border-gray-200'"
+          class="rounded-xl border py-2 flex flex-col items-center leading-none transition-colors">
+          <span class="text-[11px]" :class="recordTypeFilter === 'waste' ? 'text-white' : 'text-red-600'">浪费</span>
+          <span class="text-sm font-bold mt-1.5" :class="recordTypeFilter === 'waste' ? 'text-white' : 'text-red-600'">{{ stats.totalWaste }}<span class="text-[11px] font-normal ml-0.5" :class="recordTypeFilter === 'waste' ? 'text-white' : 'text-red-600'">件</span></span>
         </button>
       </div>
       <div class="flex items-stretch gap-2">
@@ -802,11 +794,11 @@
           </button>
         </div>
         <button @click="showRecordFilterModal = true"
-          :class="(dateRangeStart || dateRangeEnd || hasTypeFilter) ? 'bg-orange-50 border-orange-300 text-orange-600' : 'bg-white border-gray-200 text-gray-500'"
+          :class="(dateRangeStart || dateRangeEnd || recordTypeFilter) ? 'bg-orange-50 border-orange-300 text-orange-600' : 'bg-white border-gray-200 text-gray-500'"
           class="relative flex-shrink-0 px-3 self-stretch rounded-xl border text-xs font-medium flex items-center gap-1 transition-colors">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
           筛选
-          <span v-if="dateRangeStart || dateRangeEnd || hasTypeFilter" class="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
+          <span v-if="dateRangeStart || dateRangeEnd || recordTypeFilter" class="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
         </button>
       </div>
     </div>
@@ -1379,7 +1371,7 @@
         </button>
 
         <!-- Record count -->
-        <div class="text-xs text-gray-400 px-1">共 {{ filteredRecords.length }} 条记录<span v-if="filteredRecordsQty > 0"> · {{ filteredRecordsQty }} 件</span></div>
+        <div class="text-xs text-gray-400 px-1">共 {{ filteredRecords.length }} 条记录</div>
 
         <!-- Empty state -->
         <div v-if="filteredRecords.length === 0" class="fi-empty">
@@ -1480,13 +1472,10 @@
           <div class="bg-white rounded-t-2xl sm:rounded-2xl max-w-sm w-full p-5">
             <h3 class="text-base font-semibold text-gray-800 mb-3">筛选</h3>
             <div class="mb-4">
-              <div class="fi-group-title">记录类型<span class="text-gray-400 font-normal">（可多选）</span></div>
+              <div class="fi-group-title">记录类型</div>
               <div class="flex gap-1.5 flex-wrap">
-                <!-- v2.36.0：改多选。选中态背景 = 该类型自己的语义色（不再一律深灰）；
-                     「全部」是排他项 —— 点它清空所有选择，选任何具体类型时它自动灭、全灭时自动亮。 -->
-                <button v-for="opt in recordTypeOptions" :key="opt.value"
-                  @click="opt.value === '' ? clearTypeFilter() : toggleTypeFilter(opt.value)"
-                  :class="(opt.value === '' ? !hasTypeFilter : isTypeSelected(opt.value)) ? opt.on : opt.off"
+                <button v-for="opt in recordTypeOptions" :key="opt.value" @click="recordTypeFilter = opt.value"
+                  :class="recordTypeFilter === opt.value ? 'bg-gray-800 border-gray-800 text-white' : 'bg-white border-gray-200 text-gray-600'"
                   class="fi-chip">{{ opt.label }}</button>
               </div>
             </div>
@@ -1842,16 +1831,10 @@
             </div>
             <!-- v2.28.1：字号三档按用户参考图改为等宽分段控件；选中态使用与左侧「字号大小」图标同系的 indigo-500 实心，
                  未选中为白底灰字；布局保持 grid-cols-3 等宽、桌面 sm:ml-auto 右对齐。 -->
-            <!-- v2.35.0：① 配色与「文字识别 · 识别引擎」统一 —— 未选中态由 gray-200/gray-600 灰系
-                 改为 indigo-300/indigo-600 同色系淡描边 + 彩字（灰描边 + indigo 实心对比过强，
-                 看上去选中块比未选中块「大一圈」）。
-                 ② 改用 .fi-seg-btn 组件类（原来是 px-3 py-2 text-sm 裸 utility）——
-                 裸 py-2 未登记到 fontScale 层，大字号下文字被放大而框高不变 → 文字撑破按钮且高度
-                 与同屏其他控件不一致。组件类已在 fontScale 层登记等值规则。 -->
             <div class="grid grid-cols-3 gap-1.5 mt-3 sm:mt-0 sm:ml-auto sm:flex-shrink-0">
               <button v-for="opt in fontScaleOptions" :key="opt.value" type="button" @click="setFontScale(opt.value)"
-                :class="settings.fontScale === opt.value ? 'bg-indigo-500 border-indigo-500 text-white' : 'bg-white border-indigo-300 text-indigo-600'"
-                class="fi-seg-btn fi-seg-btn-round w-full">{{ opt.label }}</button>
+                :class="settings.fontScale === opt.value ? 'bg-indigo-500 border-indigo-500 text-white' : 'bg-white border-gray-200 text-gray-600'"
+                class="w-full px-3 py-2 rounded-xl border text-sm font-medium transition-colors text-center">{{ opt.label }}</button>
             </div>
           </div>
         </div>
@@ -2156,22 +2139,239 @@
           </div>
         </div>
 
-
-        <!-- v2.35.0：高级设置入口——原「云同步 / 条码查询 / 名称清洗 / OCR」四张配置卡已收进二级页 -->
+        <!-- Cloud Sync Card（v2.25.1fix：简洁模式下隐藏） -->
         <div v-if="!settings.simpleMode" class="fi-card">
-          <button @click="openAdvancedSettings" class="w-full px-4 py-3.5 flex items-center justify-between text-left active:bg-gray-50 transition-colors">
+          <div class="px-4 py-3.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
               </div>
               <div>
-                <div class="text-sm text-gray-700">高级设置</div>
-                <div class="fi-hint">{{ advancedSummary }}</div>
+                <div class="text-sm text-gray-700">云端数据同步</div>
+                <div class="fi-hint">{{ settings.cloudSyncEnabled ? '已开启' : '未开启' }}{{ settings.cloudLastSync ? ' · 上次同步 ' + formatDateTime(settings.cloudLastSync) : '' }}</div>
               </div>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
+            <!-- v2.22.4：云同步开关统一用 <toggle-setting> 组件（颜色 indigo） -->
+            <toggle-setting :model-value="settings.cloudSyncEnabled" color="indigo"
+              @update:model-value="v => { settings.cloudSyncEnabled = v; saveCloudSettings(); }" />
+          </div>
+          <div v-if="settings.cloudSyncEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
+            <div>
+              <label class="fi-label">API Key (X-Master-Key)</label>
+              <input v-model="settings.cloudApiKey" type="text" placeholder="jsonbin.io API Key"
+                class="input input-sm">
+            </div>
+            <div>
+              <label class="fi-label">Bin ID</label>
+              <input v-model="settings.cloudBinId" type="text" placeholder="jsonbin.io Bin ID"
+                class="input input-sm">
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button @click="saveCloudSettings" class="flex-1 py-2 rounded-lg bg-indigo-500 text-white text-xs font-medium active:bg-indigo-600 transition-colors">保存设置</button>
+              <button @click="cloudSync" :disabled="cloudSyncing" class="flex-1 py-2 rounded-lg bg-indigo-500 text-white text-xs font-medium disabled:opacity-50">
+                {{ cloudSyncing ? '同步中...' : '立即同步' }}
+              </button>
+            </div>
+            <!-- v2.22.0：扫码配置同步——老设备生成配置码，新设备扫码接入即共用同一 jsonbin -->
+            <div class="flex items-center gap-2 pt-0.5">
+              <button @click="openConfigQr"
+                class="fi-btn-2nd flex-1">生成配置码</button>
+              <button @click="openConfigScan"
+                class="fi-btn-2nd flex-1">扫码接入</button>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-2">
+              <label class="fi-hint flex-shrink-0 whitespace-nowrap">自动云保存</label>
+              <select v-model.number="settings.autoSaveInterval" @change="saveCloudSettings"
+                class="input input-sm w-auto flex-shrink-0" style="width:auto; min-width:0; max-width:100%;">
+                <option :value="0">关闭</option>
+                <option :value="5">每 5 分钟</option>
+                <option :value="10">每 10 分钟</option>
+                <option :value="30">每 30 分钟</option>
+              </select>
+            </div>
+            <p v-if="cloudSyncStatus" class="text-[11px] text-indigo-500">{{ cloudSyncStatus }}</p>
+          </div>
         </div>
+
+        <!-- v2.16.1：微信推送（Server酱）板块已移除，相关 JS 函数保留以备恢复 -->
+
+        <!-- v2.21.5：文字识别（小票 OCR）引擎设置——Paddle 本地识别为主，预留百度云票据识别入口。v2.25.1fix：简洁模式下隐藏 -->
+        <div v-if="!settings.simpleMode" class="fi-card">
+          <div class="px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M4 7V4h16v3M4 17v3h16v-3M2 12h20"/><rect x="5" y="10" width="3" height="4" rx="0.5"/><rect x="9.5" y="10" width="3" height="4" rx="0.5"/><rect x="14" y="10" width="3" height="4" rx="0.5"/></svg>
+              </div>
+              <div>
+                <div class="text-sm text-gray-700">文字识别（小票 OCR）</div>
+                <div class="fi-hint">{{ settings.ocrEnabled ? (settings.ocrEngine === 'tesseract' ? 'Tesseract 兼容模式' : 'Paddle 本地识别 · 首次需下载模型') : '已关闭 · 扫码/批量界面将无法使用文字识别' }}</div>
+              </div>
+            </div>
+            <!-- v2.22.4：文字识别总开关统一用 <toggle-setting> 组件（颜色 green） -->
+            <toggle-setting :model-value="settings.ocrEnabled" color="green"
+              @update:model-value="v => { settings.ocrEnabled = v; saveData(); showToast(v ? '已开启文字识别' : '已关闭文字识别'); }" />
+          </div>
+          <!-- v2.22.3：OCR 总开关关闭后整个 body 自动收起（只显示卡片头部），与「条码查询增强」关闭后样式对齐 -->
+          <div v-if="settings.ocrEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
+            <div>
+              <label class="fi-label">识别引擎</label>
+              <div class="grid grid-cols-3 gap-2">
+                <!-- v2.21.15：OCR 引擎 radio 改显式 class（peer-checked 在某些渲染下不触发；选中绿底白字，未选中白底绿字绿边） -->
+                <label class="cursor-pointer">
+                  <input type="radio" v-model="settings.ocrEngine" value="paddle" class="sr-only">
+                  <div :class="settings.ocrEngine === 'paddle' ? 'px-2 py-2 rounded-lg border bg-green-500 border-green-500 text-center text-xs font-medium text-white transition-colors' : 'px-2 py-2 rounded-lg border border-green-200 bg-white text-center text-xs font-medium text-green-600 transition-colors'">Paddle 本地</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" v-model="settings.ocrEngine" value="baidu" class="sr-only">
+                  <div :class="settings.ocrEngine === 'baidu' ? 'px-2 py-2 rounded-lg border bg-green-500 border-green-500 text-center text-xs font-medium text-white transition-colors' : 'px-2 py-2 rounded-lg border border-green-200 bg-white text-center text-xs font-medium text-green-600 transition-colors'">百度云</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" v-model="settings.ocrEngine" value="tesseract" class="sr-only">
+                  <div :class="settings.ocrEngine === 'tesseract' ? 'px-2 py-2 rounded-lg border bg-green-500 border-green-500 text-center text-xs font-medium text-white transition-colors' : 'px-2 py-2 rounded-lg border border-green-200 bg-white text-center text-xs font-medium text-green-600 transition-colors'">Tesseract</div>
+                </label>
+              </div>
+              <div class="fi-hint mt-1.5">{{ ocrEngineHint }}</div>
+            </div>
+            <!-- v2.34.0：百度云代理地址（AK/SK 不在这里，留在服务端环境变量；前端只填代理域名） -->
+            <div v-if="settings.ocrEngine === 'baidu'">
+              <label class="fi-label">百度云代理地址</label>
+              <input v-model="settings.ocrProxyUrl" type="url" placeholder="https://你的代理域名"
+                class="input input-sm" @change="saveData()">
+              <div class="fi-hint mt-1.5">填部署好的代理服务地址，点「保存设置」会自动检测连通性。</div>
+              <div class="fi-hint mt-1">百度 AK/SK 不要填在这里 —— 它们只保存在代理服务端的环境变量中，这样密钥不会随网页分发出去。</div>
+            </div>
+            <!-- v2.21.16 增强：识别前图像增强开关——Tesseract 对低对比度彩色图识别率低，开关默认开（OTSU 二值化）；Paddle 路径不受影响 -->
+            <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 green） -->
+            <div class="flex items-center justify-between mt-2">
+              <div>
+                <div class="text-[11px] text-gray-700">识别前图像增强</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">灰度 + 自适应二值化（Tesseract 生效）</div>
+              </div>
+              <toggle-setting :model-value="settings.ocrImageEnhance" color="green"
+                @update:model-value="v => { settings.ocrImageEnhance = v; saveData(); showToast(v ? '已开启图像增强' : '已关闭图像增强'); }" />
+            </div>
+            <!-- v2.21.16：批量识别智能分组开关（设置页入口，与 OCR 识别区顶部开关双向同步） -->
+            <!-- v2.22.4：统一用 <toggle-setting> 组件 -->
+            <div class="flex items-center justify-between mt-2">
+              <div>
+                <div class="text-[11px] text-gray-700">批量 OCR 智能分组</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">把 name/规格/数量/价格 自动聚合为商品卡</div>
+              </div>
+              <toggle-setting :model-value="settings.ocrGroupMode" color="green"
+                @update:model-value="v => { settings.ocrGroupMode = v; ocr.groupMode = v; saveData(); showToast(v ? '已开启智能分组' : '已关闭智能分组'); }" />
+            </div>
+            <!-- v2.34.0：原「百度云票据识别（预留）」输入框已删除 —— AK/SK 不再放前端（改由代理服务端环境变量持有），
+                 历史数据里的 settings.baiduApiKey/baiduSecretKey 仅在加载时兼容读取，不再有 UI 入口 -->
+            <button @click="saveOcrSettings" class="w-full py-2 rounded-lg bg-green-500 text-white text-xs font-medium active:bg-green-600 transition-colors">保存设置</button>
+          </div>
+        </div>
+
+        <!-- v2.22.0：名称清洗规则（录入 / OCR 落库自动整理：去营销词 · 统一大小写 · 全半角）。v2.25.1fix：简洁模式下隐藏 -->
+        <div v-if="!settings.simpleMode" class="fi-card">
+          <div class="px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              </div>
+              <div>
+                <div class="text-sm text-gray-700">名称清洗规则</div>
+                <div class="fi-hint">录入时自动整理名称，统计归并更准</div>
+              </div>
+            </div>
+            <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 violet），从 40×20 尺寸收敛到与 OCR 同款 36×20 -->
+            <toggle-setting :model-value="settings.nameCleanEnabled" color="violet"
+              @update:model-value="v => { settings.nameCleanEnabled = v; saveData(); showToast(v ? '已开启名称清洗' : '已关闭名称清洗'); }" />
+          </div>
+          <div v-if="settings.nameCleanEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[11px] text-gray-700">删除营销 / 包装词</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">特惠装 · 新品上市 · 家庭装…（整词匹配）</div>
+              </div>
+              <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 violet） -->
+              <toggle-setting :model-value="settings.nameCleanMarketing" color="violet"
+                @update:model-value="v => { settings.nameCleanMarketing = v; saveData(); }" />
+            </div>
+            <div>
+              <label class="fi-label">英文大小写</label>
+              <select v-model="settings.nameCleanCase" class="input input-sm">
+                <option value="smart">3+ 大写段转小写（默认）</option>
+                <option value="lower">全部转小写</option>
+                <option value="none">不处理</option>
+              </select>
+            </div>
+            <div>
+              <label class="fi-label">自定义删除词（换行 / 逗号分隔）</label>
+              <textarea v-model="settings.nameCleanCustom" rows="2" class="input input-sm resize-none"></textarea>
+            </div>
+            <div>
+              <label class="fi-label">白名单（绝不删除，优先保护）</label>
+              <textarea v-model="settings.nameCleanWhitelist" rows="1" class="input input-sm resize-none"></textarea>
+            </div>
+            <div>
+              <label class="fi-label">试一下（输入名称看整理效果）</label>
+              <input v-model="nameCleanPreviewText" @input="previewNameClean" type="text" class="input input-sm">
+              <div class="fi-hint mt-1 min-h-[16px]">{{ nameCleanPreviewOut ? '整理后：' + nameCleanPreviewOut : '' }}</div>
+            </div>
+            <div class="flex items-center gap-2 pt-0.5">
+              <button @click="saveNameCleanSettings" class="flex-1 py-2 rounded-lg bg-violet-500 text-white text-xs font-medium active:bg-violet-600 transition-colors">保存设置</button>
+              <button @click="openCleanHistoryModal" class="fi-btn-2nd flex-1">整理历史名称…</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- v2.22.0：历史名称整理 dry-run 预览弹窗 -->
+        <transition name="modal">
+          <div v-if="showCleanHistoryModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showCleanHistoryModal = false">
+            <div class="fi-modal-box max-h-[80vh] overflow-y-auto">
+              <h3 class="text-base font-semibold text-gray-800 mb-1">整理历史名称</h3>
+              <p class="text-xs text-gray-400 mb-3">{{ desc('cleanHistory', { n: cleanHistoryDraft.total }) }}</p>
+              <div v-if="cleanHistoryDraft.changed.length" class="space-y-1.5 mb-3">
+                <div v-for="(c, i) in cleanHistoryDraft.changed" :key="i" class="rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed">
+                  <span class="text-gray-400 line-through">{{ c.old }}</span> → <span class="text-gray-800 font-medium">{{ c.neu }}</span>
+                </div>
+              </div>
+              <p v-if="cleanHistoryDraft.total > cleanHistoryDraft.changed.length" class="fi-hint mb-3">…其余 {{ cleanHistoryDraft.total - cleanHistoryDraft.changed.length }} 条同理</p>
+              <div class="flex gap-2">
+                <button @click="showCleanHistoryModal = false" class="flex-1 py-2.5 rounded-lg font-semibold text-sm text-violet-600 bg-white border border-violet-300 active:bg-violet-50 transition-colors">取消</button>
+                <button @click="applyCleanHistory" :disabled="!cleanHistoryDraft.total || !settings.nameCleanEnabled"
+                  class="flex-1 py-2.5 rounded-lg font-semibold text-sm text-white transition-colors shadow-sm"
+                  :class="(!cleanHistoryDraft.total || !settings.nameCleanEnabled) ? 'bg-violet-400 cursor-not-allowed' : 'bg-violet-600 active:bg-violet-700'">
+                  <span v-if="!cleanHistoryDraft.total">无可整理</span>
+                  <span v-else-if="!settings.nameCleanEnabled">先开启清洗</span>
+                  <span v-else>应用整理 {{ cleanHistoryDraft.total }} 条</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </transition>
+
+        <!-- Barcode Lookup API Card（v2.25.1fix：简洁模式下隐藏） -->
+        <div v-if="!settings.simpleMode" class="fi-card">
+          <div class="px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14M21 5v14"/></svg>
+              </div>
+              <div>
+                <div class="text-sm text-gray-700">条码查询增强</div>
+                <div class="fi-hint">{{ settings.barcodeLookupEnabled ? '已开启' : '未开启' }}</div>
+              </div>
+            </div>
+            <!-- v2.22.4：条码查询增强开关统一用 <toggle-setting> 组件（颜色 orange） -->
+            <toggle-setting :model-value="settings.barcodeLookupEnabled" color="orange"
+              @update:model-value="v => { settings.barcodeLookupEnabled = v; saveBarcodeSettings(); }" />
+          </div>
+          <div v-if="settings.barcodeLookupEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
+            <div>
+              <label class="fi-label">API Key（可选，不填也有免费额度）</label>
+              <input v-model="settings.barcodeApiKey" type="text" placeholder="apizero.cn 获取的 API Key"
+                class="input input-sm">
+            </div>
+            <button @click="saveBarcodeSettings" class="w-full py-2 rounded-lg bg-orange-500 text-white text-xs font-medium active:bg-orange-600 transition-colors">保存设置</button>
+          </div>
+        </div>
+
         <!-- v2.22.0 改造：数据管理折叠——「数据整理」总入口，点击展开 5 个子动作（3 CSV → 导出备份 → 导入备份） -->
         <div class="fi-card"
           :class="settings.simpleMode ? 'order-9' : ''">
@@ -2266,257 +2466,6 @@
         </div>
       </div>
 
-
-
-      <!-- ========== v2.35.0 高级设置（四张配置卡平铺；v2.35.1 取消二次点击） ========== -->
-      <div v-if="currentPage === 'settingsAdvanced' && !settings.simpleMode" class="p-4 flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-3">
-        <div class="flex items-center gap-2 mb-1 lg:col-span-2">
-          <button @click="backToSettings" class="flex items-center gap-1 text-sm text-gray-500 active:text-gray-800 transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            设置
-          </button>
-        </div>
-        <div class="mb-1 lg:col-span-2">
-          <div class="text-base text-gray-800">高级设置</div>
-          <div class="fi-hint">云端同步与识别相关的配置</div>
-        </div>
-
-        <!-- Cloud Sync Card（v2.25.1fix：简洁模式下隐藏） -->
-        <div class="fi-card">
-          <div class="px-4 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-              </div>
-              <div>
-                <div class="text-sm text-gray-700">云端数据同步</div>
-                <div class="fi-hint">{{ settings.cloudSyncEnabled ? '已开启' : '未开启' }}{{ settings.cloudLastSync ? ' · 上次同步 ' + formatDateTime(settings.cloudLastSync) : '' }}</div>
-              </div>
-            </div>
-            <!-- v2.22.4：云同步开关统一用 <toggle-setting> 组件（颜色 indigo） -->
-            <toggle-setting :model-value="settings.cloudSyncEnabled" color="indigo"
-              @update:model-value="v => { settings.cloudSyncEnabled = v; saveCloudSettings(); }" />
-          </div>
-          <div v-if="settings.cloudSyncEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
-            <div>
-              <label class="fi-label">API Key (X-Master-Key)</label>
-              <input v-model="settings.cloudApiKey" type="text" placeholder="jsonbin.io API Key"
-                class="input input-sm">
-            </div>
-            <div>
-              <label class="fi-label">Bin ID</label>
-              <input v-model="settings.cloudBinId" type="text" placeholder="jsonbin.io Bin ID"
-                class="input input-sm">
-            </div>
-            <div class="flex items-center gap-2 pt-1">
-              <button @click="saveCloudSettings" class="flex-1 py-2 rounded-lg bg-indigo-500 text-white text-xs font-medium active:bg-indigo-600 transition-colors">保存设置</button>
-              <button @click="cloudSync" :disabled="cloudSyncing" class="flex-1 py-2 rounded-lg bg-indigo-500 text-white text-xs font-medium disabled:opacity-50">
-                {{ cloudSyncing ? '同步中...' : '立即同步' }}
-              </button>
-            </div>
-            <!-- v2.22.0：扫码配置同步——老设备生成配置码，新设备扫码接入即共用同一 jsonbin -->
-            <div class="flex items-center gap-2 pt-0.5">
-              <button @click="openConfigQr"
-                class="fi-btn-2nd flex-1">生成配置码</button>
-              <button @click="openConfigScan"
-                class="fi-btn-2nd flex-1">扫码接入</button>
-            </div>
-            <div class="flex items-center justify-between gap-2 pt-2">
-              <label class="fi-hint flex-shrink-0 whitespace-nowrap">自动云保存</label>
-              <select v-model.number="settings.autoSaveInterval" @change="saveCloudSettings"
-                class="input input-sm w-auto flex-shrink-0" style="width:auto; min-width:0; max-width:100%;">
-                <option :value="0">关闭</option>
-                <option :value="5">每 5 分钟</option>
-                <option :value="10">每 10 分钟</option>
-                <option :value="30">每 30 分钟</option>
-              </select>
-            </div>
-            <p v-if="cloudSyncStatus" class="text-[11px] text-indigo-500">{{ cloudSyncStatus }}</p>
-          </div>
-        </div>
-
-        <!-- Barcode Lookup API Card（v2.25.1fix：简洁模式下隐藏） -->
-        <div class="fi-card">
-          <div class="px-4 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14M21 5v14"/></svg>
-              </div>
-              <div>
-                <div class="text-sm text-gray-700">条码查询增强</div>
-                <div class="fi-hint">{{ settings.barcodeLookupEnabled ? '已开启' : '未开启' }}</div>
-              </div>
-            </div>
-            <!-- v2.22.4：条码查询增强开关统一用 <toggle-setting> 组件（颜色 orange） -->
-            <toggle-setting :model-value="settings.barcodeLookupEnabled" color="orange"
-              @update:model-value="v => { settings.barcodeLookupEnabled = v; saveBarcodeSettings(); }" />
-          </div>
-          <div v-if="settings.barcodeLookupEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
-            <div>
-              <label class="fi-label">API Key（可选，不填也有免费额度）</label>
-              <input v-model="settings.barcodeApiKey" type="text" placeholder="apizero.cn 获取的 API Key"
-                class="input input-sm">
-            </div>
-            <button @click="saveBarcodeSettings" class="w-full py-2 rounded-lg bg-orange-500 text-white text-xs font-medium active:bg-orange-600 transition-colors">保存设置</button>
-          </div>
-        </div>
-
-        <!-- v2.22.0：名称清洗规则（录入 / OCR 落库自动整理：去营销词 · 统一大小写 · 全半角）。v2.25.1fix：简洁模式下隐藏 -->
-        <div class="fi-card">
-          <div class="px-4 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-              </div>
-              <div>
-                <div class="text-sm text-gray-700">名称清洗规则</div>
-                <div class="fi-hint">录入时自动整理名称，统计归并更准</div>
-              </div>
-            </div>
-            <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 violet），从 40×20 尺寸收敛到与 OCR 同款 36×20 -->
-            <toggle-setting :model-value="settings.nameCleanEnabled" color="violet"
-              @update:model-value="v => { settings.nameCleanEnabled = v; saveData(); showToast(v ? '已开启名称清洗' : '已关闭名称清洗'); }" />
-          </div>
-          <div v-if="settings.nameCleanEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="text-[11px] text-gray-700">删除营销 / 包装词</div>
-                <div class="text-[10px] text-gray-300 mt-0.5">特惠装 · 新品上市 · 家庭装…（整词匹配）</div>
-              </div>
-              <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 violet） -->
-              <toggle-setting :model-value="settings.nameCleanMarketing" color="violet"
-                @update:model-value="v => { settings.nameCleanMarketing = v; saveData(); }" />
-            </div>
-            <div>
-              <label class="fi-label">英文大小写</label>
-              <select v-model="settings.nameCleanCase" class="input input-sm">
-                <option value="smart">3+ 大写段转小写（默认）</option>
-                <option value="lower">全部转小写</option>
-                <option value="none">不处理</option>
-              </select>
-            </div>
-            <div>
-              <label class="fi-label">自定义删除词（换行 / 逗号分隔）</label>
-              <textarea v-model="settings.nameCleanCustom" rows="2" class="input input-sm resize-none"></textarea>
-            </div>
-            <div>
-              <label class="fi-label">白名单（绝不删除，优先保护）</label>
-              <textarea v-model="settings.nameCleanWhitelist" rows="1" class="input input-sm resize-none"></textarea>
-            </div>
-            <div>
-              <label class="fi-label">试一下（输入名称看整理效果）</label>
-              <input v-model="nameCleanPreviewText" @input="previewNameClean" type="text" class="input input-sm">
-              <div class="fi-hint mt-1 min-h-[16px]">{{ nameCleanPreviewOut ? '整理后：' + nameCleanPreviewOut : '' }}</div>
-            </div>
-            <div class="flex items-center gap-2 pt-0.5">
-              <button @click="saveNameCleanSettings" class="flex-1 py-2 rounded-lg bg-violet-500 text-white text-xs font-medium active:bg-violet-600 transition-colors">保存设置</button>
-              <button @click="openCleanHistoryModal" class="fi-btn-2nd flex-1">整理历史名称…</button>
-            </div>
-          </div>
-        </div>
-
-
-
-        <!-- v2.21.5：文字识别（小票 OCR）引擎设置——Paddle 本地识别为主，预留百度云票据识别入口。v2.25.1fix：简洁模式下隐藏 -->
-        <div class="fi-card">
-          <div class="px-4 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M4 7V4h16v3M4 17v3h16v-3M2 12h20"/><rect x="5" y="10" width="3" height="4" rx="0.5"/><rect x="9.5" y="10" width="3" height="4" rx="0.5"/><rect x="14" y="10" width="3" height="4" rx="0.5"/></svg>
-              </div>
-              <div>
-                <div class="text-sm text-gray-700">文字识别（小票 OCR）</div>
-                <div class="fi-hint">{{ settings.ocrEnabled ? (settings.ocrEngine === 'tesseract' ? 'Tesseract 兼容模式' : 'Paddle 本地识别 · 首次需下载模型') : '已关闭 · 扫码/批量界面将无法使用文字识别' }}</div>
-              </div>
-            </div>
-            <!-- v2.22.4：文字识别总开关统一用 <toggle-setting> 组件（颜色 green） -->
-            <toggle-setting :model-value="settings.ocrEnabled" color="green"
-              @update:model-value="v => { settings.ocrEnabled = v; saveData(); showToast(v ? '已开启文字识别' : '已关闭文字识别'); }" />
-          </div>
-          <!-- v2.22.3：OCR 总开关关闭后整个 body 自动收起（只显示卡片头部），与「条码查询增强」关闭后样式对齐 -->
-          <div v-if="settings.ocrEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
-            <div>
-              <label class="fi-label">识别引擎</label>
-              <div class="grid grid-cols-3 gap-2">
-                <!-- v2.35.0：改用 .fi-seg-btn-sm 组件类（原来是 px-2 py-2 text-xs 裸 utility）——
-                     裸 py-2 未登记 fontScale 层，大字号下文字撑破按钮。语义色（绿系）仍在调用处叠加。
-                     ❗label 加 grid、内层加 h-full：超大字号下「Paddle 本地」会折成两行，
-                     靠 grid 默认 stretch 让三个按钮始终等高（否则只有选中那个填满行高）。 -->
-                <label class="cursor-pointer grid">
-                  <input type="radio" v-model="settings.ocrEngine" value="paddle" class="sr-only">
-                  <div :class="settings.ocrEngine === 'paddle' ? 'fi-seg-btn-sm h-full flex items-center justify-center border-green-500 bg-green-500 text-white' : 'fi-seg-btn-sm h-full flex items-center justify-center border-green-200 bg-white text-green-600'">Paddle 本地</div>
-                </label>
-                <label class="cursor-pointer grid">
-                  <input type="radio" v-model="settings.ocrEngine" value="baidu" class="sr-only">
-                  <div :class="settings.ocrEngine === 'baidu' ? 'fi-seg-btn-sm h-full flex items-center justify-center border-green-500 bg-green-500 text-white' : 'fi-seg-btn-sm h-full flex items-center justify-center border-green-200 bg-white text-green-600'">百度云</div>
-                </label>
-                <label class="cursor-pointer grid">
-                  <input type="radio" v-model="settings.ocrEngine" value="tesseract" class="sr-only">
-                  <div :class="settings.ocrEngine === 'tesseract' ? 'fi-seg-btn-sm h-full flex items-center justify-center border-green-500 bg-green-500 text-white' : 'fi-seg-btn-sm h-full flex items-center justify-center border-green-200 bg-white text-green-600'">Tesseract</div>
-                </label>
-              </div>
-              <div class="fi-hint mt-1.5">{{ ocrEngineHint }}</div>
-            </div>
-            <!-- v2.34.0：百度云代理地址（AK/SK 不在这里，留在服务端环境变量；前端只填代理域名） -->
-            <div v-if="settings.ocrEngine === 'baidu'">
-              <label class="fi-label">百度云代理地址</label>
-              <input v-model="settings.ocrProxyUrl" type="url" placeholder="https://你的代理域名"
-                class="input input-sm" @change="saveData()">
-              <div class="fi-hint mt-1.5">填部署好的代理服务地址，点「保存设置」会自动检测连通性。</div>
-              <div class="fi-hint mt-1">百度 AK/SK 不要填在这里 —— 它们只保存在代理服务端的环境变量中，这样密钥不会随网页分发出去。</div>
-            </div>
-            <!-- v2.21.16 增强：识别前图像增强开关——Tesseract 对低对比度彩色图识别率低，开关默认开（OTSU 二值化）；Paddle 路径不受影响 -->
-            <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 green） -->
-            <div class="flex items-center justify-between mt-2">
-              <div>
-                <div class="text-[11px] text-gray-700">识别前图像增强</div>
-                <div class="text-[10px] text-gray-300 mt-0.5">灰度 + 自适应二值化（Tesseract 生效）</div>
-              </div>
-              <toggle-setting :model-value="settings.ocrImageEnhance" color="green"
-                @update:model-value="v => { settings.ocrImageEnhance = v; saveData(); showToast(v ? '已开启图像增强' : '已关闭图像增强'); }" />
-            </div>
-            <!-- v2.21.16：批量识别智能分组开关（设置页入口，与 OCR 识别区顶部开关双向同步） -->
-            <!-- v2.22.4：统一用 <toggle-setting> 组件 -->
-            <div class="flex items-center justify-between mt-2">
-              <div>
-                <div class="text-[11px] text-gray-700">批量 OCR 智能分组</div>
-                <div class="text-[10px] text-gray-300 mt-0.5">把 name/规格/数量/价格 自动聚合为商品卡</div>
-              </div>
-              <toggle-setting :model-value="settings.ocrGroupMode" color="green"
-                @update:model-value="v => { settings.ocrGroupMode = v; ocr.groupMode = v; saveData(); showToast(v ? '已开启智能分组' : '已关闭智能分组'); }" />
-            </div>
-            <!-- v2.34.0：原「百度云票据识别（预留）」输入框已删除 —— AK/SK 不再放前端（改由代理服务端环境变量持有），
-                 历史数据里的 settings.baiduApiKey/baiduSecretKey 仅在加载时兼容读取，不再有 UI 入口 -->
-            <button @click="saveOcrSettings" class="w-full py-2 rounded-lg bg-green-500 text-white text-xs font-medium active:bg-green-600 transition-colors">保存设置</button>
-          </div>
-        </div>
-
-        <!-- v2.22.0：历史名称整理 dry-run 预览弹窗 -->
-        <transition name="modal">
-          <div v-if="showCleanHistoryModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="showCleanHistoryModal = false">
-            <div class="fi-modal-box max-h-[80vh] overflow-y-auto">
-              <h3 class="text-base font-semibold text-gray-800 mb-1">整理历史名称</h3>
-              <p class="text-xs text-gray-400 mb-3">{{ desc('cleanHistory', { n: cleanHistoryDraft.total }) }}</p>
-              <div v-if="cleanHistoryDraft.changed.length" class="space-y-1.5 mb-3">
-                <div v-for="(c, i) in cleanHistoryDraft.changed" :key="i" class="rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed">
-                  <span class="text-gray-400 line-through">{{ c.old }}</span> → <span class="text-gray-800 font-medium">{{ c.neu }}</span>
-                </div>
-              </div>
-              <p v-if="cleanHistoryDraft.total > cleanHistoryDraft.changed.length" class="fi-hint mb-3">…其余 {{ cleanHistoryDraft.total - cleanHistoryDraft.changed.length }} 条同理</p>
-              <div class="flex gap-2">
-                <button @click="showCleanHistoryModal = false" class="flex-1 py-2.5 rounded-lg font-semibold text-sm text-violet-600 bg-white border border-violet-300 active:bg-violet-50 transition-colors">取消</button>
-                <button @click="applyCleanHistory" :disabled="!cleanHistoryDraft.total || !settings.nameCleanEnabled"
-                  class="flex-1 py-2.5 rounded-lg font-semibold text-sm text-white transition-colors shadow-sm"
-                  :class="(!cleanHistoryDraft.total || !settings.nameCleanEnabled) ? 'bg-violet-400 cursor-not-allowed' : 'bg-violet-600 active:bg-violet-700'">
-                  <span v-if="!cleanHistoryDraft.total">无可整理</span>
-                  <span v-else-if="!settings.nameCleanEnabled">先开启清洗</span>
-                  <span v-else>应用整理 {{ cleanHistoryDraft.total }} 条</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </transition>
-      </div>
       <!-- ========== Guide Page（使用指南，v2.16.0） ========== -->
       <div v-if="currentPage === 'guide'" class="p-4 space-y-3">
         <div class="flex items-center justify-between">
@@ -2739,7 +2688,7 @@
                     <div class="phone-body">
                       <!-- v2.29.4：真实扫码页顶部有「小票批量录入」入口，旧示意图缺失 -->
                       <div class="p-entry">
-                        <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+                        <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><polyline points="2 17l10 5 10-5"/><polyline points="2 12l10 5 10-5"/></svg></span>
                         <span>
                           <div class="tt">小票批量录入</div>
                           <div class="ss">一次录入多件商品，支持小票图片识别</div>
@@ -4107,7 +4056,7 @@ const app = createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.34.3';   // v2.34.0–2.34.3：阶段性功能改进与 bug 修复。含 ①百度云 OCR 引擎（经自建代理，AK/SK 不进前端，苹果设备可用）+ iOS/无 WebGL 设备 Paddle 能力探测与自动降级 ②高级设置独立成页 ③记录页类型筛选改多选 + 顶栏四卡数据表驱动 ④修复保质期单位反算选错 ⑤修复重复 id 导致「改不动/删不掉」并迁移流水归属 + 删商品不再误删兄弟流水；SW v116
+    const CURRENT_VERSION = '2.33.0';   // v2.33.0：首屏加载优化（html5-qrcode 375KB 改为按需加载，首屏 604KB→217KB）/ 手机版顶栏加「图标+FoodIn」品牌展示 / 导览示例数据不再进入云同步（修 P1 云端残留）/ 导览启动时机改为等字体+两帧渲染 / SW 预缓存逐资源 allSettled 不再静默吞、失败静态资源返回 504 而非首页 HTML / 63 处裸 showToast 收敛到 5 个构造函数；SW v114
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', ocrEnabled: true, baiduApiKey: '', baiduSecretKey: '', ocrProxyUrl: '', categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0, ocrGroupMode: true, ocrImageEnhance: true, nameCleanEnabled: true, nameCleanCase: 'smart', nameCleanMarketing: true, nameCleanCustom: '', nameCleanWhitelist: '', places: [], builtinCategories: ['剩菜剩饭'], leftoverDefaultDays: 3, simpleMode: false, fontScale: 'normal', tourDone: false });   // v2.28.4：+tourDone 首次实景导览是否已完成（仅本机，同 simpleMode 不进云同步 schema——否则云端旧快照会把「已完成」覆盖回来）；v2.25.0：+simpleMode 简洁模式（大字号 + 精简功能，默认关）+fontScale 字号档位（normal 标准 / large 大 / xlarge 超大，独立于简洁模式，切换即时生效、跨设备同步，默认 large 即大字号）；v2.21.16：+ocrGroupMode 批量 OCR 智能分组开关（持久化，默认 true，首次加载迁移）+ocrImageEnhance 识别前图像增强开关（灰度+OTSU 二值化，Tesseract 路径生效，默认 true）；v2.22.0：+nameClean* 名称清洗规则库（默认开：去营销词 / 大小写 smart / 全半角）；v2.22.2：+ocrEnabled 文字识别总开关（默认 true；关闭后所有 OCR 入口按钮变灰并提示）
 
     // v2.26.0：location/category 统一「数组 ↔ 字符串」转换（商品模型落库为逗号字符串，表单态为数组）
@@ -4341,88 +4290,15 @@ const app = createApp({
     const recordSearchQuery = ref('');
     const dateRangeStart = ref('');
     const dateRangeEnd = ref('');
-    // v2.36.0：记录类型筛选从「单选字符串」改为「多选数组」。
-    //   空数组 = 不筛选（等价于「全部」）；可同时选多个类型（如「吃完 + 浪费」）。
-    //   ❗空数组在 JS 里是 truthy → 模板里**不能再写 `recordTypeFilter ?`**（会恒真），
-    //     一律用 hasTypeFilter 判断「是否有生效中的类型筛选」。
-    //   ❗「全部」= 清空筛选，与任何具体类型互斥：点具体类型时它自动灭，一个都没选时它自动亮。
-    const recordTypeFilter = ref([]);
-    // 每个选项自带两套 class：on = 选中（实心，背景色与类型标签色一致）/ off = 未选中（白底 + 类型彩字）
+    const recordTypeFilter = ref('');   // '' = 全部；in/eat/waste/adjust
     const recordTypeOptions = [
-      { value: '',       label: '全部',    on: 'bg-gray-800 border-gray-800 text-white',   off: 'bg-white border-gray-200 text-gray-600' },
-      { value: 'in',     label: '入库',    on: 'bg-amber-500 border-amber-500 text-white', off: 'bg-white border-gray-200 text-amber-600' },
-      { value: 'eat',    label: '吃完',    on: 'bg-green-500 border-green-500 text-white', off: 'bg-white border-gray-200 text-green-600' },
-      { value: 'waste',  label: '浪费',    on: 'bg-red-500 border-red-500 text-white',     off: 'bg-white border-gray-200 text-red-600' },
-      { value: 'adjust', label: '调整',    on: 'bg-blue-500 border-blue-500 text-white',   off: 'bg-white border-gray-200 text-blue-600' },
-      { value: 'reheat', label: '🔥 加热', on: 'bg-orange-500 border-orange-500 text-white', off: 'bg-white border-gray-200 text-orange-600' }
+      { value: '', label: '全部' },
+      { value: 'in', label: '入库' },
+      { value: 'eat', label: '吃完' },
+      { value: 'waste', label: '浪费' },
+      { value: 'adjust', label: '调整' },
+      { value: 'reheat', label: '🔥 加热' }   // v2.24.1：补回筛选选项
     ];
-    const hasTypeFilter = computed(() => recordTypeFilter.value.length > 0);
-    function isTypeSelected(v) { return recordTypeFilter.value.includes(v); }
-    // 多选切换：加了就减掉、没加就加上（必须重新赋值新数组才会触发模板更新）
-    function toggleTypeFilter(v) {
-      const a = recordTypeFilter.value.slice();
-      const i = a.indexOf(v);
-      if (i >= 0) a.splice(i, 1); else a.push(v);
-      recordTypeFilter.value = a;
-    }
-    // 「全部」= 一键清空筛选
-    function clearTypeFilter() { recordTypeFilter.value = []; }
-    // ===== v2.36.0 三次调整：顶栏四张卡改为「数据表驱动」，根治口径不一致 =====
-    //   ❗唯一真源 = 每张卡的 types 数组。**高亮（精确匹配）/ 筛选 / 卡片数字三者全部由它派生**，
-    //     任何一处都不许手写第二份 —— 这样才不可能再出现「卡片写 4 件、点进去只有 1 条」。
-    //   ❗四张卡全部落在「记录维度」，不再混入商品维度（旧「在库」卡的名字是商品维度、
-    //     行为却是清空筛选 = 全部记录，三者对不上）。要放在库件数请去首页看。
-    //   ❗「全部」= 空数组（不筛类型），数字用 stats.recordCount（条）；其余三张数字 = 其 types
-    //     涉及的数量合计（件）。两者都只受「日期范围」影响，与类型筛选无关（卡片代表该类总量）。
-    //   ❗顶栏=互斥快捷预设；弹层=自由多选。弹层组合不等于任何预设 → 顶栏四张卡全灭。
-    const CARD_PRESETS = [
-      { key: 'all',     label: '全部', types: [],               color: 'blue'  },
-      { key: 'in',      label: '入库', types: ['in'],           color: 'amber' },
-      { key: 'consume', label: '消耗', types: ['eat', 'waste'], color: 'green' },
-      { key: 'waste',   label: '浪费', types: ['waste'],        color: 'red'   }
-    ];
-    // 颜色类必须写成静态字面量：Tailwind 只扫描源码里的完整类名，拼接出来的不会被编译
-    const CARD_COLOR = {
-      blue:  { on: 'bg-blue-500 border-blue-500',   text: 'text-blue-600'  },
-      amber: { on: 'bg-amber-500 border-amber-500', text: 'text-amber-600' },
-      green: { on: 'bg-green-500 border-green-500', text: 'text-green-600' },
-      red:   { on: 'bg-red-500 border-red-500',     text: 'text-red-600'   }
-    };
-    // 集合相等（顺序无关）——「精确匹配预设」的唯一判据
-    function sameTypeSet(a, b) {
-      return a.length === b.length && a.every(t => b.includes(t));
-    }
-    function isCardSelected(key) {
-      const p = CARD_PRESETS.find(x => x.key === key);
-      return p ? sameTypeSet(recordTypeFilter.value, p.types) : false;
-    }
-    // 顶栏四张卡的完整展示模型：数字 / 单位 / 高亮 全部由 types 派生（模板只负责渲染）
-    const recordCards = computed(() => {
-      const s = stats.value;
-      return CARD_PRESETS.map(p => {
-        let n = 0;
-        if (!p.types.length) n = s.recordCount;              // 「全部」= 记录条数
-        else {
-          if (p.types.includes('in'))    n += s.totalIn;
-          if (p.types.includes('eat'))   n += s.totalEat;
-          if (p.types.includes('waste')) n += s.totalWaste;
-        }
-        return {
-          key: p.key, label: p.label,
-          count: n,
-          unit: p.types.length ? '件' : '条',
-          active: sameTypeSet(recordTypeFilter.value, p.types),
-          onCls: CARD_COLOR[p.color].on,
-          textCls: CARD_COLOR[p.color].text
-        };
-      });
-    });
-    // 点卡 = 切到该预设；再点一次已选中的卡 = 取消（回落「全部」）
-    function applyCardFilter(key) {
-      const p = CARD_PRESETS.find(x => x.key === key);
-      if (!p) return;
-      recordTypeFilter.value = isCardSelected(key) ? [] : p.types.slice();
-    }
     const showRecordFilterModal = ref(false);   // 记录页日期筛选弹层
     const statsRange = ref('month');            // 统计页时间范围预设：today | week | month | year（v2.20.2 标签书面化：今日/近一周/近一月/本年度）
     const statsRangeOptions = [
@@ -4497,7 +4373,7 @@ const app = createApp({
     const scanForm = reactive({
       barcode: '', name: '', location: [], _locPlace: '', category: [],   // v2.15.1：分类/位置数组（提交 join）；v2.23.0：位置改两级单选，location 存单值（分区名/地点名/独立标签），_locPlace 暂存当前选中地点
       stockInDate: todayStr,
-      productionDate: '', shelfLife: '', shelfLifeUnit: 'day', expiryDate: '', quantity: 1,
+      productionDate: '', shelfLife: '', shelfLifeUnit: 'month', expiryDate: '', quantity: 1,
       brand: '', spec: '', netContent: '', manufacturer: '', price: '', imageUrl: '', note: ''   // 更多信息（全部可选；v2.21.4 补回 note 字段，与批量录入对齐）
     });
     const showMoreFields = ref(false);   // 录入页"更多信息"折叠面板
@@ -4521,7 +4397,7 @@ const app = createApp({
     const editForm = reactive({
       id: '', name: '', barcode: '', location: [], _locPlace: '', category: [],   // v2.21.14：编辑弹窗位置/分类芯片，暂存数组、保存时 join 为字符串；v2.23.0：位置两级单选
       stockInDate: '',
-      productionDate: '', shelfLife: '', shelfLifeUnit: 'day', expiryDate: '', quantity: 0,
+      productionDate: '', shelfLife: '', shelfLifeUnit: 'month', expiryDate: '', quantity: 0,
       brand: '', spec: '', netContent: '', manufacturer: '', price: '', imageUrl: '', note: '',
       _slTouched: false   // v2.31.0：本次编辑中用户是否动过「保质期/生产日期/到期日期」（决定保存时是否回写保质期文本）
     });
@@ -4533,7 +4409,7 @@ const app = createApp({
     const blankBatchItem = () => ({
       barcode: '', name: '', location: [], _locPlace: '', category: [],
       stockInDate: getTodayStr(),
-      productionDate: '', shelfLife: '', shelfLifeUnit: 'day', expiryDate: '',
+      productionDate: '', shelfLife: '', shelfLifeUnit: 'month', expiryDate: '',
       quantity: 1, brand: '', spec: '', netContent: '', manufacturer: '',
       price: '', imageUrl: '', note: '', more: false,
       // v2.24.4：每条目独立的条码查询状态（提示文案 / 成功标志 / loading / 缓存态），避免批量页多条目共用一个全局状态互相串扰
@@ -4576,12 +4452,11 @@ const app = createApp({
       ? [ { id: 'home', label: '首页' }, { id: 'scan', label: '录入' }, { id: 'settings', label: '我的' } ]
       : [ { id: 'home', label: '首页' }, { id: 'scan', label: '扫码' }, { id: 'records', label: '记录' }, { id: 'stats', label: '统计' }, { id: 'settings', label: '设置' } ]
     );
-    // 导航高亮：batch 归属扫码；guide + 高级设置页归属设置；简洁模式下 records/stats 也归属「我的」
-    const ADVANCED_PAGES = ['settingsAdvanced'];   // v2.35.0：高级设置页（取消二次点击后只剩这一个）
+    // 导航高亮：batch 归属扫码；guide 归属设置；简洁模式下 records/stats 也归属「我的」
     const isNavActive = (id) => {
       const cp = currentPage.value;
       if (cp === id) return true;
-      if (id === 'settings' && (cp === 'guide' || ADVANCED_PAGES.includes(cp) || (settings.simpleMode && (cp === 'records' || cp === 'stats')))) return true;
+      if (id === 'settings' && (cp === 'guide' || (settings.simpleMode && (cp === 'records' || cp === 'stats')))) return true;
       if (id === 'scan' && cp === 'batch') return true;
       return false;
     };
@@ -4611,11 +4486,6 @@ const app = createApp({
       settings.simpleMode = turningOn;
       // v2.25.2：仅在「开启」简洁模式时自动把字号切到「大」；关闭时不改动字号（正常模式保持原样）
       if (turningOn) settings.fontScale = 'large';
-      // v2.35.0：若此刻停在高级设置二级页，开启简洁模式会让页面条件整块失效（白屏）。
-      // 简洁模式入口本身就在设置主页，这里把 currentPage 兜回 settings。
-      if (turningOn && currentPage.value.startsWith('settings') && currentPage.value !== 'settings') {
-        currentPage.value = 'settings';
-      }
       applyFontScale();   // 字号档位独立控制，进入/退出简洁模式仅切换 UI 精简
       saveData();
       showToast(turningOn ? '已开启简洁模式（字号已设为「大」）' : '已退出简洁模式');
@@ -5005,21 +4875,6 @@ const app = createApp({
     //   同时删除 `.actSel` 的 click 转发用途 —— `.actSel` 现仅用于「阶段二把该控件滚动到远离悬浮条的一侧」。
 
     const changelog = [
-      {
-        version: '2.34.0–2.34.3',
-        date: '2026-09-18',
-        items: [
-          '新增（百度云文字识别引擎）：原来的识别引擎只有 Paddle（本机跑，不上传图片）和 Tesseract（本机跑，兼容性最好但准确率一般）两种，都在设备本地计算。Paddle 走的是 WebGL 推理，**在苹果设备（iPhone / iPad）上必然初始化失败**——旧版会让你白等半分钟才悄悄换成 Tesseract。现新增第三个引擎「百度云」，把图片发到百度做识别，中文准确率明显更高（小票场景约 90%+），是专门为苹果设备准备的高精度通道。为了保护你的密钥，识别请求不直连百度，而是先发到你自建的一个中转服务（地址填在「设置 → 高级设置 → 文字识别」里），密钥只留在服务端、不进网页，因此不会被任何人从前端看到。点「保存设置」时会自动探一次中转服务是否可达，地址写错 / 服务没起 / 没配密钥都会在这时就明确告诉你，不会等到真正识别时才失败。引擎切换：识别引擎一栏现在有三个选项（Paddle 本地 / 百度云 / Tesseract），选哪个用哪个；若设备跑不了 Paddle，它会自动改用 Tesseract 并明确提示一次，不再静默降级。',
-          '新增（高级设置独立成页）：原来「云同步 / 条码查询 / 名称清洗 / 文字识别」四张配置卡都摊在设置主页上，找一项要划很久。现收进独立的「高级设置」二级页，设置主页只留一个入口；四张卡在新页面里直接平铺展开，点进去就能改，不用再层层点开。',
-          '新增（记录页类型筛选改为多选）：记录页顶栏的四张卡（全部 / 入库 / 消耗 / 浪费）原来是单选的，点「消耗」就没法同时看「浪费」。现改为**可多选**：点一张卡加上它，再点一张继续叠加，再点一下取消。选中态用该类型自己的语义色（入库橙 / 消耗绿 / 浪费红），不再一律深灰，看颜色就知道在看哪几类。',
-          '优化（顶栏四张卡的统计口径统一）：四张卡的数字原来各写各的，改一处容易漏另一处，出现「卡片数字」与「列表实际条数」对不上的情况。现改为由一张统一的数据表驱动，卡片与列表共用同一套口径——「件」= 当前列表里入库 / 消耗 / 浪费三类记录的数量合计。',
-          '修（填了生产日期 + 到期日期后，保质期单位按钮选错 · 重要）：录入时若先填生产日期、再填到期日期，系统会反算保质期。旧实现**无条件按「天」计算并强行把单位切成「日」**，于是「今天生产、明天到期」这种一天之差也能算对，但「1 月 1 日生产、7 月 1 日到期」会得到「181 天」而不是更好读的「6 个月」。现改为**自动挑最自然的单位**：谁最能整除、且来回换算不丢精度就用谁——1 天就是「1 日」，半年就是「6 个月」，跨年就是「1 年」。同时录入页、批量录入、商品编辑弹窗三处口径完全一致。',
-          '修（商品改不动 / 删不掉 · 重要）：云同步按商品 id 做增量收敛，多设备同时新增偶尔会让两台设备各自生成同一个 id，导致库里出现**两条 id 相同的商品**。此后按 id 查找只会命中第一条，于是「改名 / 改数量 / 删除」全都作用在了错误的那条上——表现就是点保存没反应、点删除删不掉。现在启动时会自动检测重复 id 并给后来那条重新分配新 id（控制台会记录一行日志），并**把这些商品名下的流水一并迁移到新 id**——旧实现只改了商品 id、没管流水，结果流水全部变成找不到商品的孤儿或错挂到兄弟名下。',
-          '修（同 id 商品共存时删商品会连带删掉别人的流水）：删除商品时流水是按 id 清的，而旧实现是「把这个 id 的所有流水全删掉」。当库里存在同 id 的两条商品时（见上一条），删掉其中一条会把另一条的流水也一起清空。现改为按**归属**判断：该 id 若已没有商品在用，就确认这些流水属于它、正常删除；若还有兄弟商品，则只删商品名能对上的那些，其余保留。',
-          '修（撤销「调整」后重建的商品字段类型不一致）：撤销一条调整记录、商品被重新放回库存时，储存位置与分类旧实现写的是空数组，而其他所有创建路径存的都是文本。虽然显示层能容错，但会让「这个字段是不是空的」这类判断失配。现统一为文本，与全局一致。',
-          'SW 缓存 v115 → v116；CURRENT_VERSION 2.34.0 → 2.34.3（涵盖 2.34.0–2.34.3 阶段的阶段性功能改进与 bug 修复）',
-        ]
-      },
       {
         version: '2.33.0',
         date: '2026-09-15',
@@ -6535,11 +6390,7 @@ const app = createApp({
 
     // ===== Computed =====
     const pageTitle = computed(() => {
-      // v2.35.0：+settingsAdvanced（高级设置页）。缺了会渲染出 undefined。
-      return {
-        home: '食品库存', scan: '扫码录入', records: '操作记录', stats: '数据统计', settings: '设置', guide: '使用指南', batch: '批量录入',
-        settingsAdvanced: '高级设置'
-      }[currentPage.value] || '';
+      return { home: '食品库存', scan: '扫码录入', records: '操作记录', stats: '数据统计', settings: '设置', guide: '使用指南', batch: '批量录入' }[currentPage.value];
     });
     // v2.33.0：手机版顶栏「品牌下方那行小字」用的页名。
     // 首页的 pageTitle 原值就是应用中文名「食品库存」，若直接复用会与上方的 FoodIn 词标重复
@@ -6631,10 +6482,8 @@ const app = createApp({
           (r.type || '').toLowerCase().includes(q)   // 也支持英文类型 id（in / eat / waste / adjust / reheat）
         );
       }
-      // v2.36.0：多选 —— 命中「任一」选中类型即保留（原来是 === 单值）。
-      // ❗空数组是 truthy，必须判 .length，不能用 `if (recordTypeFilter.value)`。
-      if (recordTypeFilter.value.length) {
-        result = result.filter(r => recordTypeFilter.value.includes(r.type));
+      if (recordTypeFilter.value) {
+        result = result.filter(r => r.type === recordTypeFilter.value);
       }
       if (dateRangeStart.value) {
         const s = new Date(dateRangeStart.value); s.setHours(0, 0, 0, 0);
@@ -6646,14 +6495,6 @@ const app = createApp({
       }
       return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     });
-
-    // v2.36.0：「件」= 当前列表里 in/eat/waste 三类记录的数量合计（与顶栏卡片的件数同口径）。
-    //   ❗adjust 记的是「变化量」、reheat 没有数量 → 都不计入，否则数字会莫名其妙。
-    //   列表头同时显示「N 条记录 · M 件」，消除「卡片写 4 件、列表只有 1 条」式的误解——
-    //   件与条本来就是两个量：一条 quantity:2 的记录 = 1 条、2 件。
-    const QTY_RECORD_TYPES = ['in', 'eat', 'waste'];
-    const filteredRecordsQty = computed(() => filteredRecords.value.reduce(
-      (n, r) => n + (QTY_RECORD_TYPES.includes(r.type) ? Math.abs(r.quantity || 0) : 0), 0));
 
     // ===== Records page stats & grouping（v2.14.0） =====
     const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
@@ -7046,19 +6887,11 @@ const app = createApp({
       return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
     }
 
-    // 录入页/编辑弹窗共享：到期 = 生产日期 + N 单位（自然月/年按「同号顺延」，日直接加）
-    //
-    // v2.36.0 ❗行为变更（用户拍板「必须往返无损」）：
-    //   旧实现给 month/year **统一减了 1 天**（v2.21.13 引入，意图是让「1 个月」≈ 30 天）：
-    //     2026-08-10 + 1月 → 09-10 → −1天 → 09-09；1/1 + 6月 → 7/1 → −1天 → 6/30
-    //   代价是「反算 → 正算」永远差 1 天，导致：
-    //     ① 填 1/1 与 7/1，保质期被算成 181 天（因为 6 个月正算回不到 7/1）；
-    //     ② 点一下日期，到期日会莫名跳一天。
-    //   现改为「同号顺延」（1/1 + 6月 = 7/1、3/1 + 12月 = 次年 3/1），与反算精确互逆。
-    //     2/20 + 1月 = 3/20；1/31 + 1月 = 2/28（2 月无 31 → 收敛月末）；闰日 2/29 + 1年 = 次年 2/28。
-    //   ❗对已存商品无影响：商品持久化的是 expiryDate 绝对日期 + shelfLife 文本，
-    //     本函数只决定「今后重算」的结果，不会回头改写历史数据。
-    // 日单位 → +N 天直接加（不变）
+    // 录入页/编辑弹窗共享：到期 = 生产日期 + N 单位（自然月/年-1 天，日+直接）
+    // 例：1个月 → 2026-08-10 + 1月 = 2026-09-10 → -1天 = 2026-09-09；2026-02-20 + 1月 = 2026-03-20 → 2026-03-19
+    //     2026-01-31 + 1月 = 2026-02-28（2月无31）→ 2026-02-27；2026-05-15 + 1年 = 2027-05-15 → 2027-05-14
+    // 1年 → 2026-08-10 + 1年 = 2027-08-10 → -1天 = 2027-08-09；2026-02-29 + 1年 = 2027-02-28（平年） → 2027-02-27
+    // 日单位 → 不 -1 天（保持 +N 天直接加）
     function calcExpiryDateFromParts(prod, num, unit) {
       if (!prod) return '';
       // v2.31.0：num 可能仍是历史文本（"4年"/"90天"）——先解析，文本自带单位时以文本为准，
@@ -7079,7 +6912,8 @@ const app = createApp({
         d.setDate(1);
         d.setMonth(d.getMonth() + n);
         const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-        d.setDate(Math.min(day, last));   // 当月无此日期时取当月最后一天（1/31 + 1月 = 2/28）
+        d.setDate(Math.min(day, last));   // 当月无此日期时取当月最后一天
+        d.setDate(d.getDate() - 1);   // v2.21.13：自然月-1 天（如 2/20 + 1月 = 3/19）
       } else if (unit === 'year') {
         const day = d.getDate();
         d.setFullYear(d.getFullYear() + n);
@@ -7088,23 +6922,14 @@ const app = createApp({
           d.setMonth(1);
           d.setDate(new Date(d.getFullYear(), 2, 0).getDate());
         }
+        d.setDate(d.getDate() - 1);   // v2.21.13：自然年-1 天
       } else {
-        d.setDate(d.getDate() + n);   // 日单位：直接加
+        d.setDate(d.getDate() + n);   // 日单位：不减
       }
       return toDateStr(d);
     }
 
-    // 由到期日期反算保质期（数字 + 单位）
-    //
-    // v2.36.0 ❗修复「填完生产日期+到期日期后，保质期单位按钮选错」（用户实测）：
-    //   场景：生产日期=今天、到期日期=明天 → 应得「1（天）」，实际却显示「1（月）」。
-    //   根因：scanForm.shelfLifeUnit 的**初始值硬编码是 'month'**（第 4500/4524/4536/8208 行），
-    //     用户一进录入页单位就停在「月」；而本函数旧实现「尊重表单当前单位」，
-    //     于是 1 天被按 30.44 除后 round 成 1 → 显示「1 个月」，单位按钮也留在「月」。
-    //     （对照：handleBarcodeCacheHit 里 fallback 用的是 'day'，说明 month 是没跟上的老默认值。）
-    //   现规则：**按差值自动挑最自然的单位**（能被整月/整年整除才用月/年，否则用天），
-    //     并让单位按钮跟着反算结果走 —— 用户主动点按钮时不走这里，单位仍由用户说了算。
-    //   daysOnly 已废弃（v2.36.0 不再使用，保留注释仅为说明历史）。
+    // 由到期日期反算保质期（数字 + 当前单位）
     function calcShelfLifeParts(prod, exp, unit) {
       if (!prod || !exp) return { num: '', unit };
       const days = Math.round((new Date(exp + 'T00:00:00') - new Date(prod + 'T00:00:00')) / 86400000);
@@ -7112,26 +6937,6 @@ const app = createApp({
       if (unit === 'month') return { num: String(Math.max(1, Math.round(days / 30.44))), unit };
       if (unit === 'year') return { num: String(Math.max(1, Math.round(days / 365.25))), unit };
       return { num: String(days), unit };
-    }
-
-    // v2.36.0：由「生产日期 + 到期日期」反算时，自动挑最自然的单位。
-    //   判据 = **就近取整 + 往返无损**（因为 v2.36.0 起正算已去掉「−1 天」，两者天然互逆）：
-    //     ① 天数 ≤ 1 → 必用「天」（这就是用户踩到的坑：1 天曾被显示成 1 个月）
-    //     ② 差值 / 365.25 取整后，正算能回到原到期日 → 用「年」（如 2026-03-01 → 2027-03-01 = 1 年）
-    //     ③ 差值 / 30.44 取整后，正算能回到原到期日 → 用「月」（如 1/1 → 7/1 = 6 个月）
-    //     ④ 否则 → 用「天」（如 5/15 → 9/20 = 128 天，凑不出整月）
-    //   这样「1/1 → 7/1」得到直观的「6 个月」，而「今天 → 明天」得到「1 天」，两全。
-    function pickShelfLifeUnit(prod, exp) {
-      if (!prod || !exp) return 'day';
-      const days = Math.round((new Date(exp + 'T00:00:00') - new Date(prod + 'T00:00:00')) / 86400000);
-      if (days <= 0) return 'day';
-      // 单日差绝不用「月/年」——这正是用户踩到的坑（1 天被显示成 1 个月）
-      if (days <= 1) return 'day';
-      const y = Math.round(days / 365.25);
-      if (y >= 1 && calcExpiryDateFromParts(prod, String(y), 'year') === exp) return 'year';
-      const m = Math.round(days / 30.44);
-      if (m >= 1 && calcExpiryDateFromParts(prod, String(m), 'month') === exp) return 'month';
-      return 'day';
     }
 
     // v2.31.0：保质期「文本 ↔ 数字+单位」唯一解析入口
@@ -7600,8 +7405,7 @@ const app = createApp({
           const otherIn = records.value.filter(x => x.productId === id && x.type === 'in' && x.id !== r.id);
           if (otherIn.length === 0) {
             // 最后一条入库 → 删商品 + 删该商品全部记录（同"直接删除"语义）
-            // v2.36.0：传对象引用（`p` 已定位到），避免同 id 多条时删错对象
-            removeProduct(p, { keepRecords: false });
+            removeProduct(id, { keepRecords: false });
             dropUndoSnapshot(r.id);
             toastDone('撤销「' + recordTypeLabel(r.type) + '」记录，「' + r.productName + '」已移出库存');
             revokingRecord.value = null;
@@ -7649,10 +7453,7 @@ const app = createApp({
             id: id,
             name: r.productName || '未命名',
             barcode: r.barcode || '',
-            // v2.36.0：统一为**逗号字符串**（与所有常规创建路径一致）。
-            //   旧实现写 `location: [], category: []`（空数组）——虽然 tagsFromStr/displayLocation
-            //   都能容错，但类型与模型约定不符，且会让 `p.location === ''` 这类直接比较失配。
-            location: '', category: '',
+            location: [], category: [],
             stockInDate: '', productionDate: '', shelfLife: '', expiryDate: '',
             quantity: Math.max(1, -q),
             price: r.unitPrice ? Math.round(r.unitPrice * -q * 100) / 100 : '',
@@ -7759,95 +7560,11 @@ const app = createApp({
     // v2.26.0：商品移除统一入口（收敛原「归零自动移除 / 浪费删除 / 直接删除 / 撤销内联」四套）
     // keepRecords=true  → 保留该商品全部流水（归零移除 / 浪费删除）
     // keepRecords=false → 同时清空该商品全部流水（直接删除 / 撤销最后一条入库）
-    // v2.36.0（修「改完没反应 / 删不掉」）：定位商品一律「优先按对象引用，退化为按 id」。
-    //   ❗根因：云同步的 upsert / CSV 导入都可能造成**同 id 但不同对象**的两条商品共存。
-    //     此时 `find(p => p.id === id)` 永远只命中第一个 → 你对第二张卡改名、删除，全都作用在第一张上，
-    //     页面看起来「毫无反应」。传入对象引用即可精确定位。
-    function findProduct(productOrId) {
-      if (!productOrId) return null;
-      if (typeof productOrId === 'object') {
-        // 引用在库内 → 直接命中（最可靠）；不在库内（已被替换）→ 退化为 id 匹配
-        if (products.value.includes(productOrId)) return productOrId;
-        const byId = products.value.find(p => p.id === productOrId.id);
-        return byId || null;
-      }
-      return products.value.find(p => p.id === productOrId) || null;
-    }
-
     function removeProduct(productOrId, { keepRecords = false } = {}) {
-      const p = findProduct(productOrId);
-      if (!p) return;
-      const id = p.id;
-      // ❗按**对象身份**移除商品，不再 `filter(p => p.id !== id)`。
-      //   后者在同 id 有多条时会把「兄弟」一并删掉，而列表里那张卡的 records 仍被清 → 数据对不上。
-      products.value = products.value.filter(x => x !== p);
-      if (keepRecords || !id) return;
-      // ❗v2.36.0 补修（审计发现）：流水也要按「归属」删，不能只按 id。
-      //   旧实现 `filter(r => r.productId !== id)` 在**同 id 还有兄弟商品**时，
-      //   会把兄弟的流水一起清掉（实测：删「乙」得到 records = []，把「甲」的也删了）。
-      //   现规则：仅当该 id 已无其他商品持有（= 这条流水的归属无歧义）才连同删除；
-      //   若同 id 仍有兄弟，则只删能确认属于本商品的那部分（按 productName 精确匹配），
-      //   匹配不上的一律保留 —— 宁可留一条多余流水，也不静默销毁别人的历史。
-      const idStillOwned = products.value.some(x => x && x.id === id);
-      const myName = p.name || '';
-      records.value = records.value.filter(r => {
-        if (!r || r.productId !== id) return true;          // 与本商品无关 → 保留
-        if (!idStillOwned) return false;                    // 该 id 已无主 → 确认属于本商品 → 删
-        return !(myName && r.productName === myName);       // 有兄弟 → 只删名称能对上的
-      });
-    }
-
-    // v2.36.0：给重复 id 的商品重新分配 id（自愈）。云同步按 id 做增量收敛，
-    //   同 id 两条会永远互相覆盖、表现为「怎么改都没反应」，必须拆开。
-    // ❗v2.36.0 补修（审计发现）：原实现**只改商品 id，不同步 records.productId** ——
-    //   拆开后 B 的流水仍挂在 A 的旧 id 上 → 流水全部变孤儿或错挂在 A 名下，
-    //   进而导致「删 A 连带清掉 B 的流水」「B 的记录页看不到自己的流水」。
-    //   现在按「原 id → 新 id」建映射，把**属于被拆分那条商品**的流水一并迁移。
-    //   ❗关键：只有**被改了 id 的那条**才需要迁移流水；沿用原 id 的那条（通常是先出现的第一条）
-    //     流水本来就正确，绝不能动 —— 否则会把它的流水错误地迁到新 id 上。
-    //   归属判定：优先用流水自己的 productName 与该商品 name 精确匹配；匹配不上则留在原 id（保守）。
-    function dedupeProductIds() {
-      const seen = new Set();
-      const remap = [];   // { oldId, newId, name }
-      let fixed = 0;
-      products.value.forEach(p => {
-        if (!p) return;
-        if (!p.id || seen.has(p.id)) {
-          const oldId = p.id;
-          p.id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-          remap.push({ oldId, newId: p.id, name: String(p.name || '').trim() });
-          fixed++;
-        }
-        seen.add(p.id);
-      });
-      if (!fixed) return 0;
-
-      // 同步迁移流水归属：只动「挂在被拆分 id 上、且名称能对上」的那些
-      let movedRecords = 0;
-      if (Array.isArray(records.value)) {
-        for (const r of records.value) {
-          if (!r || !r.productId) continue;
-          const cands = remap.filter(m => m.oldId === r.productId);
-          if (!cands.length) continue;
-          // 名称精确匹配（唯一可靠判据）；匹配不上 → 留在原 id（归先出现的那条商品），保守不迁
-          const hit = r.productName ? cands.find(m => m.name && m.name === r.productName) : null;
-          if (!hit) continue;
-          hit._claimed = true;
-          r.productId = hit.newId;
-          movedRecords++;
-        }
-      }
-      remap.forEach(m => { delete m._claimed; });
-
-      console.warn('[FoodIn v2.36.0] 已为 ' + fixed + ' 个重复/缺失 id 的商品重新分配 id'
-        + (movedRecords ? '，并迁移 ' + movedRecords + ' 条流水的归属' : '') + '（避免改动无反应）');
-      try {
-        // ❗只写 localStorage，不调 saveData()：同步事件按 id 生成，此刻字段已被改写，
-        //   交给下一次正常写盘即可；此处避免在 baseState 未就绪时把全量当新增推上云。
-        localStorage.setItem('food_inventory_products', JSON.stringify(products.value));
-        if (movedRecords) localStorage.setItem('food_inventory_records', JSON.stringify(records.value));
-      } catch (e) {}
-      return fixed;
+      const id = typeof productOrId === 'string' ? productOrId : (productOrId && productOrId.id);
+      if (!id) return;
+      products.value = products.value.filter(p => p.id !== id);
+      if (!keepRecords) records.value = records.value.filter(r => r.productId !== id);
     }
 
     // ===== v2.28.5：新手导览示例数据 =====
@@ -8032,12 +7749,9 @@ const app = createApp({
     //              ③ 无文本/无法识别但有生产+到期日期 → 由日期反算，单位「日」（无损：重算到期能回到原值）。
     function initEditShelfLife(product) {
       if (setShelfLifeFromText(product.shelfLife, editForm, 'day')) return;
-      // v2.36.0：无保质期文本但有生产+到期日期 → 自动挑最自然单位反算（原实现固定 'day'，
-      //   会把「1/1 → 7/1」显示成 181 天而不是 6 个月）
-      const unit = pickShelfLifeUnit(editForm.productionDate, editForm.expiryDate);
-      const parts = calcShelfLifeParts(editForm.productionDate, editForm.expiryDate, unit);
+      const parts = calcShelfLifeParts(editForm.productionDate, editForm.expiryDate, 'day');
       editForm.shelfLife = parts.num || '';
-      editForm.shelfLifeUnit = parts.num ? unit : 'day';
+      editForm.shelfLifeUnit = 'day';
     }
     function openEditModal(product) {
       editingProduct.value = product;
@@ -8088,20 +7802,19 @@ const app = createApp({
       if (editForm.productionDate && editForm.shelfLife) {
         editForm.expiryDate = calcExpiryDateFromParts(editForm.productionDate, editForm.shelfLife, editForm.shelfLifeUnit);
       } else if (editForm.productionDate && editForm.expiryDate) {
-        // v2.36.0：与录入页同口径 —— 自动挑最自然单位（往返无损优先），并同步单位按钮
-        const unit = pickShelfLifeUnit(editForm.productionDate, editForm.expiryDate);
-        const parts = calcShelfLifeParts(editForm.productionDate, editForm.expiryDate, unit);
-        if (parts.num) { editForm.shelfLife = parts.num; editForm.shelfLifeUnit = unit; }
+        const parts = calcShelfLifeParts(editForm.productionDate, editForm.expiryDate, editForm.shelfLifeUnit);
+        if (parts.num) {
+          editForm.shelfLife = parts.num;
+          // 反算后若 unit 变化（月/日/年），保留原单位（更直观）
+        }
       }
     }
     function onEditExpiryChange() {
-      // 到期日期变更：v2.36.0 改为自动挑单位（旧实现套用表单当前单位，
-      //   而 editForm 初始单位曾是 'month' → 「今天→明天」显示成「1 个月」）
+      // 到期日期变更：按当前单位反算保质期
       editForm._slTouched = true;   // v2.31.0
       if (editForm.productionDate && editForm.expiryDate) {
-        const unit = pickShelfLifeUnit(editForm.productionDate, editForm.expiryDate);
-        const parts = calcShelfLifeParts(editForm.productionDate, editForm.expiryDate, unit);
-        if (parts.num) { editForm.shelfLife = parts.num; editForm.shelfLifeUnit = unit; }
+        const parts = calcShelfLifeParts(editForm.productionDate, editForm.expiryDate, editForm.shelfLifeUnit);
+        if (parts.num) editForm.shelfLife = parts.num;
       }
     }
     function onEditShelfLifeChange() {
@@ -8121,9 +7834,7 @@ const app = createApp({
     }
 
     function saveEdit() {
-      // v2.36.0：优先用打开弹窗时锚定的对象引用（editingProduct），退化为按 id 查找。
-      //   ❗旧实现只按 id 查 → 同 id 两条商品时永远改到第一条，表现为「改名/改数量后毫无反应」。
-      const product = findProduct(editingProduct.value) || products.value.find(p => p.id === editForm.id);
+      const product = products.value.find(p => p.id === editForm.id);
       if (!product) return;
 
       // ===== 数据校验（字符串比较，避免 UTC/本地时区误判；允许生产/到期为当天） =====
@@ -8216,24 +7927,20 @@ const app = createApp({
     //   ② 更糟的是部分浏览器/输入法下 type=number 框此时取不到值（String('') 为假）→
     //      进入 else 但用当前单位算出的 181 又因 unit 被改写成 day 而重算到期得到别的日期，
     //      用户体感就是「明明填了到期日，保质期栏却始终空的 / 数字对不上」。
-    //
-    // v2.36.0 ❗二次修复「保质期单位按钮选错」（用户实测）：生产今天、到期明天 → 应「1 天」，
-    //   实际显示「1 个月」。根因是「尊重表单当前单位」撞上了 scanForm 初始单位硬编码 'month'。
-    //   现改为：**由 pickShelfLifeUnit 自动挑单位**，并把结果同步写回 shelfLifeUnit，
-    //   让单位按钮跟着数字一起跳到位（用户主动点按钮时不走这里，单位仍由用户说了算）。
-    //   forceUnit：仅当调用点明确「用户已选定单位、必须沿用」时才传（如单位切换后重算）。
-    function backfillShelfLifeByDays(raw, forceUnit) {
+    //   现规则：**一律尊重表单当前单位**（day / month / year）反算，
+    //   且当「保质期框为空」时仍用当前单位回填（不再强制改写为「日」）。
+    function backfillShelfLifeByDays(raw) {
       const item = dateForm(raw);
       if (!item.productionDate || !item.expiryDate) return;
       const days = Math.round((new Date(item.expiryDate + 'T00:00:00') - new Date(item.productionDate + 'T00:00:00')) / 86400000);
       if (days <= 0) return;
-      // 单位：显式指定 > 自动挑最自然（往返无损优先）
-      const unit = forceUnit || pickShelfLifeUnit(item.productionDate, item.expiryDate);
+      // 当前单位优先：用户选了「月/年」就按「月/年」反算，绝不悄悄改成「日」。
+      // 单位缺失（老数据/未初始化）才回落「日」。
+      const unit = (item.shelfLifeUnit === 'month' || item.shelfLifeUnit === 'year') ? item.shelfLifeUnit : 'day';
       const parts = calcShelfLifeParts(item.productionDate, item.expiryDate, unit);
       if (!parts.num) return;
       item.shelfLife = parts.num;
-      item.shelfLifeUnit = unit;   // 与反算口径保持一致，同时驱动单位按钮高亮
-      return unit;
+      item.shelfLifeUnit = unit;   // v2.34.0：与反算口径保持一致（不再出现「值按月算、单位显示日」的错配）
     }
     function onScanDateChange(raw) {
       const item = dateForm(raw);
@@ -8249,8 +7956,6 @@ const app = createApp({
     }
     function onScanShelfLifeChange(raw) {
       const item = dateForm(raw);
-      // v2.36.0：用户手填保质期数字/切单位时，一律以「用户当前单位」为准正算到期日，
-      //   绝不在这里再跑自动选单位（否则会把用户刚选的「月」又顶回「日」）。
       if (item.productionDate && item.shelfLife) {
         item.expiryDate = calcExpiryDateFromParts(item.productionDate, item.shelfLife, item.shelfLifeUnit);
       }
@@ -8311,7 +8016,7 @@ const app = createApp({
       saveData();
       toastDone('入库', product.name);
       // Reset form but stay on scan page
-      Object.assign(scanForm, { barcode: '', name: '', location: [], _locPlace: '', category: [], stockInDate: getTodayStr(), productionDate: '', shelfLife: '', shelfLifeUnit: 'day', expiryDate: '', quantity: 1, brand: '', spec: '', netContent: '', manufacturer: '', price: '', imageUrl: '', note: '' });   // v2.21.4：重置时一并清空备注；v2.23.0：+_locPlace；v2.36.0：单位默认改「日」（原 'month' 会让单位按钮一进页面就停在「月」）
+      Object.assign(scanForm, { barcode: '', name: '', location: [], _locPlace: '', category: [], stockInDate: getTodayStr(), productionDate: '', shelfLife: '', shelfLifeUnit: 'month', expiryDate: '', quantity: 1, brand: '', spec: '', netContent: '', manufacturer: '', price: '', imageUrl: '', note: '' });   // v2.21.4：重置时一并清空备注；v2.23.0：+_locPlace
       apiMessage.value = '';
       apiSuccess.value = false;
     }
@@ -8663,27 +8368,6 @@ const app = createApp({
       if (ocr.engine === 'baidu') return '百度云';
       if (ocr.engine === 'tesseract') return 'Tesseract';
       return '';
-    });
-
-    // ===== v2.35.0：高级设置页（云同步 / 条码查询 / 名称清洗 / OCR 四张配置卡从设置主页迁到这里）=====
-    // v2.35.0 二次调整：取消「列表 → 详情」的二次点击，四张卡在本页直接平铺（沿用开关开即展开的原逻辑）。
-    // 卡内功能逻辑（saveCloudSettings / saveBarcodeSettings / saveNameCleanSettings / saveOcrSettings）一行未改。
-    function openAdvancedSettings() {
-      currentPage.value = 'settingsAdvanced';
-    }
-    // 返回设置主页。设置页离开时会做「空分区地点降级」清理（见 navigateTo），
-    // 高级设置页只是展示容器、不涉及地点编辑，直接置回 currentPage 即可，不重跑那套逻辑。
-    function backToSettings() {
-      currentPage.value = 'settings';
-    }
-    // 入口卡副标题：一句话说清下面 4 项各自的开 / 关，用户不进去也能看到全局状态。
-    const advancedSummary = computed(() => {
-      const on = [];
-      if (settings.cloudSyncEnabled) on.push('云同步');
-      if (settings.barcodeLookupEnabled) on.push('条码查询');
-      if (settings.nameCleanEnabled) on.push('名称清洗');
-      if (settings.ocrEnabled) on.push('文字识别');
-      return on.length ? '已开启 ' + on.length + ' 项 · ' + on.join(' / ') : '4 项配置均未开启';
     });
 
     // v2.21.6：Paddle init 单例启动器——tryPaddleOcr / preloadPaddleModel 共用同一份 init Promise 链：
@@ -11581,10 +11265,8 @@ const app = createApp({
         || (Number.isFinite(Number(p.quantity)) && Number(p.quantity) <= 0);
       const ghosts = products.value.filter(isGhost);
       if (!ghosts.length) return 0;
-      // v2.36.0：按**对象身份**过滤。旧实现用 `new Set(ghosts.map(p => p.id))` + `!ids.has(p.id)`，
-      //   在同 id 有多条（云同步 upsert 造成）时会**把正常的那条一起删掉**。
-      const ghostSet = new Set(ghosts);
-      products.value = products.value.filter(p => !ghostSet.has(p));
+      const ids = new Set(ghosts.map(p => p.id));
+      products.value = products.value.filter(p => !ids.has(p.id));
       console.warn('[FoodIn v2.34.0] 已清理脏商品（数量 ≤ 0 或无名称）：'
         + ghosts.map(g => (String(g.name || '').trim() ? g.name : '(无名称)') + '(' + g.quantity + ')').join('、'));
       if (syncState.baseState) saveData();
@@ -11592,25 +11274,12 @@ const app = createApp({
       return ghosts.length;
     }
     // products 整体被替换（云同步重放应用）后立即清理——用监听代替改动 cloudSync 内部逻辑
-    // v2.36.0：先拆重复 id 再清幽灵商品——顺序不能反：
-    //   若两条同 id（一正常一脏），按身份清脏的那条没问题；但重复 id 本身会让后续「按 id 定位」出错，
-    //   所以 dedupe 必须在任何 id 相关操作之前跑完。
-    // ❗v2.36.0 补修：加**重入保护**。dedupeProductIds 现在会改写 records，purgeGhostProducts 会改写
-    //   products —— 两者在 watch 回调里会对响应式数据再赋值，不加锁可能自触发形成同步递归。
-    let _selfHealBusy = false;
-    watch(products, () => {
-      if (_selfHealBusy) return;
-      _selfHealBusy = true;
-      try { dedupeProductIds(); purgeGhostProducts(); }
-      finally { _selfHealBusy = false; }
-    });
+    watch(products, () => { purgeGhostProducts(); });
 
     onMounted(() => {
       let demosCleanedAtBoot = false;   // v2.33.0：启动扫到示例数据 → 同步引擎就绪后立刻落盘（见下方 saveData）
       migrateFilterArrays();   // 兼容旧版本：homeFilter 等可能是字符串，统一为数组
       loadData();
-      // v2.36.0：启动即自愈重复 id —— 否则「改名/删除没反应」会一直卡住用户
-      dedupeProductIds();
       // v2.28.5：兜底清理「导览中途被关掉」残留的示例数据——用户没点完就关页面时 endTour 没机会跑，
       // 示例商品/记录会留在 localStorage。这里在启动时无条件扫一遍，带 DEMO_MARK 的一律收回。
       // （正常流程下 endTour 已清干净，这里只是兜底，不会影响真实数据——真实数据不带 DEMO_MARK。）
@@ -11703,7 +11372,7 @@ const app = createApp({
     });
 
     // 调试/自动化测试钩子（不影响正常运行）
-    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, ensureScanLib, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, dedupeProductIds, findProduct, removeProduct, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, pickShelfLifeUnit, calcShelfLifeParts, calcExpiryDateFromParts, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
+    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, ensureScanLib, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
 
     return {
       // v2.26.1 修复（P0-01）：设置页 5 个开关的 @update:model-value 处理器直接调用 saveData() / showToast()，
@@ -11736,7 +11405,7 @@ const app = createApp({
       TOUR_STEPS, tourActive, tourStep, tourRect, tourCardStyle, tourCurrent, startTour, startTourFromModule, nextTourStep, prevTourStep, endTour, tourDemoOwned,
       tourFree, tourPrimary, tourPrimaryLabel, tourNavRects, tourFreeHint, tourBarTop, tourDimClip,   // v2.29.0/2.29.1/2.29.3：两阶段导览 + clip-path 挖洞——❗必须在这份「模板可见」清单里，漏了不会报错只会静默失效（tourHitClick 已于 v2.29.1 删除）
       pageTitle, pageTitleMobile, sortedProducts, expiringProducts, expiredProducts, filteredRecords, recordGroups, stats, statsPage,
-      recordTypeFilter, recordTypeOptions, hasTypeFilter, isTypeSelected, toggleTypeFilter, clearTypeFilter, isCardSelected, applyCardFilter, recordCards, filteredRecordsQty, findProduct, dedupeProductIds, showRecordFilterModal, statsRange, statsRangeOptions, statsDateStart, statsDateEnd, hasStatsCustom, setStatsRangePreset, clearStatsCustom, goToHomeWithFilter, goHomeWithStatus, goCategory, goLocation,
+      recordTypeFilter, recordTypeOptions, showRecordFilterModal, statsRange, statsRangeOptions, statsDateStart, statsDateEnd, hasStatsCustom, setStatsRangePreset, clearStatsCustom, goToHomeWithFilter, goHomeWithStatus, goCategory, goLocation,
       recordBadgeClass, recordNumberClass, recordTypeLabel, recordBarColor, recordQuantityLabel, recordMetaLabel, recordTimeLabel, expiryBadgeClass, expiryLabel, expiryDays, statusColor, formatDateTime,
       incrementStock, decrementStock, confirmDelete, executeDelete, executeDeleteDirect,
       openEditModal, deleteFromEdit, onEditDateChange, onEditExpiryChange, onEditShelfLifeChange, setEditShelfLifeUnit, unionTags, saveEdit,
@@ -11754,9 +11423,6 @@ const app = createApp({
       paddleSupported,   // v2.34.0：本设备是否支持 Paddle 本地识别（iOS / 无 WebGL → false，设置页据此给准确文案）
       ocrEngineHint,     // v2.34.0：设置页「识别引擎」说明文案（随所选引擎 + 设备能力变化）
       ocrEngineLabel,    // v2.34.0：结果区「本次用了哪个引擎」标签（三值：Paddle 本地 / 百度云 / Tesseract）
-      // v2.35.0：高级设置二级页
-      // v2.35.0：高级设置入口（单卡入口 → 四张配置卡平铺页）
-      openAdvancedSettings, backToSettings, advancedSummary,
       verifyBaiduProxy,  // v2.34.0：探测百度代理连通性（/health）
       // v2.22.0：一键导出表格 / 名称清洗 / 扫码配置同步 / 浪费复盘
       exportStockCsv, exportRecordsCsv, exportStatsCsv,
