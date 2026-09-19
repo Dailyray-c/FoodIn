@@ -222,9 +222,28 @@
   </div>
 </div>
 ```
-- ✅ 弹层层级只有两档：`z-40`（`.fi-modal` 确认类遮罩）、`z-50`（全屏流程：扫码 / 拍照 / 图片预览 / toast）
+- ✅ 弹层层级只有两档：`z-40`（`.fi-modal` 确认类遮罩）、`z-50`（全屏流程：扫码 / 拍照 / 图片预览 / toast / 说明弹窗）
 - ❌ 禁止再出现 `z-[60] / z-[70]` 等自定义档位（v2.28.0 已把原有的两处归入 `z-50`）
 - 长内容弹窗需滚动时：在 `.fi-modal-box` 后追加 `max-h-[80vh] overflow-y-auto`（遮罩改为 `items-start` 亦可）
+- **❗一处例外：新手导览子系统**（`.fi-tour-*`）。它自带挖洞机制，内部用 `49 / 50 / 51 / 52 / 60` 一串
+  **相对档位**（`.fi-tour-card` 必须高于 `.fi-tour-dim`，否则气泡被自己的遮罩盖住），是一套封闭层级，
+  **不受本节两档约束**。改导览层请整体来看，不要单独把某档压平。
+
+#### 3.5.1 ❗ 弹窗遮罩一律用 `.fi-modal`（v2.34.10 收敛）
+- 历史上 5 个居中确认弹窗手写遮罩（`fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4`），
+  **与 `.fi-modal` 的 z-40 / 不透明度打架**：本该 z-40 的确认弹窗占了 z-50，与全屏扫码层同级 → 「谁盖住谁」不可推断。
+- v2.34.10 全部收敛为 `<div class="fi-modal" @click.self="...">`（`showCleanHistoryModal` / `showWasteReason` /
+  `showConfigQr` / `showConfigConfirm` / `showConfigScan`），并把 `showConfigScan` 原先偏黑的 `bg-opacity-60` 归一为 `.5`。
+- ❌ 底部抽屉型弹窗（`items-end sm:items-center p-0 sm:p-4`，如记录筛选 / 首页筛选）**不套 `.fi-modal`**——
+  它是贴底的 sheet，不是居中对话框。
+
+#### 3.5.2 ❗ 需要跳转的引导弹窗必须给「行动按钮」（v2.34.10）
+- 说明弹窗（`.fi-tip-*`）此前只有单个「知道了」。对**需要用户去别处操作**的引导（如「文字识别已关闭」→ 要去设置里开），
+  用户读完知道去哪但仍得自己退出、逐层找 → 引导断在最后一步。
+- 写法：`showTip({ …, action: { label: '去设置开启', run: openAdvancedSettings } })`
+  - 有 `action` → 底部排两枚：**次要（知道了，`closeTip`）| 主要（action.label，`runTipAction`）**
+  - 无 `action` → 仍是单枚主按钮铺满（**默认形态不变**，已有 14 个调用点零改动）
+- `runTipAction()` 的顺序固定为 **关窗 → 跑 run()**，不能反 —— 先跳页会让用户看到「新页面上盖着旧弹窗」。
 
 ### 3.6 空态
 
