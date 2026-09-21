@@ -17,6 +17,9 @@ jobs:
 
       - name: Run backup script
         env:
+          # v2.35.0：数据源改为 Upstash Redis；旧的 JSONBIN_* 保留作回退（两套都没配才报错）
+          UPSTASH_REST_URL: ${{ secrets.UPSTASH_REST_URL }}
+          UPSTASH_REST_TOKEN: ${{ secrets.UPSTASH_REST_TOKEN }}
           JSONBIN_API_KEY: ${{ secrets.JSONBIN_API_KEY }}
           JSONBIN_BIN_ID: ${{ secrets.JSONBIN_BIN_ID }}
         run: python scripts/daily_backup.py

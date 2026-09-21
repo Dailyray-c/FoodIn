@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
 Daily Expiry Check Script
-Reads food inventory data from jsonbin.io, checks for expiring/expired items,
-and pushes a notification to WeChat / WeCom.
+Reads food inventory data from the cloud (Upstash Redis, 旧 jsonbin 作回退),
+checks for expiring/expired items, and pushes a notification to WeChat / WeCom.
 
-Required environment variables:
-  JSONBIN_API_KEY  - jsonbin.io X-Master-Key
-  JSONBIN_BIN_ID   - jsonbin.io Bin ID
+Required environment variables（两套取其一，优先 Upstash）:
+  UPSTASH_REST_URL   - Upstash 数据库 REST URL（如 https://xxx-yyy-12345.upstash.io）
+  UPSTASH_REST_TOKEN - Upstash REST Token
+  JSONBIN_API_KEY    - （旧后端，回退用）jsonbin.io X-Master-Key
+  JSONBIN_BIN_ID     - （旧后端，回退用）jsonbin.io Bin ID
 
 Push channels (at least one must be configured; both may be used together):
   WECOM_WEBHOOKS      - 企业微信群机器人 Webhook 地址（可多个，英文逗号分隔）
@@ -16,6 +18,7 @@ Push channels (at least one must be configured; both may be used together):
 
 v2.34.5 变更：新增企业微信群机器人通道（支持多群），Server酱 降级为可选。
 v2.34.6 变更：企微消息改为「分层瘦身 + 单行压缩」，默认不再截断（详见 build_wecom_markdown）。
+v2.35.0 变更：数据源由 jsonbin 换成 Upstash Redis（旧 jsonbin 保留为回退）；推送通道与 Webhook 配置不变。
 """
 
 import os
@@ -27,27 +30,10 @@ import urllib.request
 import urllib.parse
 from datetime import datetime, timezone, timedelta
 
+from cloud_io import resolve_backend, backend_name, missing_hint, fetch_cloud, put_cloud
+
 # Beijing timezone (UTC+8)
 BJT = timezone(timedelta(hours=8))
-
-
-def fetch_jsonbin(api_key, bin_id):
-    """Fetch data from jsonbin.io."""
-    url = f"https://api.jsonbin.io/v3/b/{bin_id}/latest"
-    req = urllib.request.Request(url, headers={
-        "X-Master-Key": api_key,
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-    })
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-        return data.get("record", data)
-    except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", errors="replace")
-        print(f"HTTP {e.code} from jsonbin.io")
-        print(f"Response body: {body[:500]}")
-        raise Exception(f"HTTP {e.code}: {body[:200]}")
 
 
 def decode_record(record):
@@ -74,29 +60,11 @@ def decode_record(record):
     return record, record
 
 
-def update_last_push_date(api_key, bin_id, data, today_str):
-    """Write lastPushDate back to jsonbin so same-day reruns skip."""
+def update_last_push_date(backend, data, today_str):
+    """把 lastPushDate 写回云端，供同日重跑跳过（读写细节统一由 cloud_io 处理）。"""
     data["lastPushDate"] = today_str
-    body = json.dumps(data, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
-        f"https://api.jsonbin.io/v3/b/{bin_id}",
-        data=body,
-        method="PUT",
-        headers={
-            "X-Master-Key": api_key,
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-        }
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            json.loads(resp.read().decode("utf-8"))
+    if put_cloud(backend, data):
         print(f"  lastPushDate updated -> {today_str}")
-    except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", errors="replace")
-        print(f"  WARN: failed to update lastPushDate (HTTP {e.code}): {body[:200]}")
-    except Exception as e:
-        print(f"  WARN: failed to update lastPushDate: {e}")
 
 
 def get_expiry_status(expiry_date_str, expiring_days):
@@ -371,18 +339,19 @@ def send_wecom(webhook_url, markdown):
 
 
 def main():
-    api_key = os.environ.get("JSONBIN_API_KEY")
-    bin_id = os.environ.get("JSONBIN_BIN_ID")
+    backend = resolve_backend()
     sendkey = (os.environ.get("SERVERCHAN_SENDKEY") or "").strip()
     raw_hooks = (os.environ.get("WECOM_WEBHOOKS") or "").strip()
 
     # v2.34.5：推送通道改为「至少配一个」。企微群是主通道，Server酱 可选。
     webhooks = [u.strip() for u in raw_hooks.replace("\n", ",").split(",") if u.strip()]
-    if not all([api_key, bin_id]) or (not webhooks and not sendkey):
+    if not backend[0] or (not webhooks and not sendkey):
         print("ERROR: Missing required environment variables.")
-        print("Required: JSONBIN_API_KEY, JSONBIN_BIN_ID")
+        print("Cloud: " + missing_hint())
         print("Push (at least one): WECOM_WEBHOOKS (可多个，逗号分隔) / SERVERCHAN_SENDKEY")
         sys.exit(1)
+
+    print(f"  Cloud backend: {backend_name(backend[0])}")
 
     print(f"  Push targets: wecom x{len(webhooks)}" + (", serverchan" if sendkey else ""))
     for i, u in enumerate(webhooks):
@@ -392,12 +361,12 @@ def main():
 
     today_str = datetime.now(BJT).strftime("%Y-%m-%d")
 
-    # Fetch data from jsonbin.io
-    print(f"[{datetime.now(BJT).strftime('%Y-%m-%d %H:%M:%S')}] Fetching data from jsonbin.io...")
+    # Fetch data from cloud
+    print(f"[{datetime.now(BJT).strftime('%Y-%m-%d %H:%M:%S')}] Fetching data from {backend_name(backend[0])}...")
     try:
-        data = fetch_jsonbin(api_key, bin_id)
+        data = fetch_cloud(backend)
     except Exception as e:
-        print(f"ERROR: Failed to fetch data from jsonbin.io: {e}")
+        print(f"ERROR: Failed to fetch data from cloud: {e}")
         sys.exit(1)
 
     # Same-day dedup: if already pushed today, skip
@@ -467,7 +436,7 @@ def main():
         print(f"  WARN: 部分通道失败（其余已成功）：{'; '.join(failures)}")
 
     # v3 结构：写回外层包裹（不重新压缩、不污染内层）；旧结构：写回顶层
-    update_last_push_date(api_key, bin_id, outer, today_str)
+    update_last_push_date(backend, outer, today_str)
 
 
 

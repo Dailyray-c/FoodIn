@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
 Daily Inventory Backup Script
-Fetches the food inventory data from jsonbin.io and saves a dated snapshot
-into the backups/ directory, then prunes old snapshots (keeps the newest 30).
+Fetches the food inventory data from the cloud (Upstash Redis, 旧 jsonbin 作回退)
+and saves a dated snapshot into the backups/ directory, then prunes old
+snapshots (keeps the newest 30).
 
-Required environment variables:
-  JSONBIN_API_KEY  - jsonbin.io X-Master-Key
-  JSONBIN_BIN_ID   - jsonbin.io Bin ID
+Required environment variables（两套取其一，优先 Upstash）:
+  UPSTASH_REST_URL   - Upstash 数据库 REST URL（如 https://xxx-yyy-12345.upstash.io）
+  UPSTASH_REST_TOKEN - Upstash REST Token
+  JSONBIN_API_KEY    - （旧后端，回退用）jsonbin.io X-Master-Key
+  JSONBIN_BIN_ID     - （旧后端，回退用）jsonbin.io Bin ID
 """
 
 import os
@@ -18,29 +21,13 @@ import glob
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
+from cloud_io import resolve_backend, backend_name, missing_hint, fetch_cloud
+
 BJT = timezone(timedelta(hours=8))
 KEEP = 30
 BACKUP_DIR = os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "backups")
 )
-
-
-def fetch_jsonbin(api_key, bin_id):
-    """Fetch the record payload from jsonbin.io (same pattern as daily_expiry_check.py)."""
-    url = f"https://api.jsonbin.io/v3/b/{bin_id}/latest"
-    req = urllib.request.Request(url, headers={
-        "X-Master-Key": api_key,
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-    })
-    with urllib.request.urlopen(req, timeout=20) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-    record = data.get("record", data)
-    if record is None:
-        raise ValueError("jsonbin returned an empty record (bin is empty)")
-    if not isinstance(record, dict):
-        raise ValueError("jsonbin record is not an object")
-    return record
 
 
 def decode_record(record):
@@ -61,13 +48,14 @@ def decode_record(record):
 
 
 def main():
-    api_key = os.environ.get("JSONBIN_API_KEY", "")
-    bin_id = os.environ.get("JSONBIN_BIN_ID", "")
-    if not api_key or not bin_id:
-        print("Missing JSONBIN_API_KEY or JSONBIN_BIN_ID")
+    backend = resolve_backend()
+    if not backend[0]:
+        print("Missing cloud credentials.")
+        print(missing_hint())
         sys.exit(1)
+    print(f"Backend: {backend_name(backend[0])}")
 
-    record = fetch_jsonbin(api_key, bin_id)
+    record = fetch_cloud(backend)
     inner = decode_record(record)   # v2.17.1+ 云端是 v3 gzip，解压后才是可读数据
 
     today = datetime.now(BJT).strftime("%Y-%m-%d")

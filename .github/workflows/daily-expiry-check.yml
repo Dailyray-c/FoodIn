@@ -12,9 +12,13 @@ jobs:
 
       - name: Run expiry check script
         env:
+          # v2.35.0：数据源改为 Upstash Redis；旧的 JSONBIN_* 保留作回退（两套都没配才报错）
+          UPSTASH_REST_URL: ${{ secrets.UPSTASH_REST_URL }}
+          UPSTASH_REST_TOKEN: ${{ secrets.UPSTASH_REST_TOKEN }}
           JSONBIN_API_KEY: ${{ secrets.JSONBIN_API_KEY }}
           JSONBIN_BIN_ID: ${{ secrets.JSONBIN_BIN_ID }}
           # v2.34.5：企业微信群机器人（主通道，可多个用逗号分隔）
+          # 注意：推送通道与「数据来源」无关 —— 换后端不影响这两项，无需改动
           WECOM_WEBHOOKS: ${{ secrets.WECOM_WEBHOOKS }}
           # 可选：Server酱 私聊（保留向后兼容，不配则自动跳过）
           SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}

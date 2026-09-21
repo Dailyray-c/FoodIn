@@ -63,13 +63,30 @@
 
 | 层级 | 规范写法 | 用途 |
 |---|---|---|
-| 页面/区块大标题 | `.fi-title`（16px / 600 / gray-800） | 页面顶部、区块头 |
-| 卡片标题 | `.fi-card-title`（14px / gray-700） | 卡片主标题 |
+| 页面/区块大标题 | `.fi-title`（16px / 600 / gray-800） | 页面顶部、区块头、弹窗标题 —— **唯一写法** |
+| 卡片标题 | `text-sm text-gray-700` | 卡片主标题 |
 | 正文 / 数值 | `text-sm text-gray-800` | 商品名、金额、数量 |
 | 字段标签 | `.fi-label`（12px / gray-500 / block / mb-1.5） | 表单字段标题 —— **唯一写法** |
 | 区块分组标题 | `.fi-group-title`（12px / 500 / gray-500 / block / mb-2） | 筛选弹窗、统计页的区块小标题 —— **唯一写法** |
 | 辅助说明 | `.fi-hint`（11px / gray-400） | 说明、副标题、占位提示 |
+| 纯 11px 小字 | `.fi-fs-11`（11px，**不设颜色**） | 需 11px 但颜色由自己/父级决定时 —— 见下 |
 | 极弱 / 禁用 | `.fi-hint` + `text-gray-300` 或 `.text-gray-300` | 失效态 |
+
+**❗`.fi-hint` vs `.fi-fs-11` 的分工（v2.34.13 确立）**
+
+两者都是 11px，差别**只在颜色**：
+
+| | 字号 | 颜色 | 何时用 |
+|---|---|---|---|
+| `.fi-hint` | 11px | **固定 `--fi-ink-400`（弱化灰）** | 说明、副标题、占位——**默认选它** |
+| `.fi-fs-11` | 11px | **不设，继承** | ① 自带语义色（`text-amber-500` 等）② 色由 `:class` 动态决定 ③ 需继承父级色 |
+
+- ❌ **不要**为了改颜色而给 `.fi-hint` 叠加 `text-*` —— 那是「一个元素两套色定义」，直接改用 `.fi-fs-11`
+- ❌ **不要**用 `.fi-fs-11` 写「弱化说明」—— 它会丢掉 `--fi-ink-400`，颜色变成继承值
+- 迁移依据：原 `text-[11px]` 中**带颜色类或 `:class` 动态色**的 → `.fi-fs-11`；**不带的** → `.fi-hint`
+
+> 大标题级已于 v2.34.13 恢复 `.fi-title` 组件类，原 17 处手写 `text-base font-semibold text-gray-800` 全部迁移（实测三档计算样式逐字节等价）。
+> 卡片标题级仍为 utility 写法 `text-sm text-gray-700`。
 
 > 现存写法 `text-[11px] text-gray-400` **已全部**收敛为 `.fi-hint`（109 处，v2.27.0）。
 > 当字段标签用的 `fi-hint block mb-1.5`（11px / gray-400）**已于 v2.28.0 全部**收敛为 `.fi-label`（26 处 + 2 处 `fi-hint block`）；
@@ -146,15 +163,33 @@
 
 ### 3.2 胶囊 chip（筛选 / 标签）
 
+**只有两级，不得新增第三档**（v2.36.1 确立）：
+
+| 层级 | 类 | 标准档高度 | 字号 | 用途 |
+|---|---|---|---|---|
+| 一级 | `.fi-chip` | **32px** | 12px | 主筛选、可点标签（独立语义） |
+| 二级 | `.fi-chip-sm` | **28px** | 11px | 从属标签（嵌在容器内：大分区下的子分区、窄容器密集 pill） |
+
+高度差固定 **4px** —— 能看出主次，又不会「一个大一个小」显得不协调。
+
+**怎么判断用哪级**：看它**是否从属于同组的另一个 chip**。
+「冰箱（含全部）→ 冷藏/冷冻海鲜抽屉…」这种「父 + 子」同框 → 父用一级、子用二级；
+录入页/编辑页那种「独立选一个分区」→ 全部用一级（它们不是谁的从属）。
+
 ```html
-<!-- 默认态（白底灰边灰字） -->
+<!-- 一级 · 默认态（白底灰边灰字） -->
 <button class="fi-chip">全部</button>
 
-<!-- 选中态：在调用处叠加语义色（组件类自动让位） -->
+<!-- 一级 · 选中态：在调用处叠加语义色（组件类自动让位） -->
 <button class="fi-chip" :class="active ? 'bg-orange-500 border-orange-500 text-white' : 'text-gray-600'">临期</button>
+
+<!-- 二级 · 父子同框场景（父 fi-chip + 子 fi-chip-sm） -->
+<button class="fi-chip">{{ pl.name }}<span class="opacity-50"> 全部</span></button>
+<button v-for="zone in pl.zones" class="fi-chip-sm" :class="on ? 'bg-teal-500 text-white border-teal-500' : 'text-gray-600'">{{ zone }}</button>
 ```
-- ✅ `.fi-chip` = `px-3 py-1.5 rounded-full border border-gray-200 bg-white text-xs font-medium transition`
-- ❌ 禁止写 `px-3 py-1.5 rounded-full border text-xs font-medium transition-colors`（等价 20+ token 的手写版）
+- ✅ `.fi-chip` / `.fi-chip-sm` = `inline-flex + items-center + justify-center + min-height + rounded-full + border border-gray-200 bg-white font-medium transition`
+- ❌ 禁止写 `px-2 py-0.5 rounded-full border text-[11px] font-medium transition-colors`（手写二级版，v2.36.1 前有 4 处）
+- ❌ 禁止靠 padding 凑高（须 `min-height` 钉死，见 §6.1.1）
 - ❌ 禁止在 chip 上用 `peer-checked` 做选中态（历史踩坑，须显式 `:class`）
 - ❗**「储存位置」chips 顺序固定为：待设置 → 有分区的地点 → 无分区的地点**（v2.30.0）。录入页 / 批量录入 / 主页编辑弹窗三处**都必须遍历 `placesOrderedView`，禁止直接遍历 `settings.places`** —— 设置页按「分区 / 不分区」两段渲染，拖拽只在各自段内生效，底层数组两段会交错，直接遍历会让「冰箱（有分区）」掉到无分区地点后面，与设置页看到的不一致。各自段内保持 `settings.places` 的相对顺序。
 
@@ -185,10 +220,13 @@
 
 | 变体 | 写法 | 用途 |
 |---|---|---|
-| 主操作 | `.fi-btn-primary` | 保存、提交（品牌填充、白字、整宽） |
+| 主操作 | `py-2/2.5/3 + rounded-xl + bg-orange-500 + text-white + text-sm + font-semibold/medium` | 保存、提交（品牌填充、白字、整宽） |
 | 次操作 | `.fi-btn-2nd` | 取消、关闭、等宽并排的次级动作（灰填充） |
-| 危险 | `.fi-btn-danger` + 尺寸类 | 删除、清空（浅红底 + 红字 + 红边） |
+| 危险 | `bg-red-50 + text-red-600 + border-red-200` + 尺寸类 | 删除、清空（浅红底 + 红字 + 红边） |
 | 幽灵 | `text-gray-400 active:opacity-70` + 尺寸类 | 图标按钮、文字链接 |
+
+> 主操作 / 危险两态**未收敛为组件类**（v2.34.13 清理）：`.fi-btn-primary` / `.fi-btn-danger` 定义存在但全项目零引用，
+> 已作为死类删除。主操作实际沿用上表 utility 写法（全项目 10 处，纵向内边距与圆角按场景微调）。
 
 **次按钮唯一写法 `.fi-btn-2nd`**（v2.28.0 由三套并为一套，16 处）：
 `py-2 + rounded-lg + bg-gray-100 + text-gray-600 + text-xs + font-medium + active:bg-gray-200`。
@@ -212,6 +250,25 @@
 - ✅ 字段标签**只**用 `.fi-label`；说明**只**用 `.fi-hint`
 - ❌ 禁止手写 `w-full px-3 py-2 border rounded-xl …` 自建输入框
 - 现存偏差：67 个 `<input>` 中 51 个已用 `.input`，其余为 `sr-only / hidden` 或搜索框特例（见 §7）
+
+❗**小控件高度规范**（v2.36.1 更新，详见 §6.1.1）：
+
+| 类 | 标准档 | 典型用途 |
+|---|---|---|
+| `.input input-sm` | **36px** | 紧凑输入框 |
+| `.fi-btn-2nd` | **36px** | 次操作按钮（取消 / 关闭） |
+| `.fi-seg-btn` | **36px** | 分段选择（如字号三档、状态切换） |
+| `.fi-seg-btn-sm` | **36px** | 紧凑分段（如星期选择、日历） |
+| `.fi-chip` | **32px** | 一级胶囊（筛选、可点标签） |
+| `.fi-chip-sm` | **28px** | 二级胶囊（从属标签） |
+
+写法统一为 `display: inline-flex; align-items: center; justify-content: center; min-height: Npx;`。
+**`.input`（全尺寸输入框）不在此列**，保持原高度。
+
+> ❗**胶囊为什么是 32 / 28 而不是 36**（v2.36.1）：胶囊是「内容自适应宽度」的紧凑控件，
+> 与按钮/输入框这类「占位块」不同 —— 统一到 36px 会让筛选区显得笨重。
+> 且原先存在「一级 36 + 二级 22.5」的高度差达 13.5px，同框时明显一大一小（用户反馈「不太协调」）。
+> 现收为 32 / 28，差 4px：既保持同一族观感，又能看出主次。
 
 ### 3.5 弹窗
 
@@ -522,10 +579,37 @@ v2.28.0 起统一由 5 个 helper 生成，**禁止再新增裸 `showToast(<字�
 元素上的 `text-xs` / `py-1.5` 一旦被组件类吸收，放大就**不再命中** → 必须在大字号 `<style>` 块内补等值规则：
 
 ```css
-body.fs-large .fi-chip { font-size: 16px !important; padding-top: .5rem !important; padding-bottom: .5rem !important; }
+body.fs-large  .fi-chip { font-size: 16px !important; min-height: 34px  !important; }
+body.fs-xlarge .fi-chip { font-size: 18px !important; min-height: 35.59px !important; }
 ```
-**已有配套**：`.fi-hint / .fi-card-sub / .fi-hint-warn / .fi-hint-danger / .fi-label / .fi-group-title / .fi-chip / .fi-btn-2nd / .fi-btn-primary`
+**已有配套**：`.fi-title / .fi-hint / .fi-fs-11 / .fi-label / .fi-group-title / .fi-chip / .fi-chip-sm / .fi-btn-2nd / .fi-seg-btn / .fi-seg-btn-sm`
 **新增组件类时必须同步登记**，否则「换类即丢放大」。
+
+❗**覆盖 `min-height`，不要覆盖 `padding`**（v2.34.13 修正）：
+小控件高度一律由 `min-height` 钉住（§3.4），大字号档若改去覆盖 `padding-top/bottom`，会与 `min-height` **叠加**、高度失控。
+数值必须是**实测基准**（见 §6.4），不能按盒模型推算。
+
+### 6.1.1 ❗ 小控件高度规范（v2.36.1；胶囊为两级 32/28）
+「按钮 / 输入框类小控件」= `.fi-btn-2nd` / `.fi-seg-btn` / `.fi-seg-btn-sm` / `.input-sm`，
+**统一写法** `display: inline-flex; align-items: center; justify-content: center; min-height: 36px;`。
+「胶囊」= 两级（`.fi-chip` 32px / `.fi-chip-sm` 28px），见 §3.2。
+- 高度用 `min-height` 钉，**不用 `padding` 凑**（padding 凑高会随字号档漂移）
+- `.input`（全尺寸输入框）与卡片类**不在此列**，保持原高度
+- 大 / 超大档**只放宽字号，不追求同为标准值**（观感优先，登记实测值即可）
+- ❗**验收必须实测**（注入法）—— 标准档须**精确等于规范值**，大/超大档须复现基准（误差 ≤ 0.01px）。**禁止按盒模型推算**（历史上推算 `.input` = 42px，实测只有 36px）。
+
+**当前基准表（回归对照用）**：
+
+| 类 | 标准 | 大 | 超大 |
+|---|---|---|---|
+| `.fi-chip` | 32 | 34 | 35.58 |
+| `.fi-chip-sm` | 28 | 30 | 31.5 |
+| `.fi-btn-2nd` | 36 | 35.19 | 36.78 |
+| `.fi-seg-btn` | 36 | 41.19 | 42.78 |
+| `.fi-seg-btn-sm` | 36 | 38.78 | 40.38 |
+
+> ❗**大 / 超大档的 min-height 必须实测后再写**：它不等于「标准值 × 比例」，
+> 而是由「字号放大后内容撑开的高度」决定。`.fi-chip` 大档实测 34（而非 32×1.2=38.4）就是例证。
 
 ### 6.2 新增 utility class → 必须重编译 Tailwind
 ```bash
@@ -622,7 +706,7 @@ function ensureScanLib() {
 | 项 | 内容 |
 |---|---|
 | 令牌层 | `:root` 26 个 `--fi-*` 变量（色彩 / 圆角 / 阴影 / 布局） |
-| 组件层 | `.fi-title` `.fi-card-title` `.fi-card-sub` `.fi-label` `.fi-group-title` `.fi-hint(-warn/-danger)` `.fi-card` `.fi-card-pad(-sm/-xs)` `.fi-row` `.fi-empty` `.fi-chip` `.fi-btn-2nd` `.fi-btn-primary` `.fi-btn-danger` `.fi-modal` `.fi-modal-box` |
+| 组件层 | `.fi-title` `.fi-label` `.fi-group-title` `.fi-hint` `.fi-fs-11` `.fi-card` `.fi-card-pad(-sm/-xs)` `.fi-row` `.fi-empty` `.fi-chip` `.fi-chip-sm` `.fi-btn-2nd` `.fi-modal` `.fi-modal-box` |
 | 迁移 | 207 处调用点 → 9 个组件类，吸收 807 个 utility token |
 | fontScale 配套 | 8 条等值规则（大 / 超大两档） |
 | 文案 | toast 110 条的句式归纳为 3 类并成文（§4），未改文案内容 |
@@ -657,7 +741,7 @@ function ensureScanLib() {
 
 1. 先查本文档有没有现成组件类；有则**只用类**，没有则先登记再落地。
 2. 颜色 / 圆角 / 阴影 / 文本层级**只从令牌取**，不新增中间档。
-3. 卡片 `.fi-card`、胶囊 `.fi-chip`、次按钮 `.fi-btn-2nd`、主按钮 `.fi-btn-primary`、弹窗 `.fi-modal`、空态 `.fi-empty`、开关 `<toggle-setting>`。
+3. 卡片 `.fi-card`、胶囊 `.fi-chip`、次按钮 `.fi-btn-2nd`、弹窗 `.fi-modal`、空态 `.fi-empty`、开关 `<toggle-setting>`。
 4. 表单：`.fi-label` + `.input/.input-sm` + `.fi-hint`。
 5. 提示文案按 §4 三种句式，对象名用 `「」`。
 6. 若把 utility 收敛成新组件类 → **同步补 fontScale 规则**（§6.1）。

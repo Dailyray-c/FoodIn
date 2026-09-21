@@ -8,7 +8,9 @@
 #   1) 绝不 `git add .` / `git add -A`。
 #      - `git add -u` 仅更新【已跟踪】文件改动（含清理时把根目录文件移到
 #        docs/ 产生的「删除」+ README/UI规范/push-safe 的修改），不碰未跟踪。
-#      - 再显式 add 新增目录：docs/、历史副本 versions/、新脚本 push-readme.sh。
+#      - 再显式 add 新增目录：docs/、历史副本 versions/、CI 脚本 scripts/
+#        （v2.35.0 补：scripts/ 曾漏掉，导致新增的 cloud_io.py 不会入库 →
+#         GitHub Actions 报 ModuleNotFoundError），另含 proxy/、push-readme.sh。
 #   2) 提交前护栏：扫描暂存区文件名，命中敏感/本地数据模式立即中止，绝不提交：
 #        *真实数据* / *库存备份_* / node_modules/ / .workbuddy/ / _paddle_models/
 #        / _test_imgs/ / *.bak
@@ -46,7 +48,7 @@ git reset --mixed "$FETCH_OID" 2>/dev/null || git reset --mixed origin/master 2>
 
 echo "[3/5] 暂存清理后的全部改动 ..."
 git add -u                                   # 已跟踪变更（含根目录文件移到 docs/ 的删除 + README/UI规范/push-safe 修改）
-git add docs/ versions/ proxy/ push-readme.sh   # 新增：文档目录 / 历史副本 / 百度OCR代理服务 / 新脚本
+git add docs/ versions/ proxy/ scripts/ push-readme.sh   # 新增：文档目录 / 历史副本 / 百度OCR代理服务 / 新脚本
 
 # 护栏：暂存区不得含敏感/本地数据
 BAD=""
@@ -81,7 +83,7 @@ else
      && F2=$(git rev-parse -q --verify FETCH_HEAD 2>/dev/null) && [ -n "$F2" ] \
      && git reset --mixed "$F2" \
      && git add -u \
-     && git add docs/ versions/ proxy/ push-readme.sh \
+     && git add docs/ versions/ proxy/ scripts/ push-readme.sh \
      && git commit -m "$MSG" \
      && git_remote push origin master; then
     echo "✓ 推送成功（已基于最新远程重演）。"
