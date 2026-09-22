@@ -4337,7 +4337,7 @@ const app = createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.36.0';   // v2.36.0：人工「正常减少库存」统一二次确认（弹窗显示商品名 / 当前库存 / 本次减少 / 减少后剩余，确认按钮防重复提交） + 修复同一 id 两条商品时「改完没反应 / 删不掉」（一律按对象引用定位 + 重复 id 自愈 + 先拆 id 再清幽灵） + 保质期单位与日期反算修复（默认单位改「日」、自动挑最自然单位、正反算往返无损、正算不再多减 1 天） + 顶栏四张统计卡改数据表驱动且件数口径统一 + 记录类型筛选支持多选与选中态配色适配；SW v119 → v120
+    const CURRENT_VERSION = '2.35.0';   // v2.35.0：云同步后端由 jsonbin 换成 Upstash Redis（额度改为按月刷新 + 单值上限 100MB，摆脱「一次性额度」与「单 Bin 100KB」） + 同步失败按状态给出明确原因（令牌无效 / 数据超限 / 被限流 / 云端故障 / 网络超时 / 网络不通） + 设置页改填 REST URL 与 REST Token + 小控件统一 36px（字号开关 38→36） + 胶囊分两级（一级 32 / 二级 28）；SW v118 → v119
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', ocrEnabled: true, baiduApiKey: '', baiduSecretKey: '', ocrProxyUrl: '', categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0, ocrGroupMode: true, ocrImageEnhance: true, nameCleanEnabled: true, nameCleanCase: 'smart', nameCleanMarketing: true, nameCleanCustom: '', nameCleanWhitelist: '', places: [], builtinCategories: ['剩菜剩饭'], leftoverDefaultDays: 3, simpleMode: false, fontScale: 'normal', tourDone: false });   // v2.28.4：+tourDone 首次实景导览是否已完成（仅本机，同 simpleMode 不进云同步 schema——否则云端旧快照会把「已完成」覆盖回来）；v2.25.0：+simpleMode 简洁模式（大字号 + 精简功能，默认关）+fontScale 字号档位（normal 标准 / large 大 / xlarge 超大，独立于简洁模式，切换即时生效、跨设备同步，默认 large 即大字号）；v2.21.16：+ocrGroupMode 批量 OCR 智能分组开关（持久化，默认 true，首次加载迁移）+ocrImageEnhance 识别前图像增强开关（灰度+OTSU 二值化，Tesseract 路径生效，默认 true）；v2.22.0：+nameClean* 名称清洗规则库（默认开：去营销词 / 大小写 smart / 全半角）；v2.22.2：+ocrEnabled 文字识别总开关（默认 true；关闭后所有 OCR 入口按钮变灰并提示）
 
     // v2.26.0：location/category 统一「数组 ↔ 字符串」转换（商品模型落库为逗号字符串，表单态为数组）
@@ -5250,19 +5250,6 @@ const app = createApp({
 
     const changelog = [
       // 近期版本：保留完整条目
-      {
-        version: "2.36.0",
-        date: "2026-09-22",
-        items: [
-          "人工「正常减少库存」改为统一二次确认：弹窗明确列出商品名称、当前库存、本次减少数量与减少后剩余库存，点「确认减少」才真正扣减；点「取消」则库存与流水完全不变、不产生任何记录。此前只有「最后一件」才弹确认，其余数量点一下就直接扣掉，误触无法挽回",
-          "确认按钮防重复提交：提交瞬间即置灰并显示加载状态，连点也只会扣减一次（扣减改到下一帧执行，避免同帧关闭弹窗造成重复入账）",
-          "修复「改完没反应 / 删不掉」：云同步 upsert 与 CSV 导入都可能让同一个 id 存在两条商品，此前改名、删除永远作用在第一条上。现在定位一律优先用对象引用；设置页可一键拆分重复 id（并把属于该商品的流水一并迁移），清理顺序改为「先拆 id 再清幽灵商品」",
-          "编辑弹窗打开时锚定商品对象引用，列表重排后保存不会再落到别的商品上",
-          "保质期单位与日期反算修复：默认单位由「月」改为「日」（原默认值会让单位按钮一进页面就停在「月」）；自动挑选最自然单位并保证正反算往返无损，正算不再多减 1 天",
-          "顶栏四张统计卡改为数据表驱动，第一张固定为「在库」（商品维度、件数口径）；「件」统一为 in / eat / waste 三类记录的数量合计，与列表口径一致",
-          "记录类型筛选支持多选，选中态背景色与类型标签配色适配"
-        ]
-      },
       {
         version: "2.35.0",
         date: "2026-09-21",

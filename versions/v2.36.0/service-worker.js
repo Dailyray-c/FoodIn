@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-inventory-v120';   // v2.36.0：减少库存二次确认 + 重复 id 商品定位修复 + 保质期单位与日期反算修复 + 顶栏统计卡数据表驱动 + 记录类型筛选多选；v2.35.0：云同步后端 jsonbin → Upstash Redis（月度额度 + 100MB 单值）+ 同步失败给明确原因 + 设置页改填 REST URL/REST Token + 小控件统一 36px + 胶囊两级（32/28）。递增 → 旧 SW 失效，activate 时删除旧缓存
+const CACHE_NAME = 'food-inventory-v119';   // v2.35.0：云同步后端 jsonbin → Upstash Redis（月度额度 + 100MB 单值）+ 同步失败给明确原因 + 设置页改填 REST URL/REST Token + 小控件统一 36px + 胶囊两级（32/28）。递增 → 旧 SW 失效，activate 时删除旧缓存
 
 // 仅预缓存「首屏必需」的同域静态资源。
 // ❗v2.33.0：html5-qrcode.min.js（375KB）与 qrcode.min.js 已移出这里 ——
