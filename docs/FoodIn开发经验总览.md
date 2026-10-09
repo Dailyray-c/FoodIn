@@ -11,7 +11,7 @@
 | 主题 | 一句话铁律 |
 |---|---|
 | 工作流 | 改代码 → 起服务+截图 → **用户确认可见性** → 才跑测试/push/部署 |
-| 发布前 Gate | 必跑 `_chk_exports.py`（模板↔return 配对），再 `_ui_diff_aligned.py` 证零变化 |
+| 发布前 Gate | 必跑 `tools/chk_exports.py`（模板↔return 配对），再 `_ui_diff_aligned.py` 证零变化 |
 | Tailwind | 任何新 utility class 必须重编译 `styles.css`；漏编译=样式失效但功能正常 |
 | Vue 最隐蔽 Bug | 函数忘了进 `return{}` → UI 正常但**不落盘**；无参 `@change` 会把 DOM Event 当实参 |
 | 同步 | `DEMO_MARK` 演示数据对同步引擎必须完全不可见；撤销快照不进 `SETTINGS_SYNC_SCHEMA` |
@@ -32,8 +32,8 @@
   - `service-worker.js`：同源静态资源缓存（白名单模式）
   - `vendor/`：`vue.global.prod.js` / `html5-qrcode.min.js` / `qrcode.min.js`（扫码/生成库，v2.33.0 起**改为按需懒加载**）
   - `manifest.json` + `icon-180/192/512.png`：PWA 元信息
-- **数据层**：`localStorage` + `jsonbin.io` **事件溯源**云同步（免费额度约 1 万次一次性 API 请求，省着用）
-- **当前版本**：`CURRENT_VERSION = '2.33.0'`；SW `CACHE_NAME = 'food-inventory-v114'`
+- **数据层**：`localStorage` + `Upstash Redis` **事件溯源**云同步（50 万命令/月、按月刷新；单值上限 100MB；读 `GET {url}/get/foodin:sync`、写 `POST {url}/set/foodin:sync`）
+- **当前版本**：`CURRENT_VERSION = '2.36.1'`；SW `CACHE_NAME = 'food-inventory-v121'`
 - **版本号迭代规律（单一事实源见《UI规范.md》§八）**：`X.Y.Z` 语义化——X 仅破坏性变更（同步引擎/存储模型重写）才 bump；Y 每次可发布功能/重要优化 +1；Z 仅 Bug 修复/小调整 +1。每次发版无论 X/Y/Z 都必须让 SW `CACHE_NAME` 数值 +1。
 - **版本四处联动**（bump 时务必同步，详见《UI规范.md》§8.4）：① `CURRENT_VERSION` ② `CACHE_NAME` ③ `index.html` 内 changelog 条目 ④ `versions/v{X.Y.Z}/` 三件套副本
 
@@ -47,7 +47,7 @@
 
 - **Review Before Testing（用户明确要求，跨项目铁律）**：改动完成后，**先交付可视化结果给用户看，用户确认 OK 之后才跑测试/回归脚本**。历史上多次出现 IDE 注入 `data-page-node-id` 导致页面根本渲染不出来、本地化资源没入库，却先跑了测试白忙一场。所以**可见性验证永远优先于测试通过**。
 - 用户确认前：不要主动执行测试脚本、不要 push、不要部署。
-- 发布前必跑 `_chk_exports.py`（见 §3）。
+- 发布前必跑 `tools/chk_exports.py`（见 §3）。
 
 ---
 
@@ -55,12 +55,12 @@
 
 | 工具 | 作用 | 关键点 |
 |---|---|---|
-| `_chk_exports.py` | 模板引用集 ∩ 定义集 − `return` 导出集 | return 块用**花括号配平**扫描；定义集限 **4 空格缩进顶层**；引用集**减 v-for/v-slot/`#default` 别名**；退出码非 0 即拦截 |
+| `tools/chk_exports.py` | 模板引用集 ∩ 定义集 − `return` 导出集 | return 块用**花括号配平**扫描；定义集限 **4 空格缩进顶层**；引用集**减 v-for/v-slot/`#default` 别名**；退出码非 0 即拦截 |
 | `_ui_diff_aligned.py` | 改版前后 DOM 计算样式零变化验证 | 按 `(tag, class)` 签名分组配对，**不能按索引比**（DOM 增删会全体平移→假差异，曾误报 2673 条，实际 0）|
 | `_chk_toast_equiv.py` | 裸 `showToast(字面量)` → 5 个构造函数的语义等价验证 | 把两侧调用展开成拼接表达式 token 序列做多重集比对，能抓「多/少一个字」；静态字符串替换查不出 |
 | 计算样式快照 | `getComputedStyle(el)` 比对 | 改 Bug 后先证「零变化」再交付 |
 
-**验收姿势**：改完 → `_ui_stylecmp.js`+`_ui_diff_aligned.py` 证零变化 → `_chk_exports.py` → **截图交用户确认** → 才 push/部署。
+**验收姿势**：改完 → `_ui_stylecmp.js`+`_ui_diff_aligned.py` 证零变化 → `tools/chk_exports.py` → **截图交用户确认** → 才 push/部署。
 
 ---
 
@@ -196,7 +196,7 @@
 - `splitTags`/`splitTagStr`/`splitLocTags` 别名未清
 - `manifest.json` 漏 `icon-512`
 - CI `lastPushDate` 写在压缩信封外层
-- `package.json version` 仍 `2.16.2`（与 `CURRENT_VERSION` 脱节）
+- ~~`package.json version` 2.16.2~~ 现已与 `CURRENT_VERSION` 保持同步（当前 `2.36.2`）；发版时记得一起 bump
 
 **待决**：删了 legacy 默认种子 → 新用户初始 0 地点（需决定补种子或引导）。
 

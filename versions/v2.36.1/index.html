@@ -631,6 +631,9 @@
        挂在 <body> 上的 .fs-large / .fs-xlarge 统一放大 Tailwind 的固定字号类与控件尺寸，
        无需改动任何模板、无需重新编译 Tailwind。settings.fontScale 驱动，云同步跨设备生效。 -->
   <style>
+    body.fs-large .text-\[9px\] { font-size: 12px !important; }
+    body.fs-large .text-\[10px\] { font-size: 13px !important; }
+    body.fs-large .text-\[11px\] { font-size: 15px !important; }
     body.fs-large .text-\[12px\] { font-size: 16px !important; }
     body.fs-large .text-\[13px\] { font-size: 16px !important; }
     body.fs-large .text-\[15px\] { font-size: 18px !important; }
@@ -642,6 +645,9 @@
     body.fs-large .text-xl { font-size: 24px !important; }
     body.fs-large .text-2xl { font-size: 28px !important; }
     body.fs-large .text-3xl { font-size: 34px !important; }
+    body.fs-xlarge .text-\[9px\] { font-size: 14px !important; }
+    body.fs-xlarge .text-\[10px\] { font-size: 15px !important; }
+    body.fs-xlarge .text-\[11px\] { font-size: 17px !important; }
     body.fs-xlarge .text-\[12px\] { font-size: 18px !important; }
     body.fs-xlarge .text-\[13px\] { font-size: 19px !important; }
     body.fs-xlarge .text-\[15px\] { font-size: 21px !important; }
@@ -700,13 +706,13 @@
        ❗把 utility 收敛成组件类时，元素上原有的 .text-xs / .py-1.5 等被一并移除，
        于是放大不再命中 —— 必须在与此处补等值规则，否则「换类即丢放大」。
        这是本轮规范化的强制配套项，新增组件类时同步在此登记。 */
-    body.fs-large .fi-hint { font-size: 15px !important; }        /* 11px 档 */
+    body.fs-large .fi-hint { font-size: 15px !important; }        /* ← .text-[11px] */
     body.fs-xlarge .fi-hint { font-size: 17px !important; }
     body.fs-large .fi-label, body.fs-large .fi-group-title { font-size: 16px !important; }    /* ← .text-xs */
     body.fs-xlarge .fi-label, body.fs-xlarge .fi-group-title { font-size: 18px !important; }
     body.fs-large .fi-title { font-size: 19px !important; }        /* ← .text-base */
     body.fs-xlarge .fi-title { font-size: 22px !important; }
-    body.fs-large .fi-fs-11 { font-size: 15px !important; }        /* 11px 档 */
+    body.fs-large .fi-fs-11 { font-size: 15px !important; }        /* ← .text-[11px] */
     body.fs-xlarge .fi-fs-11 { font-size: 17px !important; }
     /* v2.36.0：小控件统一 36px —— 类内改用 min-height 钉高，
        故大字号档也从「覆盖 padding」改为「覆盖 min-height」（否则二者会叠加、高度失控）。
@@ -714,7 +720,7 @@
        保证「除标准档统一到 36 外，大 / 超大档观感零变化」。 */
     body.fs-large .fi-chip { font-size: 16px !important; min-height: 34px !important; }    /* ← .text-xs */
     body.fs-xlarge .fi-chip { font-size: 18px !important; min-height: 35.59px !important; }
-    body.fs-large .fi-chip-sm { font-size: 15px !important; min-height: 30px !important; }    /* 11px 档 */
+    body.fs-large .fi-chip-sm { font-size: 15px !important; min-height: 30px !important; }    /* ← .text-[11px] */
     body.fs-xlarge .fi-chip-sm { font-size: 17px !important; min-height: 31.5px !important; }
     body.fs-large .fi-btn-2nd { font-size: 16px !important; min-height: 35.19px !important; }   /* ← .text-xs */
     body.fs-xlarge .fi-btn-2nd { font-size: 18px !important; min-height: 36.78px !important; }
@@ -790,7 +796,7 @@
           class="relative w-9 h-9 flex items-center justify-center rounded-full bg-orange-50 text-orange-600 border border-orange-200 active:scale-90 transition-all">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span v-if="expiringProducts.length + expiredProducts.length > 0"
-            class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white fi-fs-11 rounded-full flex items-center justify-center">
+            class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[11px] rounded-full flex items-center justify-center">
             {{ expiringProducts.length + expiredProducts.length }}
           </span>
         </button>
@@ -798,7 +804,7 @@
         <button v-if="currentPage === 'home' && !settings.simpleMode" @click="showLocationPanel = true; showExpiryReminder = false" title="存放位置"
           class="relative w-9 h-9 flex items-center justify-center rounded-full bg-teal-50 text-teal-600 border border-teal-200 active:scale-90 transition-all">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="6" y1="10" x2="18" y2="10"/><line x1="10" y1="5" x2="10" y2="7"/><line x1="10" y1="13" x2="10" y2="17"/></svg>
-          <span v-if="placeAlertCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white fi-fs-11 rounded-full flex items-center justify-center">{{ placeAlertCount }}</span>
+          <span v-if="placeAlertCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[11px] rounded-full flex items-center justify-center">{{ placeAlertCount }}</span>
         </button>
         <!-- v2.25.2：简洁模式下主页也保留云同步按钮（「我的」页仍不显示云同步设置板块）
              v2.34.11：按钮兼作**自动同步的状态指示**（15 秒防抖同步此前全静默，用户不知道数据有没有上云）。
@@ -848,19 +854,19 @@
           :class="parseSearchQuery(searchQuery).statuses.length === 0 ? 'bg-gray-800 border-gray-800 text-white' : 'bg-white border-gray-200 text-gray-600'"
           class="rounded-xl border py-2 flex flex-col items-center leading-none transition-colors">
           <span class="fi-fs-11">在库</span>
-          <span class="text-sm font-bold mt-1.5">{{ products.length }}<span class="fi-fs-11 font-normal ml-0.5">件</span></span>
+          <span class="text-sm font-bold mt-1.5">{{ products.length }}<span class="text-[11px] font-normal ml-0.5">件</span></span>
         </button>
         <button @click="toggleSearchToken('&', '临期')"
           :class="hasSearchToken('&', '临期') ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white border-gray-200 text-amber-600'"
           class="rounded-xl border py-2 flex flex-col items-center leading-none transition-colors">
           <span class="fi-fs-11">临期</span>
-          <span class="text-sm font-bold mt-1.5">{{ expiringProducts.length }}<span class="fi-fs-11 font-normal ml-0.5">件</span></span>
+          <span class="text-sm font-bold mt-1.5">{{ expiringProducts.length }}<span class="text-[11px] font-normal ml-0.5">件</span></span>
         </button>
         <button @click="toggleSearchToken('&', '过期')"
           :class="hasSearchToken('&', '过期') ? 'bg-red-500 border-red-500 text-white' : 'bg-white border-gray-200 text-red-500'"
           class="rounded-xl border py-2 flex flex-col items-center leading-none transition-colors">
           <span class="fi-fs-11">过期</span>
-          <span class="text-sm font-bold mt-1.5">{{ expiredProducts.length }}<span class="fi-fs-11 font-normal ml-0.5">件</span></span>
+          <span class="text-sm font-bold mt-1.5">{{ expiredProducts.length }}<span class="text-[11px] font-normal ml-0.5">件</span></span>
         </button>
       </div>
       <div data-tour="home-search" class="flex items-stretch gap-2">
@@ -892,7 +898,7 @@
           :class="c.active ? c.onCls : 'bg-white border-gray-200'"
           class="rounded-xl border py-2 flex flex-col items-center leading-none transition-colors">
           <span class="fi-fs-11" :class="c.active ? 'text-white' : c.textCls">{{ c.label }}</span>
-          <span class="text-sm font-bold mt-1.5" :class="c.active ? 'text-white' : c.textCls">{{ c.count }}<span class="fi-fs-11 font-normal ml-0.5" :class="c.active ? 'text-white' : c.textCls">{{ c.unit }}</span></span>
+          <span class="text-sm font-bold mt-1.5" :class="c.active ? 'text-white' : c.textCls">{{ c.count }}<span class="text-[11px] font-normal ml-0.5" :class="c.active ? 'text-white' : c.textCls">{{ c.unit }}</span></span>
         </button>
       </div>
       <div class="flex items-stretch gap-2">
@@ -988,7 +994,7 @@
         </div><!-- /product grid -->
 
         <!-- 列表页脚（v2.16.7）：有数据时显示，给底部留白一个视觉锚点 -->
-        <div v-if="sortedProducts.length > 0" class="text-center fi-fs-11 text-gray-300 py-2 flex-shrink-0">
+        <div v-if="sortedProducts.length > 0" class="text-center text-[11px] text-gray-300 py-2 flex-shrink-0">
           已显示全部 {{ sortedProducts.length }} 件商品
         </div>
       </div>
@@ -1064,7 +1070,7 @@
             <!-- 分区单选行：选中地点含分区才出现 -->
             <div v-if="locActivePlace(scanForm) && locActivePlace(scanForm).zones.length"
               class="bg-teal-50/70 border border-teal-100 rounded-xl px-3 py-2 mt-1.5">
-              <div class="fi-fs-11 text-teal-600/80 font-medium mb-1.5 flex items-center gap-1">
+              <div class="text-[11px] text-teal-600/80 font-medium mb-1.5 flex items-center gap-1">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 7v10l7-5z"/><path d="M14 7v10l7-5z"/></svg>
                 分区 · {{ scanForm._locPlace }}
               </div>
@@ -1074,7 +1080,7 @@
                   class="fi-chip">{{ z }}</button>
               </div>
             </div>
-            <p v-if="locActivePlace(scanForm) && locActivePlace(scanForm).zones.length && !scanForm.location.length" class="fi-fs-11 text-amber-500 mt-1.5">该位置有分区，请选择具体分区</p>
+            <p v-if="locActivePlace(scanForm) && locActivePlace(scanForm).zones.length && !scanForm.location.length" class="text-[11px] text-amber-500 mt-1.5">该位置有分区，请选择具体分区</p>
           </div>
           <div v-if="!settings.simpleMode" class="grid grid-cols-2 gap-3">
             <div>
@@ -1203,7 +1209,7 @@
               <div class="h-full bg-orange-500 rounded-full transition-all" :style="{ width: ocr.progress + '%' }"></div>
             </div>
             <button v-if="ocr.phase === 'paddle-dl' && settings.ocrEngine === 'paddle'" @click="cancelPaddleOcr"
-              class="mt-2 w-full py-1.5 fi-fs-11 text-gray-500 bg-gray-50 border border-gray-200 rounded-lg active:bg-gray-100">取消并切 Tesseract 识别（更快）</button>
+              class="mt-2 w-full py-1.5 text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg active:bg-gray-100">取消并切 Tesseract 识别（更快）</button>
           </div>
           <!-- v2.21.10：结果区包进 processing 的 v-else——此前批量页结果区无门控，pass1 一结束 lines 立即上屏而进度条才 92%（未到 100），与单条扫码页一致改为「进度走满 → 结果一起显示」 -->
           <template v-else>
@@ -1234,7 +1240,7 @@
                       分组 {{ gi + 1 }}<span v-if="g.lineIndices && g.lineIndices.length > 1" class="text-gray-300">· 合并 {{ g.lineIndices.length }} 行</span>
                     </div>
                     <div class="text-xs text-gray-700 leading-relaxed space-y-0.5">
-                      <div v-if="g.barcode" class="flex"><span class="text-gray-400 w-10 shrink-0">条码</span><span class="font-mono fi-fs-11">{{ g.barcode }}</span></div>
+                      <div v-if="g.barcode" class="flex"><span class="text-gray-400 w-10 shrink-0">条码</span><span class="font-mono text-[11px]">{{ g.barcode }}</span></div>
                       <div v-if="g.name" class="flex"><span class="text-gray-400 w-10 shrink-0">名称</span><span class="break-all">{{ g.name }}</span></div>
                       <div v-if="g.spec" class="flex"><span class="text-gray-400 w-10 shrink-0">规格</span><span>{{ g.spec }}</span></div>
                       <div v-if="g.qty || g.unit" class="flex"><span class="text-gray-400 w-10 shrink-0">数量</span><span>{{ g.qty || 1 }}{{ g.unit }}</span></div>
@@ -1243,21 +1249,21 @@
                     </div>
                     <div class="flex gap-1.5 mt-2">
                       <button @click="addGroupToBatch(g)" type="button"
-                        class="flex-1 py-1 fi-fs-11 rounded-lg bg-orange-500 text-white active:bg-orange-600 transition-colors">＋ 加入批量</button>
+                        class="flex-1 py-1 text-[11px] rounded-lg bg-orange-500 text-white active:bg-orange-600 transition-colors">＋ 加入批量</button>
                       <button @click="splitGroupUi(gi)" type="button"
-                        class="px-2 py-1 fi-fs-11 rounded-lg bg-white border border-gray-200 text-gray-500 active:bg-gray-50 transition-colors">✂️ 拆开</button>
+                        class="px-2 py-1 text-[11px] rounded-lg bg-white border border-gray-200 text-gray-500 active:bg-gray-50 transition-colors">✂️ 拆开</button>
                     </div>
                   </div>
                   <!-- 拆开的单行（splitIndices）—— 显示在分组卡片之后，单行按钮样式 -->
                   <template v-if="ocr.splitIndices.length">
-                    <div class="px-3 py-1.5 bg-gray-50 fi-hint">— 已拆开的单行 —</div>
+                    <div class="px-3 py-1.5 bg-gray-50 text-[10px] text-gray-400">— 已拆开的单行 —</div>
                     <button v-for="idx in ocr.splitIndices" :key="'s-'+idx"
                       @click="useBatchOcrSingleLine(idx)" type="button"
                       class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ ocr.lines[idx] }}</button>
                   </template>
                   <!-- 分组后还有未归属任何组的孤立行（防御性，正常应为空） -->
                   <template v-if="ungroupedLineIndices.length">
-                    <div class="px-3 py-1.5 bg-gray-50 fi-hint">— 其他识别行 —</div>
+                    <div class="px-3 py-1.5 bg-gray-50 text-[10px] text-gray-400">— 其他识别行 —</div>
                     <button v-for="idx in ungroupedLineIndices" :key="'u-'+idx"
                       @click="useBatchOcrSingleLine(idx)" type="button"
                       class="w-full text-left px-3 py-2 text-xs text-gray-700 border-b border-gray-100 last:border-0 active:bg-orange-50">{{ ocr.lines[idx] }}</button>
@@ -1345,7 +1351,7 @@
               <!-- 分区单选行：选中地点含分区才出现 -->
               <div v-if="locActivePlace(item) && locActivePlace(item).zones.length"
                 class="bg-teal-50/70 border border-teal-100 rounded-xl px-3 py-2 mt-1.5">
-                <div class="fi-fs-11 text-teal-600/80 font-medium mb-1.5 flex items-center gap-1">
+                <div class="text-[11px] text-teal-600/80 font-medium mb-1.5 flex items-center gap-1">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 7v10l7-5z"/><path d="M14 7v10l7-5z"/></svg>
                   分区 · {{ item._locPlace }}
                 </div>
@@ -1356,7 +1362,7 @@
                 </div>
               </div>
               <p v-if="locActivePlace(item) && !locActivePlace(item).zones.length" class="fi-hint mt-1.5">{{ desc('noZone', { p: item._locPlace }) }}</p>
-              <p v-else-if="locActivePlace(item) && locActivePlace(item).zones.length && !item.location.length" class="fi-fs-11 text-amber-500 mt-1.5">该位置有分区，请选择具体分区</p>
+              <p v-else-if="locActivePlace(item) && locActivePlace(item).zones.length && !item.location.length" class="text-[11px] text-amber-500 mt-1.5">该位置有分区，请选择具体分区</p>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
@@ -1459,7 +1465,7 @@
             <div v-if="receiptCamError" class="absolute inset-0 flex items-center justify-center text-center px-8">
               <div class="text-sm text-gray-300">
                 <div class="text-base mb-2">{{ receiptCamError }}</div>
-                <div class="fi-fs-11 text-gray-500">可在浏览器地址栏允许摄像头权限后重试</div>
+                <div class="text-[11px] text-gray-500">可在浏览器地址栏允许摄像头权限后重试</div>
               </div>
             </div>
           </div>
@@ -1501,7 +1507,7 @@
               <div class="flex-1 p-3 min-w-0">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2 min-w-0">
-                    <span :class="recordBadgeClass(record.type)" class="fi-fs-11 px-2 py-1 rounded-full font-medium flex-shrink-0">{{ recordTypeLabel(record.type) }}</span>
+                    <span :class="recordBadgeClass(record.type)" class="text-[11px] px-2 py-1 rounded-full font-medium flex-shrink-0">{{ recordTypeLabel(record.type) }}</span>
                     <span class="text-sm font-medium text-gray-800 truncate">{{ record.productName }}</span>
                   </div>
                   <span :class="recordNumberClass(record.type)" class="text-sm font-bold flex-shrink-0 ml-2 whitespace-nowrap">{{ recordQuantityLabel(record) }}</span>
@@ -1510,7 +1516,7 @@
                   <span class="fi-hint truncate">{{ recordMetaLabel(record) }}</span>
                   <span class="fi-hint flex-shrink-0">{{ recordTimeLabel(record) }}</span>
                 </div>
-                <div v-if="record.detail" class="fi-fs-11 text-gray-500 mt-1.5 whitespace-pre-line break-words leading-relaxed">{{ record.detail }}</div>
+                <div v-if="record.detail" class="text-[11px] text-gray-500 mt-1.5 whitespace-pre-line break-words leading-relaxed">{{ record.detail }}</div>
                 <!-- v2.16.8：撤销按钮 -->
                 <div class="flex justify-end mt-2 pt-2 border-t border-gray-50">
                   <button @click="confirmRevoke(record)" class="flex items-center gap-1 text-xs text-gray-400 active:text-red-500 active:scale-95 transition-all">
@@ -1525,7 +1531,7 @@
         </div><!-- /records grid -->
 
         <!-- 列表页脚（v2.16.7）：有数据时显示，给底部留白一个视觉锚点 -->
-        <div v-if="filteredRecords.length > 0" class="text-center fi-fs-11 text-gray-300 py-2 flex-shrink-0">
+        <div v-if="filteredRecords.length > 0" class="text-center text-[11px] text-gray-300 py-2 flex-shrink-0">
           已显示全部 {{ filteredRecords.length }} 条记录
         </div>
       </div>
@@ -1691,7 +1697,7 @@
               <div class="text-xl font-bold text-amber-600 mt-0.5">{{ leftoverStats.avg }} 次/件</div>
             </div>
           </div>
-          <p class="fi-fs-11 text-amber-500 mt-2">标记「剩菜剩饭」的库存自动计入；加热次数反映复热习惯</p>
+          <p class="text-[11px] text-amber-500 mt-2">标记「剩菜剩饭」的库存自动计入；加热次数反映复热习惯</p>
         </div>
 
         <!-- v2.22.0：浪费复盘（本月）——浪费时选原因，越用越懂家里在丢什么 -->
@@ -1717,7 +1723,7 @@
             </div>
             <div class="space-y-1">
               <div v-for="row in wasteReviewMonth.rows" :key="row.label" class="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                <span class="text-xs text-gray-700">{{ row.label }}<span class="fi-hint ml-1.5">{{ row.qty }} 件</span></span>
+                <span class="text-xs text-gray-700">{{ row.label }}<span class="text-[10px] text-gray-400 ml-1.5">{{ row.qty }} 件</span></span>
                 <span class="text-xs font-medium" :class="(row.label === '吃腻了' || row.label === '其他' || row.label === '未标注') ? 'text-gray-500' : 'text-red-600'">{{ row.amount > 0 ? '¥' + row.amount.toFixed(1) : '—' }}</span>
               </div>
             </div>
@@ -1727,7 +1733,7 @@
         <!-- b · 近 6 个月柱状图（v2.20.3：grid 三段式重写——总数标签贴柱顶、柱体 92px、月份名独立底栏） -->
         <div class="bg-white rounded-xl fi-card-pad-sm border border-gray-100 lg:col-span-2">
           <div class="fi-hint mb-2">近 6 个月采购 vs 消耗 vs 浪费（件）</div>
-          <div class="flex gap-3 fi-fs-11 text-gray-500 mb-2 flex-wrap">
+          <div class="flex gap-3 text-[11px] text-gray-500 mb-2 flex-wrap">
             <span>采购 <b class="text-gray-800 font-bold">{{ statsPage.totalIn }}</b></span>
             <span>消耗 <b class="text-gray-800 font-bold">{{ statsPage.totalEat }}</b></span>
             <span>浪费 <b class="text-gray-800 font-bold">{{ statsPage.totalWaste }}</b></span>
@@ -1740,7 +1746,7 @@
               <div class="absolute inset-x-0 top-0 bottom-4 flex flex-col justify-end">
                 <!-- 总数标签：贴柱顶（只在有数据时显示） -->
                 <div v-if="m.inQty + m.consumeQty + m.wasteQty > 0"
-                  class="fi-fs-11 font-medium text-gray-500 text-center leading-none mb-0.5 whitespace-nowrap">
+                  class="text-[10px] font-medium text-gray-500 text-center leading-none mb-0.5 whitespace-nowrap">
                   {{ m.inQty + m.consumeQty + m.wasteQty }}
                 </div>
                 <!-- 三色柱（采购/消耗/浪费）—— w-2 加宽、min-height 2 防 0 数据消失 -->
@@ -1755,9 +1761,9 @@
             </div>
           </div>
           <div class="flex gap-3 mt-2">
-            <span class="fi-fs-11 text-amber-600 flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-amber-400 inline-block"></span>采购</span>
-            <span class="fi-fs-11 text-green-600 flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-green-400 inline-block"></span>消耗</span>
-            <span class="fi-fs-11 text-red-600 flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-red-400 inline-block"></span>浪费</span>
+            <span class="text-[11px] text-amber-600 flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-amber-400 inline-block"></span>采购</span>
+            <span class="text-[11px] text-green-600 flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-green-400 inline-block"></span>消耗</span>
+            <span class="text-[11px] text-red-600 flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-red-400 inline-block"></span>浪费</span>
           </div>
         </div>
 
@@ -1766,12 +1772,12 @@
           <p class="fi-hint mb-2">当期金额</p>
           <div class="grid grid-cols-2 gap-2">
             <div class="bg-amber-50 rounded-xl fi-card-pad-sm">
-              <div class="fi-fs-11 text-amber-600">采购金额</div>
+              <div class="text-[11px] text-amber-600">采购金额</div>
               <div class="text-3xl font-bold text-amber-600 mt-1 leading-none">{{ statsPage.spend > 0 ? '¥' + statsPage.spend.toFixed(1) : '—' }}</div>
               <div class="fi-hint mt-1.5">日均 ¥{{ statsPage.dailySpendAmount.toFixed(1) }} · 共 {{ statsPage.totalIn }} 件</div>
             </div>
             <div class="bg-green-50 rounded-xl fi-card-pad-sm">
-              <div class="fi-fs-11 text-green-600">消耗金额</div>
+              <div class="text-[11px] text-green-600">消耗金额</div>
               <div class="text-3xl font-bold text-green-600 mt-1 leading-none">{{ statsPage.consumeAmount > 0 ? '¥' + statsPage.consumeAmount.toFixed(1) : '—' }}</div>
               <div class="fi-hint mt-1.5">日均 ¥{{ statsPage.dailyConsumeAmount.toFixed(1) }} · 共 {{ statsPage.totalConsume }} 件</div>
             </div>
@@ -1782,7 +1788,7 @@
           </div>
           <div class="flex items-center justify-between mt-1.5">
             <span class="fi-hint">件数</span>
-            <span class="fi-fs-11 text-gray-500">采购 {{ statsPage.totalIn }} · 消耗 {{ statsPage.totalEat }} · 浪费 {{ statsPage.totalWaste }} · 净增 <b :class="statsPage.netChange >= 0 ? 'text-blue-700' : 'text-red-600'">{{ statsPage.netChange >= 0 ? '+' + statsPage.netChange : statsPage.netChange }}</b> 件</span>
+            <span class="text-[11px] text-gray-500">采购 {{ statsPage.totalIn }} · 消耗 {{ statsPage.totalEat }} · 浪费 {{ statsPage.totalWaste }} · 净增 <b :class="statsPage.netChange >= 0 ? 'text-blue-700' : 'text-red-600'">{{ statsPage.netChange >= 0 ? '+' + statsPage.netChange : statsPage.netChange }}</b> 件</span>
           </div>
         </div>
 
@@ -1793,14 +1799,14 @@
             <div class="relative rounded-full flex-shrink-0 w-[96px] h-[96px] lg:w-[132px] lg:h-[132px]" :style="{ background: statsPage.stockGradient }">
               <div class="absolute rounded-full bg-white flex flex-col items-center justify-center inset-[12px] lg:inset-[18px]">
                 <div class="text-xl font-bold text-gray-800 leading-none lg:text-2xl">{{ statsPage.stockTotal }}</div>
-                <div class="fi-hint text-center mt-0.5 leading-tight fi-hint lg:mt-1">件<br>临期 {{ statsPage.expiringRatio.toFixed(1) }}%</div>
+                <div class="text-[9px] text-gray-400 text-center mt-0.5 leading-tight lg:text-[10px] lg:mt-1">件<br>临期 {{ statsPage.expiringRatio.toFixed(1) }}%</div>
               </div>
             </div>
             <div class="flex-1 flex flex-col gap-1 min-w-0 self-stretch justify-center">
               <div v-for="s in statsPage.stockStatusDist" :key="s.key" @click="goHomeWithStatus(s.key)"
                 class="flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer active:bg-gray-50 transition-colors">
                 <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ background: s.color }"></span>
-                <span class="text-xs font-semibold text-gray-700 whitespace-nowrap flex-1 min-w-0">{{ s.label }}<span class="fi-hint font-normal ml-0.5">{{ s.pct.toFixed(1) }}%</span></span>
+                <span class="text-xs font-semibold text-gray-700 whitespace-nowrap flex-1 min-w-0">{{ s.label }}<span class="text-[10px] font-normal text-gray-400 ml-0.5">{{ s.pct.toFixed(1) }}%</span></span>
                 <span class="text-xs text-gray-500 flex-shrink-0 whitespace-nowrap"><b class="text-gray-800 font-bold">{{ s.count }}</b> 件</span>
                 <svg class="w-3 h-3 text-gray-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
               </div>
@@ -1816,7 +1822,7 @@
               <div class="relative rounded-full" style="width:96px;height:96px;" :style="{ background: statsPage.categoryDonut.gradient }">
                 <div class="absolute rounded-full bg-white flex flex-col items-center justify-center" style="inset:13px;">
                   <div class="text-base font-bold text-gray-800 leading-none">{{ statsPage.categoryDonut.items.length - (statsPage.categoryDonut.unset > 0 ? 1 : 0) }}</div>
-                  <div class="fi-hint text-center mt-0.5 leading-tight">{{ statsPage.categoryDonut.unset > 0 ? '+' + statsPage.categoryDonut.unset + ' 件未设置' : '类' }}</div>
+                  <div class="text-[9px] text-gray-400 text-center mt-0.5 leading-tight">{{ statsPage.categoryDonut.unset > 0 ? '+' + statsPage.categoryDonut.unset + ' 件未设置' : '类' }}</div>
                 </div>
               </div>
             </div>
@@ -1824,7 +1830,7 @@
             <div v-for="(item, i) in statsPage.categoryDonut.items" :key="i" @click="goCategory(item.name)"
               class="flex items-center gap-1.5 px-1 py-1 rounded-md cursor-pointer active:bg-gray-50 transition-colors">
               <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :style="{ background: item.color }"></span>
-              <span class="fi-fs-11 text-gray-600 flex-1 truncate">{{ item.name }}</span>
+              <span class="text-[11px] text-gray-600 flex-1 truncate">{{ item.name }}</span>
               <span class="fi-hint flex-shrink-0"><b class="text-gray-700 font-bold">{{ item.qty }}</b></span>
               <svg class="w-2.5 h-2.5 text-gray-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
             </div>
@@ -1835,7 +1841,7 @@
               <div class="relative rounded-full" style="width:96px;height:96px;" :style="{ background: statsPage.locationDonut.gradient }">
                 <div class="absolute rounded-full bg-white flex flex-col items-center justify-center" style="inset:13px;">
                   <div class="text-base font-bold text-gray-800 leading-none">{{ statsPage.locationDonut.items.length - (statsPage.locationDonut.unset > 0 ? 1 : 0) }}</div>
-                  <div class="fi-hint text-center mt-0.5 leading-tight">{{ statsPage.locationDonut.unset > 0 ? '+' + statsPage.locationDonut.unset + ' 件未设置' : '处' }}</div>
+                  <div class="text-[9px] text-gray-400 text-center mt-0.5 leading-tight">{{ statsPage.locationDonut.unset > 0 ? '+' + statsPage.locationDonut.unset + ' 件未设置' : '处' }}</div>
                 </div>
               </div>
             </div>
@@ -1843,7 +1849,7 @@
             <div v-for="(item, i) in statsPage.locationDonut.items" :key="i" @click="goLocation(item.name)"
               class="flex items-center gap-1.5 px-1 py-1 rounded-md cursor-pointer active:bg-gray-50 transition-colors">
               <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :style="{ background: item.color }"></span>
-              <span class="fi-fs-11 text-gray-600 flex-1 truncate">{{ item.name }}</span>
+              <span class="text-[11px] text-gray-600 flex-1 truncate">{{ item.name }}</span>
               <span class="fi-hint flex-shrink-0"><b class="text-gray-700 font-bold">{{ item.qty }}</b></span>
               <svg class="w-2.5 h-2.5 text-gray-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
             </div>
@@ -1859,30 +1865,30 @@
             <!-- v2.20.3：拆"已过期 N 件"（红字主体）与"X 件未填价格，金额未计"（灰小字注释）两段
                  v2.20.3-fix：加显式 " · " 分隔符 + flex wrap（mobile 容器窄时自动换两行，lg 横排带明显分隔） -->
             <div v-if="statsPage.expiredCount > 0" class="lg:col-span-3 lg:mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              <span class="fi-fs-11 text-red-500 font-medium whitespace-nowrap">已过期 {{ statsPage.expiredCount }} 件<template v-if="statsPage.expiredValue > 0"> · ¥{{ statsPage.expiredValue.toFixed(1) }}</template></span>
-              <span v-if="statsPage.expiredUnpriced > 0" class="fi-hint whitespace-nowrap">· {{ statsPage.expiredUnpriced }} 件价格待设置，金额未计</span>
+              <span class="text-[11px] text-red-500 font-medium whitespace-nowrap">已过期 {{ statsPage.expiredCount }} 件<template v-if="statsPage.expiredValue > 0"> · ¥{{ statsPage.expiredValue.toFixed(1) }}</template></span>
+              <span v-if="statsPage.expiredUnpriced > 0" class="text-[10px] text-gray-400 whitespace-nowrap">· {{ statsPage.expiredUnpriced }} 件价格待设置，金额未计</span>
             </div>
-            <p v-else class="fi-fs-11 text-gray-300 lg:col-span-3 lg:mt-1.5">无已过期商品</p>
+            <p v-else class="text-[11px] text-gray-300 lg:col-span-3 lg:mt-1.5">无已过期商品</p>
           </div>
           <div class="bg-white rounded-xl fi-card-pad-sm border border-gray-100 lg:grid lg:grid-cols-2 lg:gap-x-3">
             <div class="fi-group-title lg:mb-0.5 lg:col-span-2">数据质量</div>
             <p @click="goToHomeWithFilter('?空价格')"
-              :class="['fi-fs-11 text-gray-700 mb-0.5 flex items-center justify-between transition-colors', statsPage.dataQuality.noPrice > 0 ? 'cursor-pointer active:opacity-60' : 'opacity-50 cursor-not-allowed']">
+              :class="['text-[11px] text-gray-700 mb-0.5 flex items-center justify-between transition-colors', statsPage.dataQuality.noPrice > 0 ? 'cursor-pointer active:opacity-60' : 'opacity-50 cursor-not-allowed']">
               <span>价格待设置 <span class="font-bold" :class="statsPage.dataQuality.noPrice > 0 ? 'text-orange-500' : ''">{{ statsPage.dataQuality.noPrice }}</span></span>
               <svg v-if="statsPage.dataQuality.noPrice > 0" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0"><path d="M9 18l6-6-6-6"/></svg>
             </p>
             <p @click="goToHomeWithFilter('?空净含量')"
-              :class="['fi-fs-11 text-gray-700 mb-0.5 flex items-center justify-between transition-colors', statsPage.dataQuality.noNet > 0 ? 'cursor-pointer active:opacity-60' : 'opacity-50 cursor-not-allowed']">
+              :class="['text-[11px] text-gray-700 mb-0.5 flex items-center justify-between transition-colors', statsPage.dataQuality.noNet > 0 ? 'cursor-pointer active:opacity-60' : 'opacity-50 cursor-not-allowed']">
               <span>净含量待设置 <span class="font-bold" :class="statsPage.dataQuality.noNet > 0 ? 'text-orange-500' : ''">{{ statsPage.dataQuality.noNet }}</span></span>
               <svg v-if="statsPage.dataQuality.noNet > 0" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0"><path d="M9 18l6-6-6-6"/></svg>
             </p>
             <p @click="goToHomeWithFilter('#待设置')"
-              :class="['fi-fs-11 text-gray-700 mb-0.5 flex items-center justify-between transition-colors', statsPage.dataQuality.noCat > 0 ? 'cursor-pointer active:opacity-60' : 'opacity-50 cursor-not-allowed']">
+              :class="['text-[11px] text-gray-700 mb-0.5 flex items-center justify-between transition-colors', statsPage.dataQuality.noCat > 0 ? 'cursor-pointer active:opacity-60' : 'opacity-50 cursor-not-allowed']">
               <span>标签待设置 <span class="font-bold">{{ statsPage.dataQuality.noCat }}</span></span>
               <svg v-if="statsPage.dataQuality.noCat > 0" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0"><path d="M9 18l6-6-6-6"/></svg>
             </p>
             <p @click="goToHomeWithFilter('@待设置')"
-              :class="['fi-fs-11 text-gray-700 flex items-center justify-between transition-colors', statsPage.dataQuality.noLoc > 0 ? 'cursor-pointer active:opacity-60' : 'opacity-50 cursor-not-allowed']">
+              :class="['text-[11px] text-gray-700 flex items-center justify-between transition-colors', statsPage.dataQuality.noLoc > 0 ? 'cursor-pointer active:opacity-60' : 'opacity-50 cursor-not-allowed']">
               <span>位置待设置 <span class="font-bold">{{ statsPage.dataQuality.noLoc }}</span></span>
               <svg v-if="statsPage.dataQuality.noLoc > 0" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-300 flex-shrink-0"><path d="M9 18l6-6-6-6"/></svg>
             </p>
@@ -2073,13 +2079,13 @@
                       class="transition-transform"
                       :class="expandedPlace === pl.name ? 'rotate-90' : ''"><polyline points="9 18 15 12 9 6"/></svg>
                     {{ pl.name }}
-                    <span class="fi-fs-11 opacity-75">{{ pl.zones.length }}</span>
+                    <span class="text-[10px] opacity-75">{{ pl.zones.length }}</span>
                   </button>
                 </template>
               </div>
               <!-- 展开的分区列表块（位于分区组下方） -->
               <div v-if="expandedPlace && placesWithZonesView.some(p => p.name === expandedPlace)" class="mt-2 mb-3 px-3 py-2.5 rounded-lg bg-teal-50/50 border border-teal-100">
-                <div class="fi-fs-11 text-teal-600 mb-1.5 flex items-center gap-1">
+                <div class="text-[11px] text-teal-600 mb-1.5 flex items-center gap-1">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                   分区：{{ expandedPlace }}
                 </div>
@@ -2091,7 +2097,7 @@
               <!-- 分区 / 不分区 分隔虚线 -->
               <div v-if="placesWithZonesView.length && placesNoZonesView.length" class="flex items-center gap-2 my-3">
                 <div class="flex-1 border-t border-dashed border-gray-200"></div>
-                <span class="fi-fs-11 text-gray-300 flex-shrink-0">不分区</span>
+                <span class="text-[10px] text-gray-300 flex-shrink-0">不分区</span>
                 <div class="flex-1 border-t border-dashed border-gray-200"></div>
               </div>
               <!-- 不分区组：仅展示名称，不展开 -->
@@ -2117,12 +2123,12 @@
                   <input v-if="renaming.type === 'place' && renaming.index === settings.places.indexOf(pl)" :ref="el => { if (el) el.focus(); }" v-model="renaming.value" type="text" class="input input-sm flex-1" @keyup.enter="confirmRename" @keyup.esc="cancelRename" @blur="confirmRename" placeholder="输入新名称">
                   <button v-else @pointerdown.stop @click="startRename('place', settings.places.indexOf(pl))" class="flex-1 min-w-0 text-left">
                     <span class="text-sm font-medium text-gray-800">{{ pl.name }}</span>
-                    <span class="fi-hint ml-1">{{ pl.zones.length }} 分区</span>
+                    <span class="text-[10px] text-gray-400 ml-1">{{ pl.zones.length }} 分区</span>
                   </button>
                   <!-- v2.23.4⑨：分区态固定「分区」标签；toggle 控制开关分区 -->
                   <div class="flex items-center gap-1 flex-shrink-0">
                     <label class="flex items-center gap-1 cursor-pointer select-none" @click.stop>
-                      <span class="fi-fs-11 text-gray-500">分区</span>
+                      <span class="text-[11px] text-gray-500">分区</span>
                       <button @click="togglePlaceZones(settings.places.indexOf(pl))" :title="pl.partitioned ? '关闭分区' : '开启分区'"
                         :class="pl.partitioned ? 'bg-teal-500' : 'bg-gray-200'"
                         class="relative w-9 h-5 rounded-full transition-colors">
@@ -2154,7 +2160,7 @@
               <!-- 分区 / 不分区 分隔虚线 -->
               <div v-if="placesWithZonesView.length && placesNoZonesView.length" class="flex items-center gap-2 my-3">
                 <div class="flex-1 border-t border-dashed border-gray-200"></div>
-                <span class="fi-fs-11 text-gray-300 flex-shrink-0">不分区</span>
+                <span class="text-[10px] text-gray-300 flex-shrink-0">不分区</span>
                 <div class="flex-1 border-t border-dashed border-gray-200"></div>
               </div>
               <!-- 不分区地点列表（仅内部排序，不与分组区域混排） -->
@@ -2172,7 +2178,7 @@
                   </button>
                   <div class="flex items-center gap-1 flex-shrink-0">
                     <label class="flex items-center gap-1 cursor-pointer select-none" @click.stop>
-                      <span class="fi-fs-11 text-gray-500">不分区</span>
+                      <span class="text-[11px] text-gray-500">不分区</span>
                       <button @click="togglePlaceZones(settings.places.indexOf(pl))" :title="pl.partitioned ? '关闭分区' : '开启分区'"
                         :class="pl.partitioned ? 'bg-teal-500' : 'bg-gray-200'"
                         class="relative w-9 h-5 rounded-full transition-colors">
@@ -2225,7 +2231,7 @@
                 :class="settings.builtinCategories.includes(cat)
                   ? 'inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-xs border border-gray-200'
                   : 'inline-flex items-center px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 text-xs border border-purple-100'">
-                <svg v-if="settings.builtinCategories.includes(cat)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mr-1"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>{{ cat }}<span v-if="settings.builtinCategories.includes(cat)" class="ml-1 fi-fs-11">内置</span>
+                <svg v-if="settings.builtinCategories.includes(cat)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mr-1"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>{{ cat }}<span v-if="settings.builtinCategories.includes(cat)" class="ml-1 text-[10px]">内置</span>
               </span>
             </div>
             <p v-if="!editingCat && settings.categories.length === 0" class="fi-hint">暂无预设分类</p>
@@ -2249,7 +2255,7 @@
                     class="input input-sm flex-1" placeholder="输入新名称">
                   <span v-else-if="settings.builtinCategories.includes(cat)"
                     class="flex-1 text-sm font-medium text-gray-400 truncate inline-flex items-center">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mr-1"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>{{ cat }}<span class="ml-1 fi-fs-11">内置</span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mr-1"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>{{ cat }}<span class="ml-1 text-[10px]">内置</span>
                   </span>
                   <span v-else @pointerdown.stop @click="startRename('cat', i)"
                     class="flex-1 text-sm font-medium text-gray-800 truncate">{{ cat }}</span>
@@ -2438,7 +2444,7 @@
                 <option :value="30">每 30 分钟</option>
               </select>
             </div>
-            <p v-if="cloudSyncStatus" class="fi-fs-11 text-indigo-500">{{ cloudSyncStatus }}</p>
+            <p v-if="cloudSyncStatus" class="text-[11px] text-indigo-500">{{ cloudSyncStatus }}</p>
           </div>
         </div>
 
@@ -2487,8 +2493,8 @@
           <div v-if="settings.nameCleanEnabled" class="px-4 pb-3.5 space-y-2 border-t border-gray-50 pt-3">
             <div class="flex items-center justify-between">
               <div>
-                <div class="fi-fs-11 text-gray-700">删除营销 / 包装词</div>
-                <div class="fi-fs-11 text-gray-300 mt-0.5">特惠装 · 新品上市 · 家庭装…（整词匹配）</div>
+                <div class="text-[11px] text-gray-700">删除营销 / 包装词</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">特惠装 · 新品上市 · 家庭装…（整词匹配）</div>
               </div>
               <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 violet） -->
               <toggle-setting :model-value="settings.nameCleanMarketing" color="violet"
@@ -2576,8 +2582,8 @@
             <!-- v2.22.4：统一用 <toggle-setting> 组件（颜色 green） -->
             <div class="flex items-center justify-between mt-2">
               <div>
-                <div class="fi-fs-11 text-gray-700">识别前图像增强</div>
-                <div class="fi-fs-11 text-gray-300 mt-0.5">灰度 + 自适应二值化（Tesseract 生效）</div>
+                <div class="text-[11px] text-gray-700">识别前图像增强</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">灰度 + 自适应二值化（Tesseract 生效）</div>
               </div>
               <toggle-setting :model-value="settings.ocrImageEnhance" color="green"
                 @update:model-value="v => { settings.ocrImageEnhance = v; saveData(); showToast(v ? '已开启图像增强' : '已关闭图像增强'); }" />
@@ -2586,8 +2592,8 @@
             <!-- v2.22.4：统一用 <toggle-setting> 组件 -->
             <div class="flex items-center justify-between mt-2">
               <div>
-                <div class="fi-fs-11 text-gray-700">批量 OCR 智能分组</div>
-                <div class="fi-fs-11 text-gray-300 mt-0.5">把 name/规格/数量/价格 自动聚合为商品卡</div>
+                <div class="text-[11px] text-gray-700">批量 OCR 智能分组</div>
+                <div class="text-[10px] text-gray-300 mt-0.5">把 name/规格/数量/价格 自动聚合为商品卡</div>
               </div>
               <toggle-setting :model-value="settings.ocrGroupMode" color="green"
                 @update:model-value="v => { settings.ocrGroupMode = v; ocr.groupMode = v; saveData(); showToast(v ? '已开启智能分组' : '已关闭智能分组'); }" />
@@ -3518,12 +3524,12 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-          <p class="fi-fs-11 text-orange-500 mb-3">⚠ 配置码含 API Key（等同密码），仅当面 / 可信设备使用，30 秒后自动关闭。</p>
+          <p class="text-[11px] text-orange-500 mb-3">⚠ 配置码含 API Key（等同密码），仅当面 / 可信设备使用，30 秒后自动关闭。</p>
           <div class="flex justify-center bg-white rounded-xl border border-gray-100 fi-card-pad-sm mb-2">
             <div id="qr-render" style="width:190px;height:190px;" class="bg-white"></div>
           </div>
           <div v-if="configQrError" class="text-center text-xs text-gray-500 mb-2">二维码生成失败（可能离线 / 首次加载库中）——请直接复制下方文本</div>
-          <textarea id="config-text-sel" readonly v-model="configQrText" rows="2" class="w-full fi-fs-11 text-gray-500 bg-gray-50 rounded-lg p-2 mb-2 break-all"></textarea>
+          <textarea id="config-text-sel" readonly v-model="configQrText" rows="2" class="w-full text-[10px] text-gray-500 bg-gray-50 rounded-lg p-2 mb-2 break-all"></textarea>
           <div class="flex gap-2">
             <button @click="copyConfigText" class="flex-1 py-2.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 text-sm font-medium active:bg-indigo-100 transition-colors">复制配置文本</button>
             <button @click="closeConfigQr" class="fi-btn-2nd flex-1">关闭</button>
@@ -3539,7 +3545,7 @@
           <h3 class="fi-title mb-1">接入云端配置</h3>
           <p class="text-sm text-gray-500 mb-2">将本机云同步切换到 Bin <b class="text-gray-800">{{ configPending ? maskConfigBin(configPending.binId) : '' }}</b>？</p>
           <p class="text-xs text-gray-400 mb-3">API Key 已自动填入（内容不在界面明文显示）。接入后先「拉取云端并入本地」，再开始双向同步。</p>
-          <p v-if="products.length > 0 || records.length > 0" class="fi-fs-11 text-amber-600 mb-3">本机现有 库存 {{ products.length }} 件 / 流水 {{ records.length }} 条，将先并入云端后再双向同步。</p>
+          <p v-if="products.length > 0 || records.length > 0" class="text-[11px] text-amber-600 mb-3">本机现有 库存 {{ products.length }} 件 / 流水 {{ records.length }} 条，将先并入云端后再双向同步。</p>
           <div class="grid grid-cols-2 gap-2">
             <button @click="cancelConfigConfirm" class="fi-btn-2nd">取消</button>
             <button @click="applyConfigConfirm" class="py-2.5 rounded-lg bg-indigo-500 text-white text-sm font-medium active:bg-indigo-600 transition-colors">接入并合并</button>
@@ -3559,14 +3565,14 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-          <p class="fi-fs-11 text-orange-500 mb-3">⚠ 请对准 FoodIn 配置码（二维码）。配置码含 API Key（等同密码），仅当面 / 可信设备使用。</p>
+          <p class="text-[11px] text-orange-500 mb-3">⚠ 请对准 FoodIn 配置码（二维码）。配置码含 API Key（等同密码），仅当面 / 可信设备使用。</p>
           <!-- 相机二维码取景区 -->
           <div class="rounded-xl overflow-hidden border border-gray-100 bg-black mb-2" style="min-height:220px;">
             <div id="qr-reader-config" class="w-full flex items-center justify-center" style="min-height:220px; background:#000;"></div>
           </div>
           <p class="fi-hint mb-1">若无法扫码，可手动粘贴配置码文本：</p>
           <textarea v-model="configManualText" rows="2" placeholder="粘贴 foodin-sync:// 开头的配置码"
-            class="w-full fi-fs-11 text-gray-700 bg-gray-50 rounded-lg p-2 mb-3 break-all border border-gray-200 focus:border-indigo-300 focus:outline-none"></textarea>
+            class="w-full text-[11px] text-gray-700 bg-gray-50 rounded-lg p-2 mb-3 break-all border border-gray-200 focus:border-indigo-300 focus:outline-none"></textarea>
           <div class="grid grid-cols-2 gap-2">
             <button @click="closeConfigScan" class="fi-btn-2nd">取消</button>
             <button @click="applyConfigManual" class="py-2.5 rounded-lg bg-indigo-500 text-white text-sm font-medium active:bg-indigo-600 transition-colors">接入</button>
@@ -3667,14 +3673,14 @@
               <!-- 展开内容 -->
               <div v-if="locPanelExpanded === pl.name" class="px-3 pb-3 bg-white border-t border-gray-100">
                 <!-- 空地点提示 -->
-                <p v-if="!placeItemCount(pl)" class="fi-fs-11 text-gray-300 py-3 text-center">该地点暂无商品</p>
+                <p v-if="!placeItemCount(pl)" class="text-[11px] text-gray-300 py-3 text-center">该地点暂无商品</p>
                 <template v-else>
                   <!-- 有分区 → 按分区分组 -->
                   <div v-if="pl.zones.length" class="space-y-3 mt-2">
                     <div v-for="zone in pl.zones" :key="zone" class="rounded-lg bg-gray-50 px-2.5 py-2">
                       <div class="flex items-center justify-between mb-2">
                         <span class="text-[12px] text-gray-500 font-medium">{{ zone }} · {{ zoneItems(pl, zone).length }} 件</span>
-                        <button v-if="zoneItems(pl, zone).length" @click="focusZoneByName(zone)" class="fi-fs-11 text-teal-600 flex-shrink-0">只看此分区 →</button>
+                        <button v-if="zoneItems(pl, zone).length" @click="focusZoneByName(zone)" class="text-[11px] text-teal-600 flex-shrink-0">只看此分区 →</button>
                       </div>
                       <div v-for="p in zoneItems(pl, zone)" :key="p.id" class="flex justify-between text-[13px] leading-6 py-0.5">
                         <span class="text-gray-800 truncate pr-2">{{ p.name }}</span>
@@ -3691,7 +3697,7 @@
                   </div>
                   <!-- v2.23.4⑪：「只看 ... 全部」按钮与上方商品之间加大间距 + 顶部细分隔线 -->
                   <div class="flex justify-end mt-4 pt-3 border-t border-gray-100">
-                    <button @click="focusPlaceByName(pl.name)" class="fi-fs-11 text-teal-600 border border-teal-200 bg-teal-50 rounded-full px-2.5 py-1">只看「{{ pl.name }}」全部 →</button>
+                    <button @click="focusPlaceByName(pl.name)" class="text-[11px] text-teal-600 border border-teal-200 bg-teal-50 rounded-full px-2.5 py-1">只看「{{ pl.name }}」全部 →</button>
                   </div>
                 </template>
               </div>
@@ -3699,17 +3705,17 @@
 
             <!-- 游离商品：location 未归入任何地点（老数据等） -->
             <div v-if="looseGroups.length" class="rounded-xl border border-dashed border-gray-200 p-3 bg-gray-50/40">
-              <div class="fi-fs-11 text-gray-500 font-medium mb-2">其他位置（未归入地点的标签）</div>
+              <div class="text-[11px] text-gray-500 font-medium mb-2">其他位置（未归入地点的标签）</div>
               <div v-for="g in looseGroups" :key="g.tag" class="mb-3 last:mb-0">
                 <div class="flex items-center justify-between mb-1.5">
                   <span class="text-[12px] text-gray-600 font-medium">{{ g.tag }} · {{ g.list.length }} 件</span>
-                  <button @click="focusLooseTag(g.tag)" class="fi-fs-11 text-teal-600 flex-shrink-0">只看此位置 →</button>
+                  <button @click="focusLooseTag(g.tag)" class="text-[11px] text-teal-600 flex-shrink-0">只看此位置 →</button>
                 </div>
                 <div v-for="p in g.list.slice(0, 5)" :key="p.id" class="flex justify-between items-center text-[12px] leading-5 bg-white rounded-lg px-2.5 py-1.5 mb-1 last:mb-0">
                   <span class="text-gray-700 truncate pr-2">{{ p.name }}</span>
-                  <span class="fi-fs-11 flex-shrink-0" :class="locDaysClass(p)">{{ locDaysOf(p).label }}</span>
+                  <span class="text-[10px] flex-shrink-0" :class="locDaysClass(p)">{{ locDaysOf(p).label }}</span>
                 </div>
-                <p v-if="g.list.length > 5" class="fi-fs-11 text-gray-300 ml-1 mt-1">还有 {{ g.list.length - 5 }} 件…</p>
+                <p v-if="g.list.length > 5" class="text-[10px] text-gray-300 ml-1 mt-1">还有 {{ g.list.length - 5 }} 件…</p>
               </div>
             </div>
 
@@ -3721,10 +3727,10 @@
                   <span class="text-sm font-medium text-gray-500">未设置位置</span>
                   <span class="fi-hint">{{ unsetProducts.length }} 件</span>
                 </div>
-                <button @click="focusLooseTag('待设置')" class="fi-fs-11 text-orange-600 border border-orange-200 bg-orange-50 rounded-full px-2.5 py-1 flex-shrink-0">只看 →</button>
+                <button @click="focusLooseTag('待设置')" class="text-[11px] text-orange-600 border border-orange-200 bg-orange-50 rounded-full px-2.5 py-1 flex-shrink-0">只看 →</button>
               </div>
               <div class="flex flex-wrap gap-1.5">
-                <span v-for="p in unsetProducts" :key="p.id" class="fi-fs-11 bg-white border border-gray-100 rounded px-2 py-1 text-gray-500">{{ p.name }}</span>
+                <span v-for="p in unsetProducts" :key="p.id" class="text-[11px] bg-white border border-gray-100 rounded px-2 py-1 text-gray-500">{{ p.name }}</span>
               </div>
             </div>
           </div>
@@ -3793,7 +3799,7 @@
               <!-- 分区单选行 -->
               <div v-if="locActivePlace(editForm) && locActivePlace(editForm).zones.length"
                 class="bg-teal-50/70 border border-teal-100 rounded-xl px-3 py-2 mt-1.5">
-                <div class="fi-fs-11 text-teal-600/80 font-medium mb-1.5 flex items-center gap-1">
+                <div class="text-[11px] text-teal-600/80 font-medium mb-1.5 flex items-center gap-1">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 7v10l7-5z"/><path d="M14 7v10l7-5z"/></svg>
                   分区 · {{ editForm._locPlace }}
                 </div>
@@ -3804,7 +3810,7 @@
                 </div>
               </div>
               <p v-if="locActivePlace(editForm) && !locActivePlace(editForm).zones.length" class="fi-hint mt-1.5">{{ desc('noZone', { p: editForm._locPlace }) }}</p>
-              <p v-else-if="locActivePlace(editForm) && locActivePlace(editForm).zones.length && !editForm.location.length" class="fi-fs-11 text-amber-500 mt-1.5">该位置有分区，请选择具体分区</p>
+              <p v-else-if="locActivePlace(editForm) && locActivePlace(editForm).zones.length && !editForm.location.length" class="text-[11px] text-amber-500 mt-1.5">该位置有分区，请选择具体分区</p>
             </div>
             <!-- 净含量 + 总价 并排：v2.21.13 从更多块上移到基础信息卡（与录入页对齐） -->
             <div class="grid grid-cols-2 gap-3">
@@ -4098,7 +4104,7 @@
               <div class="h-full bg-orange-500 rounded-full transition-all" :style="{ width: ocr.progress + '%' }"></div>
             </div>
             <button v-if="ocr.phase === 'paddle-dl' && settings.ocrEngine === 'paddle'" @click="cancelPaddleOcr"
-              class="mt-2 w-full py-1.5 fi-fs-11 text-gray-500 bg-gray-50 border border-gray-200 rounded-lg active:bg-gray-100">取消并切 Tesseract 识别（更快）</button>
+              class="mt-2 w-full py-1.5 text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg active:bg-gray-100">取消并切 Tesseract 识别（更快）</button>
           </div>
           <template v-else>
             <div v-if="ocr.barcodes.length" class="px-4 pt-3 pb-2">
@@ -4331,7 +4337,7 @@ const app = createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.36.3';   // v2.36.3：重复 id 自愈改确定性 id + 修同名流水误迁移 + 自愈改到同步引擎就绪后（结果可上云）+ 修备份导入同 id 撞车静默丢商品；v2.36.2：本地读取逐键隔离 + 损坏隔离（修数据丢失风险）+ 清理死代码与冗余别名 + 77 处手写字号收敛为 .fi-hint/.fi-fs-11；v2.36.1：位置/分类统一归一化并保证导入、云同步的 location/category 字段传播；删除分区/地点不再留下不可筛选的幽灵位置；多标签删除/重命名、空值统计、空 places 同步、带空格搜索 token 修复；地点/分区/分类名称分隔符校验；SW v120 → v121
+    const CURRENT_VERSION = '2.36.1';   // v2.36.1：位置/分类统一归一化并保证导入、云同步的 location/category 字段传播；删除分区/地点不再留下不可筛选的幽灵位置；多标签删除/重命名、空值统计、空 places 同步、带空格搜索 token 修复；地点/分区/分类名称分隔符校验；SW v120 → v121
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', ocrEnabled: true, baiduApiKey: '', baiduSecretKey: '', ocrProxyUrl: '', categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0, ocrGroupMode: true, ocrImageEnhance: true, nameCleanEnabled: true, nameCleanCase: 'smart', nameCleanMarketing: true, nameCleanCustom: '', nameCleanWhitelist: '', places: [], builtinCategories: ['剩菜剩饭'], leftoverDefaultDays: 3, simpleMode: false, fontScale: 'normal', tourDone: false });   // v2.28.4：+tourDone 首次实景导览是否已完成（仅本机，同 simpleMode 不进云同步 schema——否则云端旧快照会把「已完成」覆盖回来）；v2.25.0：+simpleMode 简洁模式（大字号 + 精简功能，默认关）+fontScale 字号档位（normal 标准 / large 大 / xlarge 超大，独立于简洁模式，切换即时生效、跨设备同步，默认 large 即大字号）；v2.21.16：+ocrGroupMode 批量 OCR 智能分组开关（持久化，默认 true，首次加载迁移）+ocrImageEnhance 识别前图像增强开关（灰度+OTSU 二值化，Tesseract 路径生效，默认 true）；v2.22.0：+nameClean* 名称清洗规则库（默认开：去营销词 / 大小写 smart / 全半角）；v2.22.2：+ocrEnabled 文字识别总开关（默认 true；关闭后所有 OCR 入口按钮变灰并提示）
 
     // v2.26.0：location/category 统一「数组 ↔ 字符串」转换（商品模型落库为逗号字符串，表单态为数组）
@@ -4481,6 +4487,7 @@ const app = createApp({
     }
 
     const searchQuery = ref('');
+    const homeFilter = ref([]);        // v2.20.6 起状态筛选改走搜索框 &状态 token（见 parseSearchQuery/matchesProduct）；此数组保留仅用于旧版本迁移兼容，实际不再参与筛选
     const homeCategory = ref([]);      // 分类筛选（多选）；空数组=全部
     const homeLocation = ref([]);      // 储存位置筛选（多选）；空数组=全部
     const sortBy = ref('expiry');      // 排序方式: expiry|name|stockIn|qty
@@ -4493,6 +4500,17 @@ const app = createApp({
       { id: 'stockIn', label: '按入库日' },
       { id: 'qty', label: '按数量' }
     ];
+
+    // 多选筛选辅助函数（toggle/clear/迁移旧字符串值）
+    function getFilterArr(type) {
+      return type === 'status' ? homeFilter : type === 'cat' ? homeCategory : homeLocation;
+    }
+    function toggleFilter(type, val) {
+      const arr = getFilterArr(type);
+      const i = arr.value.indexOf(val);
+      if (i >= 0) arr.value.splice(i, 1); else arr.value.push(val);
+    }
+    function clearFilter(type) { getFilterArr(type).value = []; }
 
     // ===== v2.18.2：搜索通配符语法 =====
     // 解析搜索框文本为：text 全文 token 数组 / cats 分类 token 数组 / locs 位置 token 数组
@@ -4688,6 +4706,7 @@ const app = createApp({
     // 兼容旧版本：从字符串迁移到数组（loadData 之后调用一次）
     function migrateFilterArrays() {
       const toArr = (v) => Array.isArray(v) ? v : (v && v !== 'all' ? [v] : []);
+      homeFilter.value = toArr(homeFilter.value);
       homeCategory.value = toArr(homeCategory.value);
       homeLocation.value = toArr(homeLocation.value);
     }
@@ -5374,46 +5393,12 @@ const app = createApp({
     const changelog = [
       // 近期版本：保留完整条目
       {
-        version: "2.36.3",
-        date: "2026-10-09",
-        items: [
-          "修复备份导入可能静默丢商品：同一个 id 若对应的是**不同商品**，旧实现会用导入件直接覆盖本地那条（连同它的流水归属一起消失）。现在区分「同一商品」与「只是 id 撞车」——前者仍按更新时间合并，后者两条都保留并为导入件分配新 id，属于它的流水一并改挂",
-          "重复 id 自愈改用**确定性 id**：旧实现是随机 id，两台设备各自自愈会算出不同结果、各推一条事件，最终反而多出商品；现在按商品的条码/名称/入库时间做内容哈希，同一份数据在任何设备上得到同一个新 id，事件按 id 幂等去重 → 多设备无需协调即可收敛",
-          "修复同名重复商品自愈时**流水被错误迁移**：旧实现按名称匹配会命中「被拆开的那条」，把本属另一条的流水也搬过去，导致那条丢掉历史；现在同名一律不迁移（归属不可判定），保持原归属并在控制台如实报告条数",
-          "自愈改在云同步引擎就绪**之后**执行：此前它在 baseState 建立前就跑完、只写本地，新 id 永远上不了云（换设备或清缓存后重复 id 又回来）",
-          "顺带修复：首次使用且库中已有数据时，完成标记的补写会在同步引擎就绪前触发保存 → 把全部商品当成新增整包推上云（与本文件内 v2.33.0 的注释自相矛盾）",
-          "更新日志订正：早期条目里写过「设置里可一键拆分重复 id」，实际**没有这个入口** —— 重复 id 一直由应用自动拆分，无需用户手动操作"
-        ]
-      },
-      {
-        version: "2.36.2",
-        date: "2026-10-09",
-        items: [
-          "修复最危险的一处数据丢失风险：本地读取改为「逐键独立解析 + 损坏隔离」。此前 4 个存储键共用一个 try/catch，商品数据一旦损坏会连带导致流水、设置、条码缓存全部不加载，随后任一次保存又把空值写回本地 —— 一次坏数据即永久丢失。现在单个键损坏只影响该键，损坏的原始内容先备份到 <键>__corrupt_<时间戳> 再继续，并明确提示「部分数据损坏，已隔离备份」",
-          "清理 3 个死函数（getFilterArr / toggleFilter / clearFilter，定义后无任何调用方）与 1 个遗留筛选状态 homeFilter，并同步移除它们在模板出口的暴露",
-          "清理 3 个冗余别名（splitTags / splitTagStr / splitLocTags），7 处调用统一改用底层的 normalizeTagList / tagsFromStr",
-          "字号规范化：77 处手写 text-[9px]/[10px]/[11px] 收敛为 .fi-hint（11px + 弱化灰，与 text-[11px] text-gray-400 渲染等价）与 .fi-fs-11（纯 11px，颜色保持原样）；原先低于 11px 下限的小字改按 11px 档渲染，并删除随之失效的 6 条大/超大档等值规则（样式产物 −1.7KB）"
-        ]
-      },
-      {
-        version: "2.36.1",
-        date: "2026-09-23",
-        items: [
-          "修复位置/分类字段在本地旧数据、JSON 导入和云同步重放时的数组/字符串分叉，统一归一化并确保 location/category 更新进入事件差分；云端快照不再携带地点输入框等 UI 临时字段",
-          "修复删除地点、关闭分区或删除分区后商品位置变成不可筛选游离标签；改为清理相关商品位置，并同步移除旧位置筛选 token",
-          "修复多分类商品删除/重命名只匹配完整字符串的问题；修复空数组/空白标签在统计中漏计「待设置」",
-          "修复地点/分区/分类名称含分隔符导致无法往返保存；搜索 token 支持带空格的历史标签",
-          "修复 JSON 备份导入直接覆盖本地库存且不恢复 places 的问题，改为按商品/记录 ID 合并并导入地点配置；空 places 现在可通过云同步传播",
-          "地点、分区和分类名称新增重复/结构归一化保护；当前版本为 2.36.1，Service Worker 缓存升级为 v121"
-        ]
-      },
-      {
         version: "2.36.0",
         date: "2026-09-22",
         items: [
           "人工「正常减少库存」改为统一二次确认：弹窗明确列出商品名称、当前库存、本次减少数量与减少后剩余库存，点「确认减少」才真正扣减；点「取消」则库存与流水完全不变、不产生任何记录。此前只有「最后一件」才弹确认，其余数量点一下就直接扣掉，误触无法挽回",
           "确认按钮防重复提交：提交瞬间即置灰并显示加载状态，连点也只会扣减一次（扣减改到下一帧执行，避免同帧关闭弹窗造成重复入账）",
-          "修复「改完没反应 / 删不掉」：云同步 upsert 与 CSV 导入都可能让同一个 id 存在两条商品，此前改名、删除永远作用在第一条上。现在定位一律优先用对象引用；启动与数据变动时会**自动拆分**重复 id（并把属于该商品的流水一并迁移），清理顺序改为「先拆 id 再清幽灵商品」",
+          "修复「改完没反应 / 删不掉」：云同步 upsert 与 CSV 导入都可能让同一个 id 存在两条商品，此前改名、删除永远作用在第一条上。现在定位一律优先用对象引用；设置页可一键拆分重复 id（并把属于该商品的流水一并迁移），清理顺序改为「先拆 id 再清幽灵商品」",
           "编辑弹窗打开时锚定商品对象引用，列表重排后保存不会再落到别的商品上",
           "保质期单位与日期反算修复：默认单位由「月」改为「日」（原默认值会让单位按钮一进页面就停在「月」）；自动挑选最自然单位并保证正反算往返无损，正算不再多减 1 天",
           "顶栏四张统计卡改为数据表驱动，第一张固定为「在库」（商品维度、件数口径）；「件」统一为 in / eat / waste 三类记录的数量合计，与列表口径一致",
@@ -6002,8 +5987,9 @@ const app = createApp({
       // v2.19.0：分类/位置按独立标签计数。p.category/p.location 是 join 后的字符串（如 "乳品蛋类, 茶叶咖啡"），
       // 需 split 后逐个 +qty，否则多标签商品会被合并为整体。
       // v2.19.1/v2.36.1：先解析再判断长度，修复空数组/空白字符串漏计「未设置」。
-      const catTags = normalizeTagList(p.category);
-      const locTags = normalizeTagList(p.location);
+      const splitTags = (s) => normalizeTagList(s);
+      const catTags = splitTags(p.category);
+      const locTags = splitTags(p.location);
       if (catTags.length) catTags.forEach(t => { catMap[t] = (catMap[t] || 0) + qty; });
       else { noCat++; catUnsetQty += qty; }
       if (locTags.length) locTags.forEach(t => { locMap[t] = (locMap[t] || 0) + qty; });
@@ -6468,43 +6454,13 @@ const app = createApp({
       }
     }
     function loadData() {
-      // v2.36.2（P0 修复）：逐键独立读取 + 损坏隔离。
-      //   旧实现把 4 个 JSON.parse 放在同一个 try/catch 里：只要 products 的 JSON 损坏，
-      //   整段直接跳到 catch → records / settings / barcodeCache 全都不加载（保持空值），
-      //   随后任意一次 saveData() 就把空值写回盘 —— 一次坏数据 = 永久丢失。
-      //   现在每个键各自兜底；解析失败的**原始字符串**先复制到隔离键
-      //   （<原键>__corrupt_<时间戳>）再移除原键，绝不静默清空，事后可从隔离键人工恢复。
-      const readKey = (key) => {
-        const raw = localStorage.getItem(key);
-        if (raw == null) return { ok: true, value: undefined };
-        try { return { ok: true, value: JSON.parse(raw) }; }
-        catch (e) {
-          const quarantine = key + '__corrupt_' + new Date().toISOString().replace(/[:.]/g, '-');
-          console.error('Load failed, raw value quarantined as ' + quarantine + ':', e);
-          try { localStorage.setItem(quarantine, raw); localStorage.removeItem(key); } catch (e2) { /* 配额满则仅记录 */ }
-          return { ok: false, value: undefined };
-        }
-      };
-      const corrupt = [];
-
-      const p = readKey('food_inventory_products');
-      if (!p.ok) corrupt.push('商品');
-      else if (p.value !== undefined) products.value = Array.isArray(p.value) ? p.value : [];
-
-      const r = readKey('food_inventory_records');
-      if (!r.ok) corrupt.push('流水');
-      else if (r.value !== undefined) records.value = Array.isArray(r.value) ? r.value : [];
-
-      const s = readKey('food_inventory_settings');
-      if (!s.ok) corrupt.push('设置');
-      else if (s.value && typeof s.value === 'object') Object.assign(settings, s.value);
-
-      const bc = readKey('food_inventory_barcode_cache');
-      if (!bc.ok) corrupt.push('条码缓存');
-      else if (bc.value && typeof bc.value === 'object') barcodeCache.value = bc.value;
-
-      // 归一化与数据迁移：单独兜底 —— 即使这里抛错，也不影响上面已经成功读到的数据
       try {
+        const p = localStorage.getItem('food_inventory_products');
+        if (p) products.value = JSON.parse(p);
+        const r = localStorage.getItem('food_inventory_records');
+        if (r) records.value = JSON.parse(r);
+        const s = localStorage.getItem('food_inventory_settings');
+        if (s) Object.assign(settings, JSON.parse(s));
         // v2.36.1：本地旧数据也统一经过同一套设置/标签归一化，避免数组、空白和重复值
         // 只在搜索或同步路径才暴露问题。
         products.value = normalizeProductList(products.value);
@@ -6539,10 +6495,9 @@ const app = createApp({
           if (!Array.isArray(p.zones)) p.zones = [];
           if (typeof p.partitioned !== 'boolean') p.partitioned = p.zones.length > 0;
         });
-      } catch (e) { console.error('Load normalize/migrate failed:', e); }
-
-      // 有键损坏时明确告知用户：数据已被隔离（未丢失），而不是静默变成空库
-      if (corrupt.length) toastErr('读取本地数据', '部分数据损坏，已隔离备份');
+        const bc = localStorage.getItem('food_inventory_barcode_cache');
+        if (bc) barcodeCache.value = JSON.parse(bc);
+      } catch (e) { console.error('Load failed:', e); }
     }
 
     // v2.24.2：保证内置分类始终存在并被并入用户分类列表（兜底函数；防止任意同步路径把「剩菜剩饭」冲掉）
@@ -7030,117 +6985,57 @@ const app = createApp({
       });
     }
 
-    // ===== v2.36.3：确定性 id =====
-    //   拆分重复 id 必须**幂等**。旧实现用随机 id（'p'+Date.now()+rand）：两台设备各自自愈会算出
-    //   不同的新 id，双方各推一条 upsert → 云端与两端最终**多出商品**（越修越乱）。
-    //   改为对「随商品一起同步、且不会被编辑改写」的字段做内容哈希 → 同一份数据在任何设备上
-    //   得到同一个新 id，upsert 事件按 id 幂等去重，**无需设备间协调即可收敛**。
-    function fnv1a32(str, seed) {
-      let h = seed >>> 0;
-      for (let i = 0; i < str.length; i++) {
-        h ^= str.charCodeAt(i);
-        h = Math.imul(h, 0x01000193) >>> 0;
-      }
-      return h >>> 0;
-    }
-    // 参与哈希：barcode / name / createdAt
-    //   ❗不含 updatedAt —— 它会被编辑改写，会让同一商品在不同设备上算出不同 id
-    //   ❗不含数组下标 —— 下标跨设备不稳定（同步到达顺序不同）
-    function deterministicProductId(p, taken) {
-      const key = [p.barcode || '', String(p.name || '').trim(), p.createdAt || ''].join('\u0000');
-      const hi = fnv1a32(key, 0x811c9dc5);                 // FNV-1a 32 位
-      const lo = fnv1a32(key + '\u0001', 0x9e3779b9);       // 换种子再算一遍 → 拼成 64 位
-      let id = 'p' + ((BigInt(hi) << 32n) | BigInt(lo)).toString(36);
-      let n = 0;   // 64 位哈希实际不会撞，仅防御；后缀由确定性顺序推出，仍可复现
-      while (taken.has(id)) id = id + (++n).toString(36);
-      taken.add(id);
-      return id;
-    }
-
-    // v2.36.0：给重复 id 的商品重新分配 id（自愈）。云同步按 id 增量收敛，
+    // v2.36.0：给重复 id 的商品重新分配 id（自愈）。云同步按 id 做增量收敛，
     //   同 id 两条会永远互相覆盖、表现为「怎么改都没反应」，必须拆开。
-    // ❗v2.36.0 补修：原实现只改商品 id 不同步 records.productId → 流水变孤儿或错挂，
-    //   进而「删 A 连带清掉 B 的流水」「B 的记录页看不到自己的流水」。现按「原 id → 新 id」迁移。
-    // ❗v2.36.3 重写，三点差异：
-    //   ① 新 id 改为**确定性**（见上）→ 拆分成为幂等操作，多设备收敛；
-    //   ② 修「同名重复时流水被错误全量迁移」：旧实现 `cands.find(m => m.name === r.productName)`
-    //      在同名两条时会命中**被拆分那条**，把本属保留条的流水也搬走 → 那条丢掉历史。
-    //      同名时归属本质不可判定 → 整组不迁移，计入 ambiguous（用户可先改名再触发自愈）；
-    //   ③ 落盘改为「**baseState 就绪就走 saveData()（事件流）**」。调用点已移到 initSyncEngine 之后，
-    //      baseState 捕获的是拆分前状态 → 能生成正确的新 id upsert 上云。
-    //      （旧实现的调用点在 initSyncEngine 之前且只直写 localStorage，云端永远学不到新 id。）
-    //   返回统计对象（旧实现返回数字）；调用方均不依赖返回值。
+    // ❗v2.36.0 补修（审计发现）：原实现**只改商品 id，不同步 records.productId** ——
+    //   拆开后 B 的流水仍挂在 A 的旧 id 上 → 流水全部变孤儿或错挂在 A 名下，
+    //   进而导致「删 A 连带清掉 B 的流水」「B 的记录页看不到自己的流水」。
+    //   现在按「原 id → 新 id」建映射，把**属于被拆分那条商品**的流水一并迁移。
+    //   ❗关键：只有**被改了 id 的那条**才需要迁移流水；沿用原 id 的那条（通常是先出现的第一条）
+    //     流水本来就正确，绝不能动 —— 否则会把它的流水错误地迁到新 id 上。
+    //   归属判定：优先用流水自己的 productName 与该商品 name 精确匹配；匹配不上则留在原 id（保守）。
     function dedupeProductIds() {
-      const stats = { groups: 0, split: 0, movedRecords: 0, ambiguousRecords: 0 };
-      // 1) 分组。示例数据完全不参与：它必须对同步引擎不可见（见 captureState），
-      //    否则给它分配 id 会产生真实 upsert，把导览演示商品推上云（v2.33.0 修过的 P1）。
-      const byId = new Map();
-      for (const p of products.value) {
-        if (!p || p[DEMO_MARK]) continue;
-        const k = (p.id == null || p.id === '') ? '\u0000__missing__' : String(p.id);
-        if (!byId.has(k)) byId.set(k, []);
-        byId.get(k).push(p);
-      }
-      // 2) 逐组判定：谁保留原 id、其余拿新 id
-      const taken = new Set(products.value.filter(x => x && x.id != null && x.id !== '').map(x => String(x.id)));
-      const plans = [];
-      for (const [k, items] of byId) {
-        if (k !== '\u0000__missing__' && items.length <= 1) continue;
-        stats.groups++;
-        // 保留规则必须确定性：createdAt 最早 → barcode 字典序 → 数组序（最后兜底）
-        const ranked = items.map((p, i) => ({ p, i })).sort((a, b) => {
-          const ta = new Date(a.p.createdAt || 0).getTime() || 0;
-          const tb = new Date(b.p.createdAt || 0).getTime() || 0;
-          if (ta !== tb) return ta - tb;
-          const ba = String(a.p.barcode || ''), bb = String(b.p.barcode || '');
-          if (ba !== bb) return ba < bb ? -1 : 1;
-          return a.i - b.i;
-        });
-        const keep = ranked[0].p;
-        const rest = ranked.slice(1).map(r => r.p);
-        const allNames = [String(keep.name || '').trim(), ...rest.map(p => String(p.name || '').trim())].filter(n => n);
-        const sameName = new Set(allNames).size < allNames.length;   // 本组存在同名 → 归属不可判定
-        const split = rest.map(p => {
+      const seen = new Set();
+      const remap = [];   // { oldId, newId, name }
+      let fixed = 0;
+      products.value.forEach(p => {
+        if (!p) return;
+        if (!p.id || seen.has(p.id)) {
           const oldId = p.id;
-          const newId = deterministicProductId(p, taken);
-          p.id = newId;
-          return { oldId, newId, name: String(p.name || '').trim() };
-        });
-        stats.split += split.length;
-        plans.push({ split, sameName });
-      }
-      if (!stats.split) return stats;
+          p.id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+          remap.push({ oldId, newId: p.id, name: String(p.name || '').trim() });
+          fixed++;
+        }
+        seen.add(p.id);
+      });
+      if (!fixed) return 0;
 
-      // 3) 流水归属迁移：只动「挂在被拆分那条上、且名称能唯一对上」的
+      // 同步迁移流水归属：只动「挂在被拆分 id 上、且名称能对上」的那些
+      let movedRecords = 0;
       if (Array.isArray(records.value)) {
-        for (const plan of plans) {
-          for (const r of records.value) {
-            if (!r || !r.productId) continue;
-            if (!plan.split.some(s => s.oldId === r.productId)) continue;
-            if (plan.sameName) { stats.ambiguousRecords++; continue; }   // 同名 → 保守不迁
-            const hit = plan.split.find(s => s.oldId === r.productId && s.name && r.productName === s.name);
-            if (!hit) { stats.ambiguousRecords++; continue; }
-            r.productId = hit.newId;
-            stats.movedRecords++;
-          }
+        for (const r of records.value) {
+          if (!r || !r.productId) continue;
+          const cands = remap.filter(m => m.oldId === r.productId);
+          if (!cands.length) continue;
+          // 名称精确匹配（唯一可靠判据）；匹配不上 → 留在原 id（归先出现的那条商品），保守不迁
+          const hit = r.productName ? cands.find(m => m.name && m.name === r.productName) : null;
+          if (!hit) continue;
+          hit._claimed = true;
+          r.productId = hit.newId;
+          movedRecords++;
         }
       }
+      remap.forEach(m => { delete m._claimed; });
 
-      console.warn('[FoodIn v2.36.3] 重复 id 自愈：' + stats.groups + ' 组 / 拆分 ' + stats.split + ' 条商品'
-        + (stats.movedRecords ? '，迁移 ' + stats.movedRecords + ' 条流水' : '')
-        + (stats.ambiguousRecords ? '；' + stats.ambiguousRecords + ' 条流水因同名/无法判定保持原归属' : ''));
-
-      // 4) 落盘：baseState 就绪 → 走 saveData()，拆分结果进入事件流并上云；
-      //    基线未就绪（极早期 / 引擎初始化失败）→ 沿用直写，避免全量被当成新增整包推上云。
-      if (syncState.baseState) {
-        try { saveData(); } catch (e) { console.error('Dedupe saveData failed:', e); }
-      } else {
-        try {
-          localStorage.setItem('food_inventory_products', JSON.stringify(products.value));
-          if (stats.movedRecords) localStorage.setItem('food_inventory_records', JSON.stringify(records.value));
-        } catch (e) { /* 配额满 → 交给下一次正常 saveData */ }
-      }
-      return stats;
+      console.warn('[FoodIn v2.36.0] 已为 ' + fixed + ' 个重复/缺失 id 的商品重新分配 id'
+        + (movedRecords ? '，并迁移 ' + movedRecords + ' 条流水的归属' : '') + '（避免改动无反应）');
+      try {
+        // ❗只写 localStorage，不调 saveData()：同步事件按 id 生成，此刻字段已被改写，
+        //   交给下一次正常写盘即可；此处避免在 baseState 未就绪时把全量当新增推上云。
+        localStorage.setItem('food_inventory_products', JSON.stringify(products.value));
+        if (movedRecords) localStorage.setItem('food_inventory_records', JSON.stringify(records.value));
+      } catch (e) {}
+      return fixed;
     }
 
     // ===== v2.28.5：新手导览示例数据 =====
@@ -7337,7 +7232,7 @@ const app = createApp({
       Object.assign(editForm, {
         id: product.id, name: product.name, barcode: product.barcode || '',
         // v2.21.14：商品存的是逗号拼接字符串，编辑暂存为数组（兼容历史数据单值/多值）
-        location: tagsFromStr(product.location), category: tagsFromStr(product.category), stockInDate: product.stockInDate || '',
+        location: splitTagStr(product.location), category: splitTagStr(product.category), stockInDate: product.stockInDate || '',
         productionDate: product.productionDate || '',
         shelfLife: '', expiryDate: product.expiryDate || '', shelfLifeUnit: 'day',   // v2.31.0：占位，紧接着由 initEditShelfLife 解析回填
         quantity: product.quantity || 0,
@@ -7358,11 +7253,12 @@ const app = createApp({
     // v2.32.0 修正顺序：**永远以「设置项」的顺序为准**，历史遗留标签追加到末尾。
     //   旧版先塞「当前已选」再塞设置项，Set 保序 → 每次勾选/取消，被选中的标签都被顶到最前面、
     //   其余 chip 整体错位（实测：设置里是 调味品·零食饮料·乳品蛋类，商品只选了「零食饮料」时它却排第一）。
+    const splitTagStr = s => tagsFromStr(s);
     function unionTags(list, current) {
       const out = [];
       const seen = new Set();
       (list || []).forEach(t => { if (t && !seen.has(t)) { seen.add(t); out.push(t); } });
-      tagsFromStr(current).forEach(t => { if (t && !seen.has(t)) { seen.add(t); out.push(t); } });
+      splitTagStr(current).forEach(t => { if (t && !seen.has(t)) { seen.add(t); out.push(t); } });
       return out;
     }
 
@@ -9312,112 +9208,69 @@ const app = createApp({
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (e) => {
-        // v2.36.3：解析与「应用」分离 —— 应用逻辑见 applyImportPayload（可被自动化直接调用，不依赖隐藏 file input）
-        try { applyImportPayload(JSON.parse(e.target.result)); }
-        catch (err) { toastErr('导入', '文件格式错误'); }
+        try {
+          const data = JSON.parse(e.target.result);
+          // v2.36.1：备份导入改为按 ID 合并，不再直接覆盖本地库存。
+          // 同一商品优先采用 updatedAt 较新的版本，保证导入的 location/category 更新能进入 saveData → diffToEvents。
+          if (Array.isArray(data.products)) {
+            const incoming = normalizeProductList(data.products);
+            const byId = new Map(normalizeProductList(products.value).map(p => [p.id, p]));
+            incoming.forEach(p => {
+              const old = byId.get(p.id);
+              if (!old) { byId.set(p.id, p); return; }
+              const oldTs = new Date(old.updatedAt || old.createdAt || 0).getTime();
+              const newTs = new Date(p.updatedAt || p.createdAt || 0).getTime();
+              if (!oldTs || newTs >= oldTs) byId.set(p.id, p);
+            });
+            products.value = [...byId.values()];
+          }
+          if (Array.isArray(data.records)) {
+            const byId = new Map((Array.isArray(records.value) ? records.value : []).filter(r => r && r.id).map(r => [r.id, r]));
+            data.records.forEach(r => { if (r && r.id && !byId.has(r.id)) byId.set(r.id, r); });
+            records.value = [...byId.values()];
+          }
+          if (data.settings) {
+            // 白名单字段赋值：避免旧备份里的 version 等无关字段污染当前设置
+            const obj = data.settings;
+            if (obj.expiringDays) settings.expiringDays = obj.expiringDays;
+            settings.cloudApiKey = obj.cloudApiKey || '';
+            settings.cloudBinId = obj.cloudBinId || '';
+            settings.cloudSyncEnabled = !!obj.cloudSyncEnabled;
+            settings.cloudLastSync = '';   // 导入后清零同步时间戳（不从备份恢复）——v2.18.0 事件引擎按差分生成 upsert/delete 事件随下次同步上云；早已删除的商品因 knownIds 墓碑不会随导入复活
+            settings.localModified = '';   // 导入视为全新本地状态（内容以备份为准，不以时间戳代言）
+            settings.barcodeApiKey = obj.barcodeApiKey || '';
+            settings.barcodeLookupEnabled = !!obj.barcodeLookupEnabled;
+            // v2.34.0：三值白名单（原实现只认 tesseract，其余一律回落 paddle → 备份里存的是
+            //   baidu 时会被静默改成 paddle，让用户以为设置「自己变了」）
+            settings.ocrEngine = ['paddle', 'baidu', 'tesseract'].includes(obj.ocrEngine) ? obj.ocrEngine : 'paddle';
+            settings.ocrProxyUrl = obj.ocrProxyUrl || '';   // v2.34.0：百度云代理地址
+            settings.baiduApiKey = obj.baiduApiKey || '';   // v2.21.5 遗留字段：仅兼容读取，无 UI 入口、不上云（密钥改由服务端持有）
+            settings.baiduSecretKey = obj.baiduSecretKey || '';   // 同上
+            if (Array.isArray(obj.locations) && obj.locations.length) { settings.locations = obj.locations; migrateLooseLocationsToPlaces(); }   // v2.26.0：老备份的遗留位置池一次性迁入 places
+            // v2.36.1：新备份直接恢复 places/builtinCategories；空数组也有明确语义，不能用 length 判断是否存在。
+            if (Array.isArray(obj.places)) settings.places = obj.places;
+            if (Array.isArray(obj.builtinCategories)) settings.builtinCategories = obj.builtinCategories;
+            if (Array.isArray(obj.categories)) settings.categories = obj.categories;
+            if (obj.leftoverDefaultDays != null) settings.leftoverDefaultDays = Number(obj.leftoverDefaultDays) || settings.leftoverDefaultDays;
+            normalizeSettingsCollections();
+            settings.autoSaveInterval = obj.autoSaveInterval || 0;
+            // v2.22.0：名称清洗规则白名单导入（仅当旧备份里有值才覆盖）
+            settings.nameCleanEnabled = (obj.nameCleanEnabled == null) ? settings.nameCleanEnabled : !!obj.nameCleanEnabled;
+            settings.nameCleanCase = (obj.nameCleanCase === 'lower' || obj.nameCleanCase === 'none') ? obj.nameCleanCase : 'smart';
+            settings.nameCleanMarketing = (obj.nameCleanMarketing == null) ? settings.nameCleanMarketing : !!obj.nameCleanMarketing;
+            if (typeof obj.nameCleanCustom === 'string') settings.nameCleanCustom = obj.nameCleanCustom;
+            if (typeof obj.nameCleanWhitelist === 'string') settings.nameCleanWhitelist = obj.nameCleanWhitelist;
+            // version 由代码常量控制，不从备份导入
+            settings.version = CURRENT_VERSION;
+          }
+          saveData();
+          toastDone('导入数据，变更将在下次云同步时合并到云端');
+        } catch (err) {
+          toastErr('导入', '文件格式错误');
+        }
       };
       reader.readAsText(file);
       event.target.value = '';
-    }
-
-    // v2.36.3：把「应用导入负载」抽为独立函数。
-    //   原因：导入入口是「数据整理」折叠区里的隐藏 file input（v-if="showDataManage"），
-    //   未展开时它根本不在 DOM，自动化无法直接驱动；分离后可 __foodin.applyImportPayload(obj) 验证。
-    //   顺便让「按 id 合并」的逻辑独立可读、可单测。
-    function applyImportPayload(data) {
-      // v2.36.1：备份导入改为按 ID 合并，不再直接覆盖本地库存。
-      // 同一商品优先采用 updatedAt 较新的版本，保证导入的 location/category 更新能进入 saveData → diffToEvents。
-      // v2.36.3 ❗修复静默丢数据：旧实现用 byId.set(p.id, p) 会**直接覆盖**同 id 的本地件 ——
-      //   当「同 id 但并非同一商品」时（重复 id 撞车），本地那条连同它的流水归属会被无声替换掉。
-      //   现在区分两种情况：
-      //     ① 同一商品（名称 + 条码都相同）→ 仍按 updatedAt 新者胜（合并，语义不变）
-      //     ② 只是 id 撞车（名称或条码不同）→ **两条都保留**，给来件分配**确定性新 id**，
-      //        并在下面把属于它的流水一并改挂（按名称精确匹配，与 dedupeProductIds 同一套保守规则）
-      //   另：不再用 Map 承载输出 —— Map 会把「本地已有的同 id 商品」折叠掉，同样是静默丢数据。
-      const incomingRemap = [];   // { oldId, newId, name }：来件被换 id 的记录，供流水改挂
-      if (Array.isArray(data.products)) {
-        const incoming = normalizeProductList(data.products);
-        const out = normalizeProductList(products.value).slice();
-        const idx = new Map();                                   // id → out 下标（只记首个同 id 件）
-        out.forEach((p, i) => { if (p && p.id && !idx.has(p.id)) idx.set(p.id, i); });
-        const taken = new Set(out.filter(p => p && p.id).map(p => String(p.id)));
-        const sameProduct = (a, b) => String(a.name || '').trim() === String(b.name || '').trim()
-                                  && String(a.barcode || '') === String(b.barcode || '');
-        const pickNewer = (a, b) => {
-          const ta = new Date(a.updatedAt || a.createdAt || 0).getTime();
-          const tb = new Date(b.updatedAt || b.createdAt || 0).getTime();
-          return (!ta || tb >= ta) ? b : a;
-        };
-        incoming.forEach(p => {
-          if (!p) return;
-          if (!p.id) {                                           // 来件没有 id → 直接补确定性 id
-            p.id = deterministicProductId(p, taken);
-            out.push(p); idx.set(p.id, out.length - 1);
-            return;
-          }
-          const at = idx.get(p.id);
-          if (at === undefined) {                                // 本地没有该 id → 收下并登记
-            out.push(p); idx.set(p.id, out.length - 1);
-            return;
-          }
-          if (sameProduct(out[at], p)) { out[at] = pickNewer(out[at], p); return; }   // 同一商品 → 合并
-          const newId = deterministicProductId(p, taken);         // 仅 id 撞车 → 两条都留
-          incomingRemap.push({ oldId: p.id, newId, name: String(p.name || '').trim() });
-          p.id = newId;
-          out.push(p); idx.set(newId, out.length - 1);
-        });
-        products.value = out;
-      }
-      if (Array.isArray(data.records)) {
-        // v2.36.3：同上，不再用 Map 折叠（会把同 id 的本地流水丢掉）；改为「本地全留 + 来件按 id 去重追加」。
-        // 若该流水的商品在导入时被换过 id（incomingRemap），按名称精确匹配把它改挂到新 id —— 名称对不上则不动（保守）。
-        const out = (Array.isArray(records.value) ? records.value : []).slice();
-        const have = new Set(out.filter(r => r && r.id).map(r => r.id));
-        data.records.forEach(r => {
-          if (!r || !r.id) return;
-          const moved = incomingRemap.find(m => m.oldId === r.productId && m.name && r.productName === m.name);
-          const rec = moved ? Object.assign({}, r, { productId: moved.newId }) : r;
-          if (have.has(rec.id)) return;     // 同 id 流水已存在 → 保留本地那条（既有语义）
-          out.push(rec); have.add(rec.id);
-        });
-        records.value = out;
-      }
-      if (data.settings) {
-        // 白名单字段赋值：避免旧备份里的 version 等无关字段污染当前设置
-        const obj = data.settings;
-        if (obj.expiringDays) settings.expiringDays = obj.expiringDays;
-        settings.cloudApiKey = obj.cloudApiKey || '';
-        settings.cloudBinId = obj.cloudBinId || '';
-        settings.cloudSyncEnabled = !!obj.cloudSyncEnabled;
-        settings.cloudLastSync = '';   // 导入后清零同步时间戳（不从备份恢复）——v2.18.0 事件引擎按差分生成 upsert/delete 事件随下次同步上云；早已删除的商品因 knownIds 墓碑不会随导入复活
-        settings.localModified = '';   // 导入视为全新本地状态（内容以备份为准，不以时间戳代言）
-        settings.barcodeApiKey = obj.barcodeApiKey || '';
-        settings.barcodeLookupEnabled = !!obj.barcodeLookupEnabled;
-        // v2.34.0：三值白名单（原实现只认 tesseract，其余一律回落 paddle → 备份里存的是
-        //   baidu 时会被静默改成 paddle，让用户以为设置「自己变了」）
-        settings.ocrEngine = ['paddle', 'baidu', 'tesseract'].includes(obj.ocrEngine) ? obj.ocrEngine : 'paddle';
-        settings.ocrProxyUrl = obj.ocrProxyUrl || '';   // v2.34.0：百度云代理地址
-        settings.baiduApiKey = obj.baiduApiKey || '';   // v2.21.5 遗留字段：仅兼容读取，无 UI 入口、不上云（密钥改由服务端持有）
-        settings.baiduSecretKey = obj.baiduSecretKey || '';   // 同上
-        if (Array.isArray(obj.locations) && obj.locations.length) { settings.locations = obj.locations; migrateLooseLocationsToPlaces(); }   // v2.26.0：老备份的遗留位置池一次性迁入 places
-        // v2.36.1：新备份直接恢复 places/builtinCategories；空数组也有明确语义，不能用 length 判断是否存在。
-        if (Array.isArray(obj.places)) settings.places = obj.places;
-        if (Array.isArray(obj.builtinCategories)) settings.builtinCategories = obj.builtinCategories;
-        if (Array.isArray(obj.categories)) settings.categories = obj.categories;
-        if (obj.leftoverDefaultDays != null) settings.leftoverDefaultDays = Number(obj.leftoverDefaultDays) || settings.leftoverDefaultDays;
-        normalizeSettingsCollections();
-        settings.autoSaveInterval = obj.autoSaveInterval || 0;
-        // v2.22.0：名称清洗规则白名单导入（仅当旧备份里有值才覆盖）
-        settings.nameCleanEnabled = (obj.nameCleanEnabled == null) ? settings.nameCleanEnabled : !!obj.nameCleanEnabled;
-        settings.nameCleanCase = (obj.nameCleanCase === 'lower' || obj.nameCleanCase === 'none') ? obj.nameCleanCase : 'smart';
-        settings.nameCleanMarketing = (obj.nameCleanMarketing == null) ? settings.nameCleanMarketing : !!obj.nameCleanMarketing;
-        if (typeof obj.nameCleanCustom === 'string') settings.nameCleanCustom = obj.nameCleanCustom;
-        if (typeof obj.nameCleanWhitelist === 'string') settings.nameCleanWhitelist = obj.nameCleanWhitelist;
-        // version 由代码常量控制，不从备份导入
-        settings.version = CURRENT_VERSION;
-      }
-      saveData();
-      toastDone('导入数据，变更将在下次云同步时合并到云端');
     }
 
     function clearAllData() {
@@ -10026,10 +9879,11 @@ const app = createApp({
     // ===== v2.23.0 主页「存放位置」浮层（冰箱钮，方案 A：时间维度↔空间维度对称） =====
     const showLocationPanel = ref(false);
     const locPanelExpanded = ref('');          // 当前展开的地点名（'' = 全部折叠）
+    const splitLocTags = s => normalizeTagList(s);
     function placeProducts(pl) {               // 归属某地点的商品（location 命中其任一分区 或 地点名）
       const hasZ = Array.isArray(pl.zones) && pl.zones.length;
       return products.value.filter(p => {
-        const tags = normalizeTagList(p.location);
+        const tags = splitLocTags(p.location);
         if (!tags.length) return false;
         return tags.some(t => hasZ ? pl.zones.includes(t) : t === pl.name);
       });
@@ -10047,7 +9901,7 @@ const app = createApp({
     const looseGroups = computed(() => {
       const map = {};
       products.value.forEach(p => {
-        normalizeTagList(p.location).forEach(t => { if (!placeOfTag(t)) (map[t] = map[t] || []).push(p); });
+        splitLocTags(p.location).forEach(t => { if (!placeOfTag(t)) (map[t] = map[t] || []).push(p); });
       });
       const sortP = list => [...list].sort((a, b) => {
         const sa = getExpiryStatus(a.expiryDate), sb = getExpiryStatus(b.expiryDate);
@@ -10075,7 +9929,7 @@ const app = createApp({
         return sa.status === 'expired' ? db - da : da - db;
       });
       if (!pl.zones || !pl.zones.length) return sortP(base);
-      return sortP(base.filter(p => normalizeTagList(p.location).includes(zone)));
+      return sortP(base.filter(p => splitLocTags(p.location).includes(zone)));
     }
     // 联动主页：写入搜索框 @token 筛选（与筛选弹窗同一机制）
     function focusPlaceByName(name) { currentPage.value = 'home'; searchQuery.value = '@' + name; showLocationPanel.value = false; toastDone('筛选位置：' + name); }
@@ -11350,12 +11204,10 @@ const app = createApp({
 
     onMounted(() => {
       let demosCleanedAtBoot = false;   // v2.33.0：启动扫到示例数据 → 同步引擎就绪后立刻落盘（见下方 saveData）
-      let pendingBootSave = false;      // v2.36.3：需要在同步引擎就绪后才补写的落盘（tourDone 等）
-      migrateFilterArrays();   // v2.36.2：兼容旧版本 —— homeCategory/homeLocation 历史上可能是字符串，统一为数组
+      migrateFilterArrays();   // 兼容旧版本：homeFilter 等可能是字符串，统一为数组
       loadData();
-      // v2.36.3：自愈**不再**在这里跑。原来在本行调用，而此刻 initSyncEngine() 还没执行、
-      //   baseState 为 null → 拆分结果只能直写 localStorage、永远上不了云（换设备/清缓存后重复 id 又回来）。
-      //   已移到 initSyncEngine() 之后（见下方），确保 baseState 捕获的是「拆分前」状态。
+      // v2.36.0：启动即自愈重复 id —— 否则「改名/删除没反应」会一直卡住用户
+      dedupeProductIds();
       // v2.28.5：兜底清理「导览中途被关掉」残留的示例数据——用户没点完就关页面时 endTour 没机会跑，
       // 示例商品/记录会留在 localStorage。这里在启动时无条件扫一遍，带 DEMO_MARK 的一律收回。
       // （正常流程下 endTour 已清干净，这里只是兜底，不会影响真实数据——真实数据不带 DEMO_MARK。）
@@ -11381,9 +11233,7 @@ const app = createApp({
       if (!settings.tourDone) {
         if (products.value.length > 0 || records.value.length > 0) {
           settings.tourDone = true;
-          // v2.36.3：推迟到 initSyncEngine() 之后。原来在这里直接 saveData()，而此刻 baseState 还是 null，
-          //   diffToEvents 会把「全部商品」当新增整包推上云 —— 与本文件上方 v2.33.0 的注释自相矛盾。
-          pendingBootSave = true;
+          saveData();
         } else {
           // v2.33.0：原来是写死的 `setTimeout(() => startTour(), 700)` —— 一个「等首屏渲染完」的经验值。
           // 它两头都不准：快机上白等 0.7 秒才出聚光灯；慢机上 700ms 可能还没排完布局/字体，
@@ -11397,18 +11247,12 @@ const app = createApp({
         }
       }
       initSyncEngine();
-      // v2.36.3：自愈放在这里 —— 同步引擎就绪后，baseState 捕获的是「拆分前」状态，
-      //   于是拆分产生的新 id 会走 diffToEvents 生成正确的 upsert 上云。
-      //   必须早于 purgeGhostProducts：重复 id 会让任何「按 id 定位」的清理作用到错误的商品上。
-      dedupeProductIds();
       purgeGhostProducts();   // v2.30.0：同步引擎就绪后先清一遍启动时就存在的幽灵商品（数量 ≤ 0），此时 baseState 已有值，delete 事件能正确生成
-      if (demosCleanedAtBoot || pendingBootSave) {
+      if (demosCleanedAtBoot) {
         // v2.33.0：现在 baseState 已就绪，落盘不会把全量误判成新增；
         // 且 captureState 已把示例数据排除在同步之外，所以这次 saveData 只写本地、不推云端，
         // 纯粹把「示例数据已收回」这个事实持久化，免得每次启动都要重扫一遍。
-        // v2.36.3：pendingBootSave（tourDone 补写）也归到这里，避免在 baseState 就绪前整包推云。
         demosCleanedAtBoot = false;
-        pendingBootSave = false;
         saveData();
       }
       loadUndoCache();        // v2.31.0：载入本机撤销快照（localStorage-only，不参与云同步），并顺手修剪孤儿条目
@@ -11456,7 +11300,7 @@ const app = createApp({
     });
 
     // 调试/自动化测试钩子（不影响正常运行）
-    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, applyImportPayload, loadTesseract, loadPaddleOcr, ensureScanLib, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, dedupeProductIds, deterministicProductId, fnv1a32, findProduct, removeProduct, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, pickShelfLifeUnit, calcShelfLifeParts, calcExpiryDateFromParts, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, cloudAutoHint, cloudAutoText, cloudAutoSet, cloudSyncButtonVisible, CLOUD_SYNC_PAGES, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT,       showTip, closeTip, tipModal, tipOcrOff, runTipAction,      startRename, confirmRename, cancelRename, renaming, removeCategory, newPlaceInput, verifyBaiduProxy, confirmRevoke, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
+    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, ensureScanLib, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, dedupeProductIds, findProduct, removeProduct, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, pickShelfLifeUnit, calcShelfLifeParts, calcExpiryDateFromParts, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, cloudAutoHint, cloudAutoText, cloudAutoSet, cloudSyncButtonVisible, CLOUD_SYNC_PAGES, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT,       showTip, closeTip, tipModal, tipOcrOff, runTipAction,      startRename, confirmRename, cancelRename, renaming, removeCategory, newPlaceInput, verifyBaiduProxy, confirmRevoke, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
 
     return {
       // v2.26.1 修复（P0-01）：设置页 5 个开关的 @update:model-value 处理器直接调用 saveData() / showToast()，
@@ -11467,7 +11311,7 @@ const app = createApp({
       toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff,   // v2.28.0：toast 文案规范（UI规范 §4）
       tipModal, closeTip, tipOcrOff, runTipAction,   // v2.34.7：说明弹窗（toast 装不下的长文案走这里）；v2.34.10：+runTipAction（行动按钮）
       currentPage, products, records, settings, barcodeCache,
-      searchQuery, homeCategory, homeLocation, sortBy, homeDateStart, homeDateEnd, showFilterModal, sortOptions, hasActiveFilter, resetHomeFilters, toggleArrayItem, parseSearchQuery, matchesProduct, toggleSearchToken, hasSearchToken, clearSearchTokens, recordSearchQuery, dateRangeStart, dateRangeEnd,
+      searchQuery, homeFilter, homeCategory, homeLocation, sortBy, homeDateStart, homeDateEnd, showFilterModal, sortOptions, hasActiveFilter, resetHomeFilters, toggleFilter, clearFilter, toggleArrayItem, parseSearchQuery, matchesProduct, toggleSearchToken, hasSearchToken, clearSearchTokens, recordSearchQuery, dateRangeStart, dateRangeEnd,
       showDeleteConfirm, showExpiryReminder, showEditModal, showChangelog, showClearConfirm, showDataManage, showCloudSyncModal, showScanModal, scanContext,
       cloudSyncing, cloudSyncStatus, cloudAutoHint, cloudAutoText,
       deletingProduct, editingProduct, toast,

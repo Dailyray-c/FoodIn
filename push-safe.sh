@@ -41,6 +41,9 @@ git_remote() {
 
 # 仅发布这些文件（绝不包含 _ 前缀调试产物 / versions 历史副本以外的杂项）。
 PUBLISH_FILES=(index.html service-worker.js styles.css UI规范.md push-safe.sh README.md .gitignore scripts/daily_expiry_check.py)
+# 2026-10-08：tools/ 是发布卡点（chk_exports.py）与回归套件（e2e/）的受控存放位置。
+# 它们原先叫 _chk_exports.py / _shot_*.js，被 .gitignore 的 `_*` 规则屏蔽 → 从未进过仓库。
+TOOLS_DIR=(tools)
 
 echo "[1/6] 拉取远程最新 ..."
 if ! git_remote fetch origin master; then
@@ -72,6 +75,7 @@ git checkout -- backups/ 2>/dev/null || true
 
 echo "[3/6] 暂存发布文件 ..."
 git add "${PUBLISH_FILES[@]}"
+if [ -d tools ]; then git add "${TOOLS_DIR[@]}"; echo "      项目工具: $(find tools -type f | wc -l) 个文件（tools/）"; fi
 # 版本副本：一次把 versions/ 下全部纳入跟踪（幂等）。
 # 先前只 add「最新一个」，导致 v2.24.4–v2.32.0 共 19 个历史副本始终没进远程档案，
 # 回退时拿不到对应版本的三件套。改为整体 add，此后每次推送都会自动补齐新副本。
@@ -112,6 +116,7 @@ else
      && [ -n "$FETCH_OID2" ] \
      && git reset --mixed "$FETCH_OID2" \
      && git add "${PUBLISH_FILES[@]}" \
+     && git add tools/ \
      && git add versions/ \
      && git commit -m "$MSG" \
      && git_remote push origin master; then

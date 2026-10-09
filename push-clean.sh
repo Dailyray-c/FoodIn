@@ -48,7 +48,7 @@ git reset --mixed "$FETCH_OID" 2>/dev/null || git reset --mixed origin/master 2>
 
 echo "[3/5] 暂存清理后的全部改动 ..."
 git add -u                                   # 已跟踪变更（含根目录文件移到 docs/ 的删除 + README/UI规范/push-safe 修改）
-git add docs/ versions/ proxy/ scripts/ push-readme.sh   # 新增：文档目录 / 历史副本 / 百度OCR代理服务 / 新脚本
+git add docs/ versions/ proxy/ scripts/ tools/ push-readme.sh   # 新增：文档 / 历史副本 / 百度OCR代理 / 新脚本 / 项目工具（2026-10-08 起）
 
 # 护栏：暂存区不得含敏感/本地数据
 BAD=""
@@ -83,7 +83,7 @@ else
      && F2=$(git rev-parse -q --verify FETCH_HEAD 2>/dev/null) && [ -n "$F2" ] \
      && git reset --mixed "$F2" \
      && git add -u \
-     && git add docs/ versions/ proxy/ scripts/ push-readme.sh \
+     && git add docs/ versions/ proxy/ scripts/ tools/ push-readme.sh \
      && git commit -m "$MSG" \
      && git_remote push origin master; then
     echo "✓ 推送成功（已基于最新远程重演）。"

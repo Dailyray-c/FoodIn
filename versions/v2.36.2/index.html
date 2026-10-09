@@ -4331,7 +4331,7 @@ const app = createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.36.3';   // v2.36.3：重复 id 自愈改确定性 id + 修同名流水误迁移 + 自愈改到同步引擎就绪后（结果可上云）+ 修备份导入同 id 撞车静默丢商品；v2.36.2：本地读取逐键隔离 + 损坏隔离（修数据丢失风险）+ 清理死代码与冗余别名 + 77 处手写字号收敛为 .fi-hint/.fi-fs-11；v2.36.1：位置/分类统一归一化并保证导入、云同步的 location/category 字段传播；删除分区/地点不再留下不可筛选的幽灵位置；多标签删除/重命名、空值统计、空 places 同步、带空格搜索 token 修复；地点/分区/分类名称分隔符校验；SW v120 → v121
+    const CURRENT_VERSION = '2.36.2';   // v2.36.2：本地读取逐键隔离 + 损坏隔离（修数据丢失风险）+ 清理死代码与冗余别名 + 77 处手写字号收敛为 .fi-hint/.fi-fs-11；v2.36.1：位置/分类统一归一化并保证导入、云同步的 location/category 字段传播；删除分区/地点不再留下不可筛选的幽灵位置；多标签删除/重命名、空值统计、空 places 同步、带空格搜索 token 修复；地点/分区/分类名称分隔符校验；SW v120 → v121
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', ocrEnabled: true, baiduApiKey: '', baiduSecretKey: '', ocrProxyUrl: '', categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0, ocrGroupMode: true, ocrImageEnhance: true, nameCleanEnabled: true, nameCleanCase: 'smart', nameCleanMarketing: true, nameCleanCustom: '', nameCleanWhitelist: '', places: [], builtinCategories: ['剩菜剩饭'], leftoverDefaultDays: 3, simpleMode: false, fontScale: 'normal', tourDone: false });   // v2.28.4：+tourDone 首次实景导览是否已完成（仅本机，同 simpleMode 不进云同步 schema——否则云端旧快照会把「已完成」覆盖回来）；v2.25.0：+simpleMode 简洁模式（大字号 + 精简功能，默认关）+fontScale 字号档位（normal 标准 / large 大 / xlarge 超大，独立于简洁模式，切换即时生效、跨设备同步，默认 large 即大字号）；v2.21.16：+ocrGroupMode 批量 OCR 智能分组开关（持久化，默认 true，首次加载迁移）+ocrImageEnhance 识别前图像增强开关（灰度+OTSU 二值化，Tesseract 路径生效，默认 true）；v2.22.0：+nameClean* 名称清洗规则库（默认开：去营销词 / 大小写 smart / 全半角）；v2.22.2：+ocrEnabled 文字识别总开关（默认 true；关闭后所有 OCR 入口按钮变灰并提示）
 
     // v2.26.0：location/category 统一「数组 ↔ 字符串」转换（商品模型落库为逗号字符串，表单态为数组）
@@ -5374,18 +5374,6 @@ const app = createApp({
     const changelog = [
       // 近期版本：保留完整条目
       {
-        version: "2.36.3",
-        date: "2026-10-09",
-        items: [
-          "修复备份导入可能静默丢商品：同一个 id 若对应的是**不同商品**，旧实现会用导入件直接覆盖本地那条（连同它的流水归属一起消失）。现在区分「同一商品」与「只是 id 撞车」——前者仍按更新时间合并，后者两条都保留并为导入件分配新 id，属于它的流水一并改挂",
-          "重复 id 自愈改用**确定性 id**：旧实现是随机 id，两台设备各自自愈会算出不同结果、各推一条事件，最终反而多出商品；现在按商品的条码/名称/入库时间做内容哈希，同一份数据在任何设备上得到同一个新 id，事件按 id 幂等去重 → 多设备无需协调即可收敛",
-          "修复同名重复商品自愈时**流水被错误迁移**：旧实现按名称匹配会命中「被拆开的那条」，把本属另一条的流水也搬过去，导致那条丢掉历史；现在同名一律不迁移（归属不可判定），保持原归属并在控制台如实报告条数",
-          "自愈改在云同步引擎就绪**之后**执行：此前它在 baseState 建立前就跑完、只写本地，新 id 永远上不了云（换设备或清缓存后重复 id 又回来）",
-          "顺带修复：首次使用且库中已有数据时，完成标记的补写会在同步引擎就绪前触发保存 → 把全部商品当成新增整包推上云（与本文件内 v2.33.0 的注释自相矛盾）",
-          "更新日志订正：早期条目里写过「设置里可一键拆分重复 id」，实际**没有这个入口** —— 重复 id 一直由应用自动拆分，无需用户手动操作"
-        ]
-      },
-      {
         version: "2.36.2",
         date: "2026-10-09",
         items: [
@@ -5413,7 +5401,7 @@ const app = createApp({
         items: [
           "人工「正常减少库存」改为统一二次确认：弹窗明确列出商品名称、当前库存、本次减少数量与减少后剩余库存，点「确认减少」才真正扣减；点「取消」则库存与流水完全不变、不产生任何记录。此前只有「最后一件」才弹确认，其余数量点一下就直接扣掉，误触无法挽回",
           "确认按钮防重复提交：提交瞬间即置灰并显示加载状态，连点也只会扣减一次（扣减改到下一帧执行，避免同帧关闭弹窗造成重复入账）",
-          "修复「改完没反应 / 删不掉」：云同步 upsert 与 CSV 导入都可能让同一个 id 存在两条商品，此前改名、删除永远作用在第一条上。现在定位一律优先用对象引用；启动与数据变动时会**自动拆分**重复 id（并把属于该商品的流水一并迁移），清理顺序改为「先拆 id 再清幽灵商品」",
+          "修复「改完没反应 / 删不掉」：云同步 upsert 与 CSV 导入都可能让同一个 id 存在两条商品，此前改名、删除永远作用在第一条上。现在定位一律优先用对象引用；设置页可一键拆分重复 id（并把属于该商品的流水一并迁移），清理顺序改为「先拆 id 再清幽灵商品」",
           "编辑弹窗打开时锚定商品对象引用，列表重排后保存不会再落到别的商品上",
           "保质期单位与日期反算修复：默认单位由「月」改为「日」（原默认值会让单位按钮一进页面就停在「月」）；自动挑选最自然单位并保证正反算往返无损，正算不再多减 1 天",
           "顶栏四张统计卡改为数据表驱动，第一张固定为「在库」（商品维度、件数口径）；「件」统一为 in / eat / waste 三类记录的数量合计，与列表口径一致",
@@ -7030,117 +7018,57 @@ const app = createApp({
       });
     }
 
-    // ===== v2.36.3：确定性 id =====
-    //   拆分重复 id 必须**幂等**。旧实现用随机 id（'p'+Date.now()+rand）：两台设备各自自愈会算出
-    //   不同的新 id，双方各推一条 upsert → 云端与两端最终**多出商品**（越修越乱）。
-    //   改为对「随商品一起同步、且不会被编辑改写」的字段做内容哈希 → 同一份数据在任何设备上
-    //   得到同一个新 id，upsert 事件按 id 幂等去重，**无需设备间协调即可收敛**。
-    function fnv1a32(str, seed) {
-      let h = seed >>> 0;
-      for (let i = 0; i < str.length; i++) {
-        h ^= str.charCodeAt(i);
-        h = Math.imul(h, 0x01000193) >>> 0;
-      }
-      return h >>> 0;
-    }
-    // 参与哈希：barcode / name / createdAt
-    //   ❗不含 updatedAt —— 它会被编辑改写，会让同一商品在不同设备上算出不同 id
-    //   ❗不含数组下标 —— 下标跨设备不稳定（同步到达顺序不同）
-    function deterministicProductId(p, taken) {
-      const key = [p.barcode || '', String(p.name || '').trim(), p.createdAt || ''].join('\u0000');
-      const hi = fnv1a32(key, 0x811c9dc5);                 // FNV-1a 32 位
-      const lo = fnv1a32(key + '\u0001', 0x9e3779b9);       // 换种子再算一遍 → 拼成 64 位
-      let id = 'p' + ((BigInt(hi) << 32n) | BigInt(lo)).toString(36);
-      let n = 0;   // 64 位哈希实际不会撞，仅防御；后缀由确定性顺序推出，仍可复现
-      while (taken.has(id)) id = id + (++n).toString(36);
-      taken.add(id);
-      return id;
-    }
-
-    // v2.36.0：给重复 id 的商品重新分配 id（自愈）。云同步按 id 增量收敛，
+    // v2.36.0：给重复 id 的商品重新分配 id（自愈）。云同步按 id 做增量收敛，
     //   同 id 两条会永远互相覆盖、表现为「怎么改都没反应」，必须拆开。
-    // ❗v2.36.0 补修：原实现只改商品 id 不同步 records.productId → 流水变孤儿或错挂，
-    //   进而「删 A 连带清掉 B 的流水」「B 的记录页看不到自己的流水」。现按「原 id → 新 id」迁移。
-    // ❗v2.36.3 重写，三点差异：
-    //   ① 新 id 改为**确定性**（见上）→ 拆分成为幂等操作，多设备收敛；
-    //   ② 修「同名重复时流水被错误全量迁移」：旧实现 `cands.find(m => m.name === r.productName)`
-    //      在同名两条时会命中**被拆分那条**，把本属保留条的流水也搬走 → 那条丢掉历史。
-    //      同名时归属本质不可判定 → 整组不迁移，计入 ambiguous（用户可先改名再触发自愈）；
-    //   ③ 落盘改为「**baseState 就绪就走 saveData()（事件流）**」。调用点已移到 initSyncEngine 之后，
-    //      baseState 捕获的是拆分前状态 → 能生成正确的新 id upsert 上云。
-    //      （旧实现的调用点在 initSyncEngine 之前且只直写 localStorage，云端永远学不到新 id。）
-    //   返回统计对象（旧实现返回数字）；调用方均不依赖返回值。
+    // ❗v2.36.0 补修（审计发现）：原实现**只改商品 id，不同步 records.productId** ——
+    //   拆开后 B 的流水仍挂在 A 的旧 id 上 → 流水全部变孤儿或错挂在 A 名下，
+    //   进而导致「删 A 连带清掉 B 的流水」「B 的记录页看不到自己的流水」。
+    //   现在按「原 id → 新 id」建映射，把**属于被拆分那条商品**的流水一并迁移。
+    //   ❗关键：只有**被改了 id 的那条**才需要迁移流水；沿用原 id 的那条（通常是先出现的第一条）
+    //     流水本来就正确，绝不能动 —— 否则会把它的流水错误地迁到新 id 上。
+    //   归属判定：优先用流水自己的 productName 与该商品 name 精确匹配；匹配不上则留在原 id（保守）。
     function dedupeProductIds() {
-      const stats = { groups: 0, split: 0, movedRecords: 0, ambiguousRecords: 0 };
-      // 1) 分组。示例数据完全不参与：它必须对同步引擎不可见（见 captureState），
-      //    否则给它分配 id 会产生真实 upsert，把导览演示商品推上云（v2.33.0 修过的 P1）。
-      const byId = new Map();
-      for (const p of products.value) {
-        if (!p || p[DEMO_MARK]) continue;
-        const k = (p.id == null || p.id === '') ? '\u0000__missing__' : String(p.id);
-        if (!byId.has(k)) byId.set(k, []);
-        byId.get(k).push(p);
-      }
-      // 2) 逐组判定：谁保留原 id、其余拿新 id
-      const taken = new Set(products.value.filter(x => x && x.id != null && x.id !== '').map(x => String(x.id)));
-      const plans = [];
-      for (const [k, items] of byId) {
-        if (k !== '\u0000__missing__' && items.length <= 1) continue;
-        stats.groups++;
-        // 保留规则必须确定性：createdAt 最早 → barcode 字典序 → 数组序（最后兜底）
-        const ranked = items.map((p, i) => ({ p, i })).sort((a, b) => {
-          const ta = new Date(a.p.createdAt || 0).getTime() || 0;
-          const tb = new Date(b.p.createdAt || 0).getTime() || 0;
-          if (ta !== tb) return ta - tb;
-          const ba = String(a.p.barcode || ''), bb = String(b.p.barcode || '');
-          if (ba !== bb) return ba < bb ? -1 : 1;
-          return a.i - b.i;
-        });
-        const keep = ranked[0].p;
-        const rest = ranked.slice(1).map(r => r.p);
-        const allNames = [String(keep.name || '').trim(), ...rest.map(p => String(p.name || '').trim())].filter(n => n);
-        const sameName = new Set(allNames).size < allNames.length;   // 本组存在同名 → 归属不可判定
-        const split = rest.map(p => {
+      const seen = new Set();
+      const remap = [];   // { oldId, newId, name }
+      let fixed = 0;
+      products.value.forEach(p => {
+        if (!p) return;
+        if (!p.id || seen.has(p.id)) {
           const oldId = p.id;
-          const newId = deterministicProductId(p, taken);
-          p.id = newId;
-          return { oldId, newId, name: String(p.name || '').trim() };
-        });
-        stats.split += split.length;
-        plans.push({ split, sameName });
-      }
-      if (!stats.split) return stats;
+          p.id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+          remap.push({ oldId, newId: p.id, name: String(p.name || '').trim() });
+          fixed++;
+        }
+        seen.add(p.id);
+      });
+      if (!fixed) return 0;
 
-      // 3) 流水归属迁移：只动「挂在被拆分那条上、且名称能唯一对上」的
+      // 同步迁移流水归属：只动「挂在被拆分 id 上、且名称能对上」的那些
+      let movedRecords = 0;
       if (Array.isArray(records.value)) {
-        for (const plan of plans) {
-          for (const r of records.value) {
-            if (!r || !r.productId) continue;
-            if (!plan.split.some(s => s.oldId === r.productId)) continue;
-            if (plan.sameName) { stats.ambiguousRecords++; continue; }   // 同名 → 保守不迁
-            const hit = plan.split.find(s => s.oldId === r.productId && s.name && r.productName === s.name);
-            if (!hit) { stats.ambiguousRecords++; continue; }
-            r.productId = hit.newId;
-            stats.movedRecords++;
-          }
+        for (const r of records.value) {
+          if (!r || !r.productId) continue;
+          const cands = remap.filter(m => m.oldId === r.productId);
+          if (!cands.length) continue;
+          // 名称精确匹配（唯一可靠判据）；匹配不上 → 留在原 id（归先出现的那条商品），保守不迁
+          const hit = r.productName ? cands.find(m => m.name && m.name === r.productName) : null;
+          if (!hit) continue;
+          hit._claimed = true;
+          r.productId = hit.newId;
+          movedRecords++;
         }
       }
+      remap.forEach(m => { delete m._claimed; });
 
-      console.warn('[FoodIn v2.36.3] 重复 id 自愈：' + stats.groups + ' 组 / 拆分 ' + stats.split + ' 条商品'
-        + (stats.movedRecords ? '，迁移 ' + stats.movedRecords + ' 条流水' : '')
-        + (stats.ambiguousRecords ? '；' + stats.ambiguousRecords + ' 条流水因同名/无法判定保持原归属' : ''));
-
-      // 4) 落盘：baseState 就绪 → 走 saveData()，拆分结果进入事件流并上云；
-      //    基线未就绪（极早期 / 引擎初始化失败）→ 沿用直写，避免全量被当成新增整包推上云。
-      if (syncState.baseState) {
-        try { saveData(); } catch (e) { console.error('Dedupe saveData failed:', e); }
-      } else {
-        try {
-          localStorage.setItem('food_inventory_products', JSON.stringify(products.value));
-          if (stats.movedRecords) localStorage.setItem('food_inventory_records', JSON.stringify(records.value));
-        } catch (e) { /* 配额满 → 交给下一次正常 saveData */ }
-      }
-      return stats;
+      console.warn('[FoodIn v2.36.0] 已为 ' + fixed + ' 个重复/缺失 id 的商品重新分配 id'
+        + (movedRecords ? '，并迁移 ' + movedRecords + ' 条流水的归属' : '') + '（避免改动无反应）');
+      try {
+        // ❗只写 localStorage，不调 saveData()：同步事件按 id 生成，此刻字段已被改写，
+        //   交给下一次正常写盘即可；此处避免在 baseState 未就绪时把全量当新增推上云。
+        localStorage.setItem('food_inventory_products', JSON.stringify(products.value));
+        if (movedRecords) localStorage.setItem('food_inventory_records', JSON.stringify(records.value));
+      } catch (e) {}
+      return fixed;
     }
 
     // ===== v2.28.5：新手导览示例数据 =====
@@ -9312,112 +9240,69 @@ const app = createApp({
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (e) => {
-        // v2.36.3：解析与「应用」分离 —— 应用逻辑见 applyImportPayload（可被自动化直接调用，不依赖隐藏 file input）
-        try { applyImportPayload(JSON.parse(e.target.result)); }
-        catch (err) { toastErr('导入', '文件格式错误'); }
+        try {
+          const data = JSON.parse(e.target.result);
+          // v2.36.1：备份导入改为按 ID 合并，不再直接覆盖本地库存。
+          // 同一商品优先采用 updatedAt 较新的版本，保证导入的 location/category 更新能进入 saveData → diffToEvents。
+          if (Array.isArray(data.products)) {
+            const incoming = normalizeProductList(data.products);
+            const byId = new Map(normalizeProductList(products.value).map(p => [p.id, p]));
+            incoming.forEach(p => {
+              const old = byId.get(p.id);
+              if (!old) { byId.set(p.id, p); return; }
+              const oldTs = new Date(old.updatedAt || old.createdAt || 0).getTime();
+              const newTs = new Date(p.updatedAt || p.createdAt || 0).getTime();
+              if (!oldTs || newTs >= oldTs) byId.set(p.id, p);
+            });
+            products.value = [...byId.values()];
+          }
+          if (Array.isArray(data.records)) {
+            const byId = new Map((Array.isArray(records.value) ? records.value : []).filter(r => r && r.id).map(r => [r.id, r]));
+            data.records.forEach(r => { if (r && r.id && !byId.has(r.id)) byId.set(r.id, r); });
+            records.value = [...byId.values()];
+          }
+          if (data.settings) {
+            // 白名单字段赋值：避免旧备份里的 version 等无关字段污染当前设置
+            const obj = data.settings;
+            if (obj.expiringDays) settings.expiringDays = obj.expiringDays;
+            settings.cloudApiKey = obj.cloudApiKey || '';
+            settings.cloudBinId = obj.cloudBinId || '';
+            settings.cloudSyncEnabled = !!obj.cloudSyncEnabled;
+            settings.cloudLastSync = '';   // 导入后清零同步时间戳（不从备份恢复）——v2.18.0 事件引擎按差分生成 upsert/delete 事件随下次同步上云；早已删除的商品因 knownIds 墓碑不会随导入复活
+            settings.localModified = '';   // 导入视为全新本地状态（内容以备份为准，不以时间戳代言）
+            settings.barcodeApiKey = obj.barcodeApiKey || '';
+            settings.barcodeLookupEnabled = !!obj.barcodeLookupEnabled;
+            // v2.34.0：三值白名单（原实现只认 tesseract，其余一律回落 paddle → 备份里存的是
+            //   baidu 时会被静默改成 paddle，让用户以为设置「自己变了」）
+            settings.ocrEngine = ['paddle', 'baidu', 'tesseract'].includes(obj.ocrEngine) ? obj.ocrEngine : 'paddle';
+            settings.ocrProxyUrl = obj.ocrProxyUrl || '';   // v2.34.0：百度云代理地址
+            settings.baiduApiKey = obj.baiduApiKey || '';   // v2.21.5 遗留字段：仅兼容读取，无 UI 入口、不上云（密钥改由服务端持有）
+            settings.baiduSecretKey = obj.baiduSecretKey || '';   // 同上
+            if (Array.isArray(obj.locations) && obj.locations.length) { settings.locations = obj.locations; migrateLooseLocationsToPlaces(); }   // v2.26.0：老备份的遗留位置池一次性迁入 places
+            // v2.36.1：新备份直接恢复 places/builtinCategories；空数组也有明确语义，不能用 length 判断是否存在。
+            if (Array.isArray(obj.places)) settings.places = obj.places;
+            if (Array.isArray(obj.builtinCategories)) settings.builtinCategories = obj.builtinCategories;
+            if (Array.isArray(obj.categories)) settings.categories = obj.categories;
+            if (obj.leftoverDefaultDays != null) settings.leftoverDefaultDays = Number(obj.leftoverDefaultDays) || settings.leftoverDefaultDays;
+            normalizeSettingsCollections();
+            settings.autoSaveInterval = obj.autoSaveInterval || 0;
+            // v2.22.0：名称清洗规则白名单导入（仅当旧备份里有值才覆盖）
+            settings.nameCleanEnabled = (obj.nameCleanEnabled == null) ? settings.nameCleanEnabled : !!obj.nameCleanEnabled;
+            settings.nameCleanCase = (obj.nameCleanCase === 'lower' || obj.nameCleanCase === 'none') ? obj.nameCleanCase : 'smart';
+            settings.nameCleanMarketing = (obj.nameCleanMarketing == null) ? settings.nameCleanMarketing : !!obj.nameCleanMarketing;
+            if (typeof obj.nameCleanCustom === 'string') settings.nameCleanCustom = obj.nameCleanCustom;
+            if (typeof obj.nameCleanWhitelist === 'string') settings.nameCleanWhitelist = obj.nameCleanWhitelist;
+            // version 由代码常量控制，不从备份导入
+            settings.version = CURRENT_VERSION;
+          }
+          saveData();
+          toastDone('导入数据，变更将在下次云同步时合并到云端');
+        } catch (err) {
+          toastErr('导入', '文件格式错误');
+        }
       };
       reader.readAsText(file);
       event.target.value = '';
-    }
-
-    // v2.36.3：把「应用导入负载」抽为独立函数。
-    //   原因：导入入口是「数据整理」折叠区里的隐藏 file input（v-if="showDataManage"），
-    //   未展开时它根本不在 DOM，自动化无法直接驱动；分离后可 __foodin.applyImportPayload(obj) 验证。
-    //   顺便让「按 id 合并」的逻辑独立可读、可单测。
-    function applyImportPayload(data) {
-      // v2.36.1：备份导入改为按 ID 合并，不再直接覆盖本地库存。
-      // 同一商品优先采用 updatedAt 较新的版本，保证导入的 location/category 更新能进入 saveData → diffToEvents。
-      // v2.36.3 ❗修复静默丢数据：旧实现用 byId.set(p.id, p) 会**直接覆盖**同 id 的本地件 ——
-      //   当「同 id 但并非同一商品」时（重复 id 撞车），本地那条连同它的流水归属会被无声替换掉。
-      //   现在区分两种情况：
-      //     ① 同一商品（名称 + 条码都相同）→ 仍按 updatedAt 新者胜（合并，语义不变）
-      //     ② 只是 id 撞车（名称或条码不同）→ **两条都保留**，给来件分配**确定性新 id**，
-      //        并在下面把属于它的流水一并改挂（按名称精确匹配，与 dedupeProductIds 同一套保守规则）
-      //   另：不再用 Map 承载输出 —— Map 会把「本地已有的同 id 商品」折叠掉，同样是静默丢数据。
-      const incomingRemap = [];   // { oldId, newId, name }：来件被换 id 的记录，供流水改挂
-      if (Array.isArray(data.products)) {
-        const incoming = normalizeProductList(data.products);
-        const out = normalizeProductList(products.value).slice();
-        const idx = new Map();                                   // id → out 下标（只记首个同 id 件）
-        out.forEach((p, i) => { if (p && p.id && !idx.has(p.id)) idx.set(p.id, i); });
-        const taken = new Set(out.filter(p => p && p.id).map(p => String(p.id)));
-        const sameProduct = (a, b) => String(a.name || '').trim() === String(b.name || '').trim()
-                                  && String(a.barcode || '') === String(b.barcode || '');
-        const pickNewer = (a, b) => {
-          const ta = new Date(a.updatedAt || a.createdAt || 0).getTime();
-          const tb = new Date(b.updatedAt || b.createdAt || 0).getTime();
-          return (!ta || tb >= ta) ? b : a;
-        };
-        incoming.forEach(p => {
-          if (!p) return;
-          if (!p.id) {                                           // 来件没有 id → 直接补确定性 id
-            p.id = deterministicProductId(p, taken);
-            out.push(p); idx.set(p.id, out.length - 1);
-            return;
-          }
-          const at = idx.get(p.id);
-          if (at === undefined) {                                // 本地没有该 id → 收下并登记
-            out.push(p); idx.set(p.id, out.length - 1);
-            return;
-          }
-          if (sameProduct(out[at], p)) { out[at] = pickNewer(out[at], p); return; }   // 同一商品 → 合并
-          const newId = deterministicProductId(p, taken);         // 仅 id 撞车 → 两条都留
-          incomingRemap.push({ oldId: p.id, newId, name: String(p.name || '').trim() });
-          p.id = newId;
-          out.push(p); idx.set(newId, out.length - 1);
-        });
-        products.value = out;
-      }
-      if (Array.isArray(data.records)) {
-        // v2.36.3：同上，不再用 Map 折叠（会把同 id 的本地流水丢掉）；改为「本地全留 + 来件按 id 去重追加」。
-        // 若该流水的商品在导入时被换过 id（incomingRemap），按名称精确匹配把它改挂到新 id —— 名称对不上则不动（保守）。
-        const out = (Array.isArray(records.value) ? records.value : []).slice();
-        const have = new Set(out.filter(r => r && r.id).map(r => r.id));
-        data.records.forEach(r => {
-          if (!r || !r.id) return;
-          const moved = incomingRemap.find(m => m.oldId === r.productId && m.name && r.productName === m.name);
-          const rec = moved ? Object.assign({}, r, { productId: moved.newId }) : r;
-          if (have.has(rec.id)) return;     // 同 id 流水已存在 → 保留本地那条（既有语义）
-          out.push(rec); have.add(rec.id);
-        });
-        records.value = out;
-      }
-      if (data.settings) {
-        // 白名单字段赋值：避免旧备份里的 version 等无关字段污染当前设置
-        const obj = data.settings;
-        if (obj.expiringDays) settings.expiringDays = obj.expiringDays;
-        settings.cloudApiKey = obj.cloudApiKey || '';
-        settings.cloudBinId = obj.cloudBinId || '';
-        settings.cloudSyncEnabled = !!obj.cloudSyncEnabled;
-        settings.cloudLastSync = '';   // 导入后清零同步时间戳（不从备份恢复）——v2.18.0 事件引擎按差分生成 upsert/delete 事件随下次同步上云；早已删除的商品因 knownIds 墓碑不会随导入复活
-        settings.localModified = '';   // 导入视为全新本地状态（内容以备份为准，不以时间戳代言）
-        settings.barcodeApiKey = obj.barcodeApiKey || '';
-        settings.barcodeLookupEnabled = !!obj.barcodeLookupEnabled;
-        // v2.34.0：三值白名单（原实现只认 tesseract，其余一律回落 paddle → 备份里存的是
-        //   baidu 时会被静默改成 paddle，让用户以为设置「自己变了」）
-        settings.ocrEngine = ['paddle', 'baidu', 'tesseract'].includes(obj.ocrEngine) ? obj.ocrEngine : 'paddle';
-        settings.ocrProxyUrl = obj.ocrProxyUrl || '';   // v2.34.0：百度云代理地址
-        settings.baiduApiKey = obj.baiduApiKey || '';   // v2.21.5 遗留字段：仅兼容读取，无 UI 入口、不上云（密钥改由服务端持有）
-        settings.baiduSecretKey = obj.baiduSecretKey || '';   // 同上
-        if (Array.isArray(obj.locations) && obj.locations.length) { settings.locations = obj.locations; migrateLooseLocationsToPlaces(); }   // v2.26.0：老备份的遗留位置池一次性迁入 places
-        // v2.36.1：新备份直接恢复 places/builtinCategories；空数组也有明确语义，不能用 length 判断是否存在。
-        if (Array.isArray(obj.places)) settings.places = obj.places;
-        if (Array.isArray(obj.builtinCategories)) settings.builtinCategories = obj.builtinCategories;
-        if (Array.isArray(obj.categories)) settings.categories = obj.categories;
-        if (obj.leftoverDefaultDays != null) settings.leftoverDefaultDays = Number(obj.leftoverDefaultDays) || settings.leftoverDefaultDays;
-        normalizeSettingsCollections();
-        settings.autoSaveInterval = obj.autoSaveInterval || 0;
-        // v2.22.0：名称清洗规则白名单导入（仅当旧备份里有值才覆盖）
-        settings.nameCleanEnabled = (obj.nameCleanEnabled == null) ? settings.nameCleanEnabled : !!obj.nameCleanEnabled;
-        settings.nameCleanCase = (obj.nameCleanCase === 'lower' || obj.nameCleanCase === 'none') ? obj.nameCleanCase : 'smart';
-        settings.nameCleanMarketing = (obj.nameCleanMarketing == null) ? settings.nameCleanMarketing : !!obj.nameCleanMarketing;
-        if (typeof obj.nameCleanCustom === 'string') settings.nameCleanCustom = obj.nameCleanCustom;
-        if (typeof obj.nameCleanWhitelist === 'string') settings.nameCleanWhitelist = obj.nameCleanWhitelist;
-        // version 由代码常量控制，不从备份导入
-        settings.version = CURRENT_VERSION;
-      }
-      saveData();
-      toastDone('导入数据，变更将在下次云同步时合并到云端');
     }
 
     function clearAllData() {
@@ -11350,12 +11235,10 @@ const app = createApp({
 
     onMounted(() => {
       let demosCleanedAtBoot = false;   // v2.33.0：启动扫到示例数据 → 同步引擎就绪后立刻落盘（见下方 saveData）
-      let pendingBootSave = false;      // v2.36.3：需要在同步引擎就绪后才补写的落盘（tourDone 等）
       migrateFilterArrays();   // v2.36.2：兼容旧版本 —— homeCategory/homeLocation 历史上可能是字符串，统一为数组
       loadData();
-      // v2.36.3：自愈**不再**在这里跑。原来在本行调用，而此刻 initSyncEngine() 还没执行、
-      //   baseState 为 null → 拆分结果只能直写 localStorage、永远上不了云（换设备/清缓存后重复 id 又回来）。
-      //   已移到 initSyncEngine() 之后（见下方），确保 baseState 捕获的是「拆分前」状态。
+      // v2.36.0：启动即自愈重复 id —— 否则「改名/删除没反应」会一直卡住用户
+      dedupeProductIds();
       // v2.28.5：兜底清理「导览中途被关掉」残留的示例数据——用户没点完就关页面时 endTour 没机会跑，
       // 示例商品/记录会留在 localStorage。这里在启动时无条件扫一遍，带 DEMO_MARK 的一律收回。
       // （正常流程下 endTour 已清干净，这里只是兜底，不会影响真实数据——真实数据不带 DEMO_MARK。）
@@ -11381,9 +11264,7 @@ const app = createApp({
       if (!settings.tourDone) {
         if (products.value.length > 0 || records.value.length > 0) {
           settings.tourDone = true;
-          // v2.36.3：推迟到 initSyncEngine() 之后。原来在这里直接 saveData()，而此刻 baseState 还是 null，
-          //   diffToEvents 会把「全部商品」当新增整包推上云 —— 与本文件上方 v2.33.0 的注释自相矛盾。
-          pendingBootSave = true;
+          saveData();
         } else {
           // v2.33.0：原来是写死的 `setTimeout(() => startTour(), 700)` —— 一个「等首屏渲染完」的经验值。
           // 它两头都不准：快机上白等 0.7 秒才出聚光灯；慢机上 700ms 可能还没排完布局/字体，
@@ -11397,18 +11278,12 @@ const app = createApp({
         }
       }
       initSyncEngine();
-      // v2.36.3：自愈放在这里 —— 同步引擎就绪后，baseState 捕获的是「拆分前」状态，
-      //   于是拆分产生的新 id 会走 diffToEvents 生成正确的 upsert 上云。
-      //   必须早于 purgeGhostProducts：重复 id 会让任何「按 id 定位」的清理作用到错误的商品上。
-      dedupeProductIds();
       purgeGhostProducts();   // v2.30.0：同步引擎就绪后先清一遍启动时就存在的幽灵商品（数量 ≤ 0），此时 baseState 已有值，delete 事件能正确生成
-      if (demosCleanedAtBoot || pendingBootSave) {
+      if (demosCleanedAtBoot) {
         // v2.33.0：现在 baseState 已就绪，落盘不会把全量误判成新增；
         // 且 captureState 已把示例数据排除在同步之外，所以这次 saveData 只写本地、不推云端，
         // 纯粹把「示例数据已收回」这个事实持久化，免得每次启动都要重扫一遍。
-        // v2.36.3：pendingBootSave（tourDone 补写）也归到这里，避免在 baseState 就绪前整包推云。
         demosCleanedAtBoot = false;
-        pendingBootSave = false;
         saveData();
       }
       loadUndoCache();        // v2.31.0：载入本机撤销快照（localStorage-only，不参与云同步），并顺手修剪孤儿条目
@@ -11456,7 +11331,7 @@ const app = createApp({
     });
 
     // 调试/自动化测试钩子（不影响正常运行）
-    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, applyImportPayload, loadTesseract, loadPaddleOcr, ensureScanLib, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, dedupeProductIds, deterministicProductId, fnv1a32, findProduct, removeProduct, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, pickShelfLifeUnit, calcShelfLifeParts, calcExpiryDateFromParts, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, cloudAutoHint, cloudAutoText, cloudAutoSet, cloudSyncButtonVisible, CLOUD_SYNC_PAGES, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT,       showTip, closeTip, tipModal, tipOcrOff, runTipAction,      startRename, confirmRename, cancelRename, renaming, removeCategory, newPlaceInput, verifyBaiduProxy, confirmRevoke, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
+    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, loadTesseract, loadPaddleOcr, ensureScanLib, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, dedupeProductIds, findProduct, removeProduct, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, pickShelfLifeUnit, calcShelfLifeParts, calcExpiryDateFromParts, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, cloudAutoHint, cloudAutoText, cloudAutoSet, cloudSyncButtonVisible, CLOUD_SYNC_PAGES, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT,       showTip, closeTip, tipModal, tipOcrOff, runTipAction,      startRename, confirmRename, cancelRename, renaming, removeCategory, newPlaceInput, verifyBaiduProxy, confirmRevoke, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
 
     return {
       // v2.26.1 修复（P0-01）：设置页 5 个开关的 @update:model-value 处理器直接调用 saveData() / showToast()，

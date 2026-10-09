@@ -1,6 +1,6 @@
 {
   "name": "food-in",
-  "version": "2.16.2",
+  "version": "2.36.3",
   "private": true,
   "description": "家庭食品库存管理系统 - 静态 PWA 构建",
   "scripts": {

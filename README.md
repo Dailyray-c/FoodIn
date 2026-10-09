@@ -1,9 +1,9 @@
 # FoodIn · 家庭食品库存与临期管理 PWA
 
-> 一个**单文件、可安装、可离线**的家庭食品库存管理应用：扫码录入、分区存放、保质期/临期提醒、吃/浪费/加热流水、统计看板，数据本地保存并通过 jsonbin.io 做事件溯源云同步。
+> 一个**单文件、可安装、可离线**的家庭食品库存管理应用：扫码录入、分区存放、保质期/临期提醒、吃/浪费/加热流水、统计看板，数据本地保存并通过 Upstash Redis 做事件溯源云同步。
 
 - 线上地址（GitHub Pages）：<https://dailyray-c.github.io/FoodIn/>
-- 当前版本：**v2.33.0**（见 `index.html` 内 `CURRENT_VERSION`）；Service Worker 缓存版本 **v114**
+- 当前版本：**v2.36.1**（见 `index.html` 内 `CURRENT_VERSION`）；Service Worker 缓存版本 **v121**
 
 ---
 
@@ -16,7 +16,7 @@
 | 临期提醒 | 按保质期推算临期/过期状态，统计页与首页高亮提示 |
 | 流水操作 | 吃 / 浪费 / 加热（复热计数）三类流水，支持**撤销**（本机快照，只还原自己操作过的字段） |
 | 统计看板 | 库存分布、临期、浪费、各位置用量等可视化统计 |
-| 云同步 | `localStorage` + `jsonbin.io` **事件溯源**同步，设置项由 `SETTINGS_SYNC_SCHEMA` 驱动 |
+| 云同步 | `localStorage` + `Upstash Redis` **事件溯源**同步，设置项由 `SETTINGS_SYNC_SCHEMA` 驱动 |
 | PWA | 可「添加到主屏幕」安装，离线可用（Service Worker 同源静态缓存） |
 
 ---
@@ -26,7 +26,7 @@
 - **单 HTML 文件**：`index.html` 内联 Vue3 模板与 `setup()`，Vue 走本地 `./vendor/vue.global.prod.js`（非 CDN）。
 - **样式**：TailwindCSS **预编译**产物 `styles.css`（源文件 `src/tailwind.css`）。采用确定性构建以锁定精确色值。
 - **离线**：`service-worker.js` 白名单模式缓存同源静态资源；改动后须同步 bump `CACHE_NAME`。
-- **数据**：`localStorage`（`food_inventory_products` / `food_inventory_records` / `food_inventory_settings`）+ jsonbin.io 云同步。
+- **数据**：`localStorage`（`food_inventory_products` / `food_inventory_records` / `food_inventory_settings`）+ Upstash Redis 云同步。
 - **扫码/生成库**：`vendor/html5-qrcode.min.js`、`vendor/qrcode.min.js` 在 v2.33.0 起改为**按需懒加载**（首屏不再阻塞）。
 
 ---
@@ -80,7 +80,7 @@ npm run build:css
 
 ```bash
 cd "项目根目录"
-./push-safe.sh "release(v2.33.0): 一句话说明本次改动"
+./push-safe.sh "release(v2.36.1): 一句话说明本次改动"
 ```
 
 脚本做了哪些安全保障（详见脚本内注释）：
@@ -92,10 +92,10 @@ cd "项目根目录"
 部署完成后：
 
 - 自动触发 `.github/workflows/deploy.yml` 构建 `_site/` 并发布到 GitHub Pages，**约 1 分钟后生效**：<https://dailyray-c.github.io/FoodIn/>
-- 可选打版本标签：`git tag -a v2.33.0 -m "长期版本 v2.33.0" && git push origin v2.33.0`
+- 可选打版本标签：`git tag -a v2.36.1 -m "长期版本 v2.36.1" && git push origin v2.36.1`
 - 若沙箱/代理环境推送失败，请在**能直连 GitHub 的终端**执行（脚本已内置 `GIT_HTTP_PROXY=` 等绕过，但仍依赖网络可达）。
 - SW 缓存版本变化后，**线上需刷新两次**才能拿到新资源。
-- 线上版本号可在「我的」页查看，应显示 `2.33.0`。
+- 线上版本号可在「我的」页查看，应显示 `2.36.1`。
 
 > 注：README 本身已加入 `push-safe.sh` 的发布白名单，会随下一次部署提交进仓库；它不参与 Pages 运行时部署（Pages 只构建应用静态文件）。
 
@@ -121,5 +121,5 @@ cd "项目根目录"
 
 ## 八、隐私与数据
 
-- 库存数据默认仅存于本机 `localStorage`；开启云同步后通过 jsonbin.io 同步，**请勿在商品名中存放敏感信息**。
+- 库存数据默认仅存于本机 `localStorage`；开启云同步后通过 Upstash Redis 同步，**请勿在商品名中存放敏感信息**。
 - 云同步采用事件溯源，撤销快照仅存于本机，不会上传。

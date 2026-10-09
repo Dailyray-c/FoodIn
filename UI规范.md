@@ -1,4 +1,4 @@
-# FoodIn UI 规范化标准（当前生效版 v2.33.0）
+# FoodIn UI 规范化标准（当前生效版 v2.36.1）
 
 > **适用范围**：`index.html`（模板 + 内联 `<style>`）与后续所有界面改动。
 > **真源（Single Source of Truth）**：`index.html` 内联 `<style>` 顶部的 **UI 规范层**（`:root` 令牌 + `.fi-*` 组件类）。
@@ -619,7 +619,7 @@ body.fs-xlarge .fi-chip { font-size: 18px !important; min-height: 35.59px !impor
 
 ### 6.3 模板引用 ↔ `return{}` 导出（发布卡点）
 ```bash
-python _chk_exports.py      # 退出码非 0 即拦截
+python tools/chk_exports.py      # 退出码非 0 即拦截
 ```
 覆盖「定义集 ∩ 模板引用集 − return 导出集 − v-for 别名」。历史上已两次踩坑（`saveOcrSettings`、`saveData/showToast`）。
 
@@ -710,8 +710,8 @@ function ensureScanLib() {
 | 迁移 | 207 处调用点 → 9 个组件类，吸收 807 个 utility token |
 | fontScale 配套 | 8 条等值规则（大 / 超大两档） |
 | 文案 | toast 110 条的句式归纳为 3 类并成文（§4），未改文案内容 |
-| 验证 | 2546 元素 × 23 属性 **零差异**；0 pageerror；`_chk_exports.py` 通过 |
-| 工具 | `_chk_exports.py`（导出卡点）、`_ui_stylecmp.js` + `_ui_diff.py`（计算样式比对）、`_ui_migrate.py`（可重跑的迁移脚本）、`_ui_audit.py`（模式量化审计） |
+| 验证 | 2546 元素 × 23 属性 **零差异**；0 pageerror；`tools/chk_exports.py` 通过 |
+| 工具 | `tools/chk_exports.py`（导出卡点）、`_ui_stylecmp.js` + `_ui_diff.py`（计算样式比对）、`_ui_migrate.py`（可重跑的迁移脚本）、`_ui_audit.py`（模式量化审计） |
 
 ### 7.2 ✅ 遗留 7 项已收口（v2.28.0）
 
@@ -726,7 +726,7 @@ function ensureScanLib() {
 | 7 | toast 未收敛 | 36 处调用 | → 5 个句式构造函数 + `OCR_OFF_HINT` 常量 | 零变化（8 条文案措辞统一） |
 
 > 第 4–7 项为等值重构，前后截图 md5 相同；第 1–3 项的对照见 `UI改动对照_v2.28.0.html`。
-> 验证：`_chk_exports.py` 通过、0 pageerror、类定义与 fontScale 三档实测符合预期。
+> 验证：`tools/chk_exports.py` 通过、0 pageerror、类定义与 fontScale 三档实测符合预期。
 
 ### 7.3 ⏳ 仍未覆盖（登记在案）
 
@@ -746,7 +746,7 @@ function ensureScanLib() {
 5. 提示文案按 §4 三种句式，对象名用 `「」`。
 6. 若把 utility 收敛成新组件类 → **同步补 fontScale 规则**（§6.1）。
 7. 若新增了从未出现过的 utility class → **重编译 styles.css**（§6.2）。
-8. 改完先跑 `_ui_stylecmp.js` + `_ui_diff.py` 证明零变化，再跑 `_chk_exports.py`，最后**截图交用户确认**，才 push / 部署。
+8. 改完先跑 `_ui_stylecmp.js` + `_ui_diff.py` 证明零变化，再跑 `tools/chk_exports.py`，最后**截图交用户确认**，才 push / 部署。
 9. **保质期一律「拆成 数字 + 单位」两控显示**（§3.12）：存储层仍是单条文本，但任何输入控件都不得直接把整条文本塞进 `type=number`；解析走 `splitShelfLifeValue(v)`，回写走 `composeShelfLifeText()`，文本→控件走 `setShelfLifeFromText(text, form, 'day')`。**无单位纯数字默认「日」。**
 10. **表单「未改动」不得触发回写**：日期 → 保质期是双向推导链，保存时必须用「用户是否真的动过」开关（如 `editForm._slTouched`）挡住无操作重算，否则会把 `"364"` 改写成 `"364天"` 并凭空产生一条调整记录。
 11. **chip 组顺序由设置列表权威决定**，「选中 / 取消选中」**绝不允许改变顺序**：先按设置列表铺满，再把遗留标签追加到末尾，**禁止把「当前已选」先塞进去**（`Set` 保插入序 → 每点一次就重排）。
@@ -766,7 +766,7 @@ function ensureScanLib() {
 
 ### 8.1 版本号格式（语义化三位）
 - 格式：`主版本.次版本.修订号` = `X.Y.Z`，三位必填，禁止缺位（如 `2.33` 不合法，必须 `2.33.0`）。
-- 当前锚点：`CURRENT_VERSION = '2.33.0'`（2026-09-15）；SW `CACHE_NAME = 'food-inventory-v114'`。
+- 当前锚点：`CURRENT_VERSION = '2.36.3'`（2026-10-09）；SW `CACHE_NAME = 'food-inventory-v123'`。
 
 ### 8.2 三类 bump 的判定（核心规律）
 | 位 | 名称 | bump 时机 | 归零规则 | 示例 |
@@ -799,7 +799,7 @@ function ensureScanLib() {
    `versions/` 是历史档案，**永不删**；回退用 `cp versions/vX.Y.Z/* .`（若版本间无新增类可跳过重编译 styles.css）。
 
 ### 8.5 发布前 Gate（与 §6.3 配套）
-- `_chk_exports.py` 校验模板引用 ↔ `return{}` 导出配对；
+- `tools/chk_exports.py` 校验模板引用 ↔ `return{}` 导出配对；
 - `_ui_diff` 计算样式零差异（新增类必须已重编译 Tailwind）；
 - Playwright 回归全绿。
 - 验收姿势见 §6.4：先截图交用户确认，**用户点头后才跑测试/push/部署**。
@@ -813,6 +813,28 @@ function ensureScanLib() {
 ```
 
 ## 九、变更记录
+
+### v2.36.1 — 位置/分类归一化 + 幽灵位置清理 + 小控件高度规范（2026-09-23）
+- 位置/分类在**本地旧数据 / JSON 导入 / 云同步重放**三处的「数组 ↔ 字符串」分叉统一归一化
+- 修复删除地点、关闭或删除分区后商品位置变成**不可筛选的游离标签**；同步移除旧位置筛选 token
+- 多标签删除/重命名不再只按完整字符串匹配；空值统计与**带空格**搜索 token（`#"冷冻 食品"`）修复
+- 新增 **§6.1.1「小控件高度规范」**：`.input-sm` / `.fi-btn-2nd` / `.fi-seg-btn{,-sm}` 统一 **36px**（`min-height` 钉高），胶囊两级 **32 / 28**
+
+### v2.36.0 — 减少库存二次确认 / 重复 id 定位修复 / 保质期反算修复（2026-09-22）
+- 人工「正常减少库存」统一**二次确认**（弹窗列出商品名 / 当前库存 / 本次减少 / 减少后剩余），确认按钮防重复提交
+- 同一 id 两条商品的**定位一律优先对象引用**（`findProduct`/`removeProduct`）；编辑弹窗锚定对象引用
+- 保质期默认单位改「**日**」、自动挑最自然单位、正反算往返无损、正算不再多减 1 天
+- 记录页顶栏四卡改为**数据表驱动**（`CARD_PRESETS`），记录类型筛选支持多选
+
+### v2.35.0 — 小控件统一 36px / 胶囊两级化 / 云同步后端换 Upstash（2026-09-21）
+- 小控件统一由 `min-height` 钉 **36px**（不再靠 padding 凑高）；胶囊分**两级 32 / 28**（§3.2、§6.1.1）
+- 清理 8 个无引用组件类；恢复 `.fi-title`（收敛 17 处手写标题）；新增 `.fi-fs-11`
+- 云同步后端 jsonbin → **Upstash Redis**（§6.7 同步契约随之变更）；更新日志弹窗精简为三段
+
+### v2.34.4–2.34.13 — 弹窗体系收敛 / 自动同步状态可见 / 使用指南同步（2026-09-19）
+- 说明弹窗（`showTip`）体系收敛；新增行动按钮 `runTipAction`（**顺序固定：先关窗，再执行**）
+- 顶栏云同步按钮兼作**状态指示灯**（同步中 / 已同步 / 失败原因常驻）
+- 录入页与批量录入页顶栏补云同步入口
 
 ### v2.34.0 — 新增百度云 OCR 引擎（苹果设备可用）/ Paddle 能力探测自动降级 / 修复日期反算与空白商品（2026-09-16）
 - **① 新增「百度云」识别引擎（第三个选项）**：Paddle 依赖 WebGL，iOS Safari 必然初始化失败 → 苹果设备此前只能退回精度较低的 Tesseract。
@@ -868,7 +890,7 @@ function ensureScanLib() {
   规避两处完全相同的文案被误替换。文案层面调整，无功能变更。
 - **更正**：此前登记的「4 处死类 `.fi-btn-fill`」为**误判** —— 该 4 处全在 changelog 历史文案里，非模板死类，**实际无死类**。
 - **版本联动**：`CURRENT_VERSION` 2.32.0 → 2.33.0；SW `CACHE_NAME` v113 → v114；归档 `versions/v2.33.0/`
-- **验证**：`_verify_2330.js` **23/23 PASS**；`_chk_exports.py` 305 键无 P0；Tailwind 已重编译
+- **验证**：`_verify_2330.js` **23/23 PASS**；`tools/chk_exports.py` 305 键无 P0；Tailwind 已重编译
   （新增 `lg:hidden / lg:block / gap-2.5 / mt-0.5`，v2.32.0 的 `lg:*` 类全部保留）；前后对照截图 `_cmp2330/old/`（= v2.32.0），看板 `_review_2330.html`
 
 ### v2.32.0 — 撤销范围收窄 / 芯片顺序与悬停 / 电脑版卡片按钮对齐（2026-09-15）
@@ -884,7 +906,7 @@ function ensureScanLib() {
 - **⑤ 编辑页标签顺序错乱修复**：`unionTags()` 原用 `Set` 先收「当前已选」再补设置列表 → 每点一次标签就重排。改为**先按设置列表铺满、遗留标签追加末尾**，顺序与设置页一致且点击不再变化。（用户澄清这是「顺序错误更改」，非面板动画问题。）
 - **⑥ 电脑版商品卡按钮对齐**：卡片 `lg:flex lg:flex-col`、按钮行 `lg:mt-auto lg:pt-2`、按钮 `py-1.5 lg:py-2`、`lg:hover:bg-*-600`。实测按钮行 top 由 `[311, 311, 343]` → `[343, 343, 343]`。**手机版零改动**（全部 `lg:` 前缀）。
 - **版本联动**：`CURRENT_VERSION` 2.31.0 → 2.32.0；SW `CACHE_NAME` v112 → v113；归档 `versions/v2.32.0/`
-- **验证**：`_verify_2320.js` **33/33 PASS**（A 芯片顺序稳定 / B 调整撤销只动分类且数量保持 3 + 提示文案消失 + 方向正确 / C 无 `hover:border-teal` 且真实悬停边框色不变 / D in-eat-reheat-waste 撤销回归 / E 桌面 1440×900 两卡等高按钮齐平）；`_chk_exports.py` 304 键无 P0；前后对照截图 12 张（`_cmp2320/old/` = v2.31.0），看板 `_review_2320.html`
+- **验证**：`_verify_2320.js` **33/33 PASS**（A 芯片顺序稳定 / B 调整撤销只动分类且数量保持 3 + 提示文案消失 + 方向正确 / C 无 `hover:border-teal` 且真实悬停边框色不变 / D in-eat-reheat-waste 撤销回归 / E 桌面 1440×900 两卡等高按钮齐平）；`tools/chk_exports.py` 304 键无 P0；前后对照截图 12 张（`_cmp2320/old/` = v2.31.0），看板 `_review_2320.html`
 - **登记未修（P2）**：`index.html` 残留 4 处 `.fi-btn-fill`（该 CSS 规则已并入 `.fi-btn-2nd`、`styles.css` 中已无对应规则 → 死类，视觉无影响）
 
 ### v2.31.0 — 撤销升级为「真撤销」（本机快照）+ 保质期显示链路修复（2026-09-14）
@@ -907,7 +929,7 @@ function ensureScanLib() {
   - **`backfillShelfLifeByDays` 不再强制 `'day'`**：已有 `shelfLife` 时保留用户单位，仅在为空时才用天数推算。
   - **`_slTouched` 挡无操作重写**：`saveEdit` 里 `const editShelfLifeText = editForm._slTouched ? composeShelfLifeText(editForm) : (product.shelfLife || '')`；四个 `@change`（生产日期 / 到期日期 / 保质期 / 切单位）都会置 `true`。
 - **版本联动**：`CURRENT_VERSION` 2.30.0 → 2.31.0；SW `CACHE_NAME` v111 → v112；归档 `versions/v2.31.0/`
-- **验证**：`_verify_2310.js` **80/80 PASS**（保质期 6 种形态回环 + 用户改单位回写；撤销 4 分支 + 无快照降级；快照不落云三断言）；`_chk_exports.py` 305 键通过；与 v2.30.0 全量前后对照截图 12 张（`_cmp2310/old/`），看板 `_review_2310.html`
+- **验证**：`_verify_2310.js` **80/80 PASS**（保质期 6 种形态回环 + 用户改单位回写；撤销 4 分支 + 无快照降级；快照不落云三断言）；`tools/chk_exports.py` 305 键通过；与 v2.30.0 全量前后对照截图 12 张（`_cmp2310/old/`），看板 `_review_2310.html`
 
 
 ### v2.30.0 — 三个 Bug 修复：幽灵商品 / 储存位置排序 / 日期反算保质期（2026-09-14）

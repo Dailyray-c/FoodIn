@@ -20,7 +20,7 @@ $srv = Start-Process -FilePath $py -ArgumentList '-m','http.server','8777','--bi
        -WorkingDirectory $root -PassThru -WindowStyle Hidden
 try {
   Start-Sleep -Seconds 2
-  & $node "_shot_xxx.js" 2>&1 | Out-File "_shot_xxx.log" -Encoding utf8
+  & $node "tools/e2e/shot_xxx.js" 2>&1 | Out-File "_shot_xxx.log" -Encoding utf8
   "NODE_EXIT=$LASTEXITCODE"
 } finally {
   Stop-Process -Id $srv.Id -Force -ErrorAction SilentlyContinue
@@ -87,7 +87,7 @@ export PATH="/c/Users/Administrator/.workbuddy/binaries/PortableGit/versions/1.2
 **手写白名单，≠ `return{}`**。漏进 `return{}` 最隐蔽（UI 正常，后果是不落盘）→ **每次改完必跑**：
 
 ```bash
-"C:/Users/Administrator/.workbuddy/binaries/python/versions/3.13.12/python.exe" _chk_exports.py
+"C:/Users/Administrator/.workbuddy/binaries/python/versions/3.13.12/python.exe" tools/chk_exports.py
 ```
 
 判断某标识符是否在白名单里，**必须用正则**（粗用 `in` 会被 `foo,` 尾逗号骗过）：
@@ -112,17 +112,26 @@ re.search(r'(?<![\w$])' + name + r'(?=\s*[,}])', wl)
 - 每个场景落 `_results.json`，同时打 `== 场景名 | 说明` + `JSON.stringify(info)`，便于机器核对。
 
 ### 拦截外部 API
-不要打真实 jsonbin / 真实网络。用 `ctx.route` + 全局开关模拟：
+不要打真实云端 / 真实网络。用 `ctx.route` + 全局开关模拟。
+**当前后端是 Upstash Redis REST**（旧 jsonbin 的 `{record, metadata}` 形状已不适用）：
+
 ```js
-await ctx.route('**/api.jsonbin.io/**', async route => {
+// 读：GET {url}/get/foodin%3Async → { result: "<JSON 字符串>" }
+// 写：POST {url}/set/foodin%3Async → { result: "OK" }
+// 拦截模式按测试里配置的 REST URL 写（示例用 upstash.io）；键名是 foodin:sync
+await ctx.route('**/upstash.io/**', async route => {
   const mode = global.__syncMode || 'ok';
   if (mode === 'fail401') return route.fulfill({ status: 401, contentType: 'application/json',
-    body: JSON.stringify({ message: 'invalid key' }) });
+    body: JSON.stringify({ error: 'WRONGPASS invalid or missing auth token' }) });
   return route.fulfill({ status: 200, contentType: 'application/json',
-    body: JSON.stringify({ record: { syncedAt: 'demo', events: [], snapshot: {}, knownIds: [] },
-                           metadata: { id: 'demo-bin' } }) });
+    body: JSON.stringify({ result: JSON.stringify({
+      schemaVersion: 2, syncedAt: 'demo', events: [],
+      snapshot: { products: [], records: [], settings: {}, upToId: null, knownIds: [] },
+      barcodeCache: {} }) }) });
 });
 ```
+
+> 手动触发同步用 `window.__foodin.cloudSync()`；调试队列看 localStorage `food_inventory_sync_v2`。
 
 ---
 
@@ -130,13 +139,13 @@ await ctx.route('**/api.jsonbin.io/**', async route => {
 
 | 脚本 | 断言数 | 覆盖 |
 |---|---|---|
-| `_shot_2360.js` | 92 | v2.36.0 全量 UI |
-| `_shot_dup.js` | 10 | 重复 id / 幽灵商品 |
-| `_shot_2351.js` | 22 | v2.35.1 |
-| `_shot_fontbtn.js` | 15 | 字号三档按钮 |
-| `_shot_tip_all.js` | 30 | 10 类说明弹窗 |
+| `tools/e2e/shot_2360.js` | 92 | v2.36.0 全量 UI |
+| `tools/e2e/shot_dup.js` | 25 | 重复 id / 幽灵商品 / 确定性 id / 同名不迁移 / 幂等 / 导入撞车 / 事件流 |
+| `tools/e2e/shot_2351.js` | 22 | v2.35.1 |
+| `tools/e2e/shot_fontbtn.js` | 15 | 字号三档按钮 |
+| `tools/e2e/shot_tip_all.js` | 30 | 10 类说明弹窗 |
 
-单轮验收脚本命名：`_shot_v<版本>.js` → 产物 `_shots_v<版本>/`。
+单轮验收脚本命名：`tools/e2e/shot_v<版本>.js` → 产物 `_shots_v<版本>/`。
 
 ---
 

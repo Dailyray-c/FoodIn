@@ -42,3 +42,7 @@ _extracted.js
 # 上面的 `_*.js` 一类只覆盖「文件」模式，目录不会被匹配到 —— 结果是 git status
 # 长期挂着 7 个未跟踪目录（噪音），也多留了一个被误 add 的口子。
 _*/
+
+# 2026-10-08：AI 会话记忆目录（与 .workbuddy/ 同性质）。
+# 原先只忽略了 .workbuddy/，导致 .workbuddy-ai/memory/*.md 长期挂在 git status 里成为噪音。
+.workbuddy-ai/
