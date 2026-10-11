@@ -1,164 +1,7 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-10-09T22:57:20.615Z",
+  "syncedAt": "2026-10-11T08:55:47.057Z",
   "events": [
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:950",
-      "ts": "2026-10-09T08:52:32.120Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "c759dd6f-21a7-4b03-9761-2a2c04a48ab3",
-      "patch": {
-        "id": "c759dd6f-21a7-4b03-9761-2a2c04a48ab3",
-        "type": "eat",
-        "productId": "f0f206f4-0501-45a2-bc93-733285bc22aa",
-        "productName": "小站稻米乳",
-        "barcode": "6975382535737",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "220mL",
-        "reason": "",
-        "createdAt": "2026-10-09T08:52:32.097Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:951",
-      "ts": "2026-10-09T08:52:33.315Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "f0f206f4-0501-45a2-bc93-733285bc22aa",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:952",
-      "ts": "2026-10-09T08:52:33.335Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "f0f206f4-0501-45a2-bc93-733285bc22aa",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:953",
-      "ts": "2026-10-09T08:52:33.337Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "6caf217a-4adf-4963-95fc-56b362d67642",
-      "patch": {
-        "id": "6caf217a-4adf-4963-95fc-56b362d67642",
-        "type": "eat",
-        "productId": "f0f206f4-0501-45a2-bc93-733285bc22aa",
-        "productName": "小站稻米乳",
-        "barcode": "6975382535737",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "220mL",
-        "reason": "",
-        "createdAt": "2026-10-09T08:52:33.315Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:954",
-      "ts": "2026-10-09T08:52:43.197Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "04908a63-7f86-4e6a-9068-8fbbc213a944",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:955",
-      "ts": "2026-10-09T08:52:43.216Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "04908a63-7f86-4e6a-9068-8fbbc213a944",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:956",
-      "ts": "2026-10-09T08:52:43.218Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "e7bfa18f-db33-4df0-9311-783229bf216d",
-      "patch": {
-        "id": "e7bfa18f-db33-4df0-9311-783229bf216d",
-        "type": "eat",
-        "productId": "04908a63-7f86-4e6a-9068-8fbbc213a944",
-        "productName": "海河椰子牛奶",
-        "barcode": "",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "220毫升",
-        "reason": "",
-        "createdAt": "2026-10-09T08:52:43.197Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:957",
-      "ts": "2026-10-09T08:52:58.646Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "f1456854-126d-4dd4-9eee-b2c5e3c5cd47",
-      "patch": {
-        "id": "f1456854-126d-4dd4-9eee-b2c5e3c5cd47",
-        "type": "eat",
-        "productId": "03441054-4107-4b55-b3df-35ec6f4ed2bd",
-        "productName": "西瓜牛奶",
-        "barcode": "6975382535539",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "220毫升",
-        "reason": "",
-        "createdAt": "2026-10-09T08:52:21.936Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:958",
-      "ts": "2026-10-09T08:53:16.156Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "e5a95ce5-6fb9-48f3-bb62-5d08bfb7f9cf",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:959",
-      "ts": "2026-10-09T08:53:16.177Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "e5a95ce5-6fb9-48f3-bb62-5d08bfb7f9cf",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:rtt3:960",
-      "ts": "2026-10-09T08:53:16.179Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "8eb27187-6f57-420d-a9e9-afea94b01d72",
-      "patch": {
-        "id": "8eb27187-6f57-420d-a9e9-afea94b01d72",
-        "type": "eat",
-        "productId": "e5a95ce5-6fb9-48f3-bb62-5d08bfb7f9cf",
-        "productName": "椰树牌椰汁🥥",
-        "barcode": "",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "245毫升",
-        "reason": "",
-        "createdAt": "2026-10-09T08:53:16.156Z"
-      }
-    },
     {
       "id": "dev-mu45z8v37r9kwy:aatp:76",
       "ts": "2026-10-09T10:18:11.750Z",
@@ -284,6 +127,124 @@
         "reason": "",
         "createdAt": "2026-10-09T22:57:05.128Z"
       }
+    },
+    {
+      "id": "dev-mu45z8v37r9kwy:1g0k:79",
+      "ts": "2026-10-11T08:08:22.054Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "fontScale",
+      "patch": "normal"
+    },
+    {
+      "id": "dev-mu45z8v37r9kwy:1g0k:80",
+      "ts": "2026-10-11T08:09:55.107Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "1a3e3f45-3f04-4b9b-8ef7-5b9a0b65e0ac",
+      "patch": {
+        "delta": -1,
+        "quantity": 2
+      }
+    },
+    {
+      "id": "dev-mu45z8v37r9kwy:1g0k:81",
+      "ts": "2026-10-11T08:09:55.119Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "1a3e3f45-3f04-4b9b-8ef7-5b9a0b65e0ac",
+      "patch": {
+        "updatedAt": "2026-10-11T08:09:55.107Z"
+      }
+    },
+    {
+      "id": "dev-mu45z8v37r9kwy:1g0k:82",
+      "ts": "2026-10-11T08:09:55.121Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "3eb00828-b191-4d10-86d0-c617a2fcf127",
+      "patch": {
+        "id": "3eb00828-b191-4d10-86d0-c617a2fcf127",
+        "type": "borrow",
+        "productId": "1a3e3f45-3f04-4b9b-8ef7-5b9a0b65e0ac",
+        "productName": "安佳烘焙咸黄油🧈",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "借出 -1 · 未记名",
+        "unitPrice": 0,
+        "netContent": "75g",
+        "reason": "",
+        "borrower": "未记名",
+        "createdAt": "2026-10-11T08:09:55.107Z"
+      }
+    },
+    {
+      "id": "dev-mu45z8v37r9kwy:nnp2:83",
+      "ts": "2026-10-11T08:23:18.508Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "1a3e3f45-3f04-4b9b-8ef7-5b9a0b65e0ac",
+      "patch": {
+        "delta": 1,
+        "quantity": 3
+      }
+    },
+    {
+      "id": "dev-mu45z8v37r9kwy:nnp2:84",
+      "ts": "2026-10-11T08:23:18.522Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "1a3e3f45-3f04-4b9b-8ef7-5b9a0b65e0ac",
+      "patch": {
+        "updatedAt": "2026-10-11T08:23:18.508Z"
+      }
+    },
+    {
+      "id": "dev-mu45z8v37r9kwy:nnp2:85",
+      "ts": "2026-10-11T08:23:18.523Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "0e5ea957-fb44-4880-af90-0368386b7b88",
+      "patch": {
+        "id": "0e5ea957-fb44-4880-af90-0368386b7b88",
+        "type": "return",
+        "productId": "1a3e3f45-3f04-4b9b-8ef7-5b9a0b65e0ac",
+        "productName": "安佳烘焙咸黄油🧈",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "归还 +1 · 未记名",
+        "unitPrice": 0,
+        "netContent": "75g",
+        "reason": "",
+        "borrower": "未记名",
+        "createdAt": "2026-10-11T08:23:18.508Z"
+      }
+    },
+    {
+      "id": "dev-mu45z8v37r9kwy:th98:86",
+      "ts": "2026-10-11T08:55:31.268Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "categories",
+      "patch": [
+        "调味品",
+        "零食饮料",
+        "冷冻食品",
+        "乳品蛋类",
+        "其他",
+        "剩菜剩饭",
+        "水果",
+        "面食",
+        "茶叶咖啡",
+        "食品",
+        "日用品",
+        "药品保健",
+        "清洁用品",
+        "数码电子",
+        "文具办公",
+        "工具五金",
+        "衣物配饰"
+      ]
     }
   ],
   "snapshot": {
@@ -2287,7 +2248,7 @@
         "imageUrl": "",
         "note": "",
         "createdAt": "2026-09-20T04:40:37.841Z",
-        "updatedAt": "2026-09-22T00:47:01.424Z"
+        "updatedAt": "2026-10-11T08:23:18.508Z"
       },
       {
         "id": "41f4f5d0-a254-4b3c-aadf-c4082b83693c",
@@ -9933,6 +9894,34 @@
         "netContent": "500毫升",
         "reason": "",
         "createdAt": "2026-10-09T22:57:05.128Z"
+      },
+      {
+        "id": "3eb00828-b191-4d10-86d0-c617a2fcf127",
+        "type": "borrow",
+        "productId": "1a3e3f45-3f04-4b9b-8ef7-5b9a0b65e0ac",
+        "productName": "安佳烘焙咸黄油🧈",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "借出 -1 · 未记名",
+        "unitPrice": 0,
+        "netContent": "75g",
+        "reason": "",
+        "borrower": "未记名",
+        "createdAt": "2026-10-11T08:09:55.107Z"
+      },
+      {
+        "id": "0e5ea957-fb44-4880-af90-0368386b7b88",
+        "type": "return",
+        "productId": "1a3e3f45-3f04-4b9b-8ef7-5b9a0b65e0ac",
+        "productName": "安佳烘焙咸黄油🧈",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "归还 +1 · 未记名",
+        "unitPrice": 0,
+        "netContent": "75g",
+        "reason": "",
+        "borrower": "未记名",
+        "createdAt": "2026-10-11T08:23:18.508Z"
       }
     ],
     "settings": {
@@ -9990,20 +9979,14 @@
           "layout": ""
         }
       ],
-      "builtinCategories": [
-        "剩菜剩饭"
-      ],
-      "leftoverDefaultDays": 3,
       "nameCleanEnabled": true,
       "nameCleanCase": "smart",
       "nameCleanMarketing": true,
       "nameCleanCustom": "",
       "nameCleanWhitelist": "",
-      "fontScale": "large",
-      "ocrEngine": "paddle",
-      "ocrProxyUrl": ""
+      "fontScale": "normal"
     },
-    "upToId": "dev-mu1udqqh6nbern:8gim:569",
+    "upToId": "dev-mu0mi3qk6dij1g:rtt3:960",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -10806,7 +10789,9 @@
       "record:f1456854-126d-4dd4-9eee-b2c5e3c5cd47",
       "record:8eb27187-6f57-420d-a9e9-afea94b01d72",
       "record:8db51ff9-3339-4755-89a3-9d1a6092543e",
-      "record:a2252987-6302-4d2b-bc21-be1182381f7d"
+      "record:a2252987-6302-4d2b-bc21-be1182381f7d",
+      "record:3eb00828-b191-4d10-86d0-c617a2fcf127",
+      "record:0e5ea957-fb44-4880-af90-0368386b7b88"
     ]
   },
   "barcodeCache": {
