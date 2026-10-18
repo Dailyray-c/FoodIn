@@ -1,7 +1,15 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-10-11T08:55:47.057Z",
+  "syncedAt": "2026-10-18T05:49:51.224Z",
   "events": [
+    {
+      "id": "dev-mu15jd1y7fj2if:sdgs:610",
+      "ts": "2026-10-01T09:05:46.682Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "fontScale",
+      "patch": "normal"
+    },
     {
       "id": "dev-mu45z8v37r9kwy:aatp:76",
       "ts": "2026-10-09T10:18:11.750Z",
@@ -245,6 +253,32 @@
         "工具五金",
         "衣物配饰"
       ]
+    },
+    {
+      "id": "dev-mu15jd1y7fj2if:3lcz:611",
+      "ts": "2026-10-18T05:49:51.198Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "builtinCategories",
+      "patch": [
+        "剩菜剩饭"
+      ]
+    },
+    {
+      "id": "dev-mu15jd1y7fj2if:3lcz:612",
+      "ts": "2026-10-18T05:49:51.200Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "leftoverDefaultDays",
+      "patch": 3
+    },
+    {
+      "id": "dev-mu15jd1y7fj2if:3lcz:613",
+      "ts": "2026-10-18T05:49:51.201Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "ocrProxyUrl",
+      "patch": ""
     }
   ],
   "snapshot": {
@@ -9935,7 +9969,15 @@
         "剩菜剩饭",
         "水果",
         "面食",
-        "茶叶咖啡"
+        "茶叶咖啡",
+        "食品",
+        "日用品",
+        "药品保健",
+        "清洁用品",
+        "数码电子",
+        "文具办公",
+        "工具五金",
+        "衣物配饰"
       ],
       "places": [
         {
@@ -9979,14 +10021,20 @@
           "layout": ""
         }
       ],
+      "builtinCategories": [
+        "剩菜剩饭"
+      ],
+      "leftoverDefaultDays": 3,
       "nameCleanEnabled": true,
       "nameCleanCase": "smart",
       "nameCleanMarketing": true,
       "nameCleanCustom": "",
       "nameCleanWhitelist": "",
-      "fontScale": "normal"
+      "fontScale": "normal",
+      "ocrEngine": "paddle",
+      "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu0mi3qk6dij1g:rtt3:960",
+    "upToId": "dev-mu15jd1y7fj2if:3lcz:613",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
