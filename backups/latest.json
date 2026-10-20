@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-10-19T13:38:57.826Z",
+  "syncedAt": "2026-10-20T12:48:18.737Z",
   "events": [
     {
       "id": "dev-mu0mi3qk6dij1g:a5dc:962",
@@ -508,6 +508,14 @@
       "op": "upsert",
       "key": "ocrEngine",
       "patch": "tesseract"
+    },
+    {
+      "id": "dev-mu5ocmscszpwzu:yc2w:133",
+      "ts": "2026-10-20T06:56:32.001Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "ocrEngine",
+      "patch": "paddle"
     }
   ],
   "snapshot": {
@@ -10751,10 +10759,10 @@
       "nameCleanCustom": "",
       "nameCleanWhitelist": "",
       "fontScale": "normal",
-      "ocrEngine": "tesseract",
+      "ocrEngine": "paddle",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu0mi3qk6dij1g:d5u3:968",
+    "upToId": "dev-mu5ocmscszpwzu:yc2w:133",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
