@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-10-21T13:58:59.678Z",
+  "syncedAt": "2026-10-22T10:44:53.156Z",
   "events": [
     {
       "id": "dev-mu5ocmscszpwzu:yc2w:122",
@@ -476,6 +476,54 @@
         "netContent": "",
         "reason": "",
         "createdAt": "2026-10-21T13:58:44.161Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:w7yh:579",
+      "ts": "2026-10-22T10:44:37.651Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "1177d189-1d25-471c-b70a-ce94ac6182e3",
+      "patch": {
+        "id": "1177d189-1d25-471c-b70a-ce94ac6182e3",
+        "name": "盒马烘焙低糖龙井冰淇淋绿豆糕饼290克",
+        "barcode": "6977000278699",
+        "location": "冷藏",
+        "category": "食品",
+        "stockInDate": "2026-10-22",
+        "productionDate": "2026-10-18",
+        "expiryDate": "2026-11-01",
+        "shelfLife": "14天",
+        "quantity": 1,
+        "brand": "盒马烘焙",
+        "spec": "",
+        "netContent": "",
+        "manufacturer": "莆田市加一食品有限公司",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-22T10:44:37.615Z",
+        "updatedAt": "2026-10-22T10:44:37.615Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:w7yh:580",
+      "ts": "2026-10-22T10:44:37.654Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "f51b187c-7bef-4ea9-8b4d-6ee1b4230041",
+      "patch": {
+        "id": "f51b187c-7bef-4ea9-8b4d-6ee1b4230041",
+        "type": "in",
+        "productId": "1177d189-1d25-471c-b70a-ce94ac6182e3",
+        "productName": "盒马烘焙低糖龙井冰淇淋绿豆糕饼290克",
+        "barcode": "6977000278699",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-22T10:44:37.615Z"
       }
     }
   ],
@@ -3616,6 +3664,27 @@
         "note": "",
         "createdAt": "2026-10-21T13:58:44.161Z",
         "updatedAt": "2026-10-21T13:58:44.161Z"
+      },
+      {
+        "id": "1177d189-1d25-471c-b70a-ce94ac6182e3",
+        "name": "盒马烘焙低糖龙井冰淇淋绿豆糕饼290克",
+        "barcode": "6977000278699",
+        "location": "冷藏",
+        "category": "食品",
+        "stockInDate": "2026-10-22",
+        "productionDate": "2026-10-18",
+        "expiryDate": "2026-11-01",
+        "shelfLife": "14天",
+        "quantity": 1,
+        "brand": "盒马烘焙",
+        "spec": "",
+        "netContent": "",
+        "manufacturer": "莆田市加一食品有限公司",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-22T10:44:37.615Z",
+        "updatedAt": "2026-10-22T10:44:37.615Z"
       }
     ],
     "records": [
@@ -10781,6 +10850,19 @@
         "netContent": "",
         "reason": "",
         "createdAt": "2026-10-21T13:58:44.161Z"
+      },
+      {
+        "id": "f51b187c-7bef-4ea9-8b4d-6ee1b4230041",
+        "type": "in",
+        "productId": "1177d189-1d25-471c-b70a-ce94ac6182e3",
+        "productName": "盒马烘焙低糖龙井冰淇淋绿豆糕饼290克",
+        "barcode": "6977000278699",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-22T10:44:37.615Z"
       }
     ],
     "settings": {
@@ -10859,7 +10941,7 @@
       "ocrEngine": "paddle",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu1udqqh6nbern:c0su:578",
+    "upToId": "dev-mu1udqqh6nbern:w7yh:580",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -11710,10 +11792,22 @@
       "product:d15bacb7-bcdd-43db-8909-7ecd3137c402",
       "record:6f7b6467-ab0c-43fd-8138-e7f39931fe7a",
       "product:813a8920-e030-4ef1-9f86-6d75b371a61e",
-      "record:ae4a2d9a-09df-4256-b33a-2de4f9e1ec7b"
+      "record:ae4a2d9a-09df-4256-b33a-2de4f9e1ec7b",
+      "product:1177d189-1d25-471c-b70a-ce94ac6182e3",
+      "record:f51b187c-7bef-4ea9-8b4d-6ee1b4230041"
     ]
   },
   "barcodeCache": {
+    "6977000278699": {
+      "name": "盒马烘焙低糖龙井冰淇淋绿豆糕饼290克",
+      "shelfLife": "14天",
+      "brand": "盒马烘焙",
+      "spec": "",
+      "netContent": "",
+      "manufacturer": "莆田市加一食品有限公司",
+      "imageUrl": "",
+      "updatedAt": "2026-10-22T10:44:37.615Z"
+    },
     "6950967313573": {
       "name": "胡椒猪肚鸡",
       "shelfLife": "364天",
