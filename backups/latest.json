@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-10-22T10:44:53.156Z",
+  "syncedAt": "2026-10-24T10:00:11.699Z",
   "events": [
     {
       "id": "dev-mu5ocmscszpwzu:yc2w:122",
@@ -271,6 +271,54 @@
       "patch": "tesseract"
     },
     {
+      "id": "dev-mu0mi3qk6dij1g:d5u3:969",
+      "ts": "2026-10-19T13:41:58.227Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "5a8c81f6-de68-4027-99fe-c9cc2a8889e5",
+      "patch": {
+        "id": "5a8c81f6-de68-4027-99fe-c9cc2a8889e5",
+        "name": "无糖百事可乐易拉罐🍋‍🟩青柠口味",
+        "barcode": "",
+        "location": "冷藏",
+        "category": "零食饮料",
+        "stockInDate": "2026-10-19",
+        "productionDate": "2026-08-19",
+        "expiryDate": "2027-08-19",
+        "shelfLife": "1年",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "330毫升",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-19T13:41:58.209Z",
+        "updatedAt": "2026-10-19T13:41:58.209Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:d5u3:970",
+      "ts": "2026-10-19T13:41:58.229Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "cdac6928-e0e6-462a-9b8b-78c88b3b6a79",
+      "patch": {
+        "id": "cdac6928-e0e6-462a-9b8b-78c88b3b6a79",
+        "type": "in",
+        "productId": "5a8c81f6-de68-4027-99fe-c9cc2a8889e5",
+        "productName": "无糖百事可乐易拉罐🍋‍🟩青柠口味",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "330毫升",
+        "reason": "",
+        "createdAt": "2026-10-19T13:41:58.210Z"
+      }
+    },
+    {
       "id": "dev-mu5ocmscszpwzu:yc2w:133",
       "ts": "2026-10-20T06:56:32.001Z",
       "kind": "setting",
@@ -525,6 +573,30 @@
         "reason": "",
         "createdAt": "2026-10-22T10:44:37.615Z"
       }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:bj18:971",
+      "ts": "2026-10-24T02:36:57.331Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "fontScale",
+      "patch": "normal"
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:bj18:972",
+      "ts": "2026-10-24T02:36:57.332Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "ocrEngine",
+      "patch": "tesseract"
+    },
+    {
+      "id": "dev-mu15jd1y7fj2if:z74k:614",
+      "ts": "2026-10-24T10:00:11.674Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "ocrEngine",
+      "patch": "paddle"
     }
   ],
   "snapshot": {
@@ -3685,6 +3757,27 @@
         "note": "",
         "createdAt": "2026-10-22T10:44:37.615Z",
         "updatedAt": "2026-10-22T10:44:37.615Z"
+      },
+      {
+        "id": "5a8c81f6-de68-4027-99fe-c9cc2a8889e5",
+        "name": "无糖百事可乐易拉罐🍋‍🟩青柠口味",
+        "barcode": "",
+        "location": "冷藏",
+        "category": "零食饮料",
+        "stockInDate": "2026-10-19",
+        "productionDate": "2026-08-19",
+        "expiryDate": "2027-08-19",
+        "shelfLife": "1年",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "330毫升",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-19T13:41:58.209Z",
+        "updatedAt": "2026-10-19T13:41:58.209Z"
       }
     ],
     "records": [
@@ -10800,6 +10893,19 @@
         "createdAt": "2026-10-19T12:28:21.682Z"
       },
       {
+        "id": "cdac6928-e0e6-462a-9b8b-78c88b3b6a79",
+        "type": "in",
+        "productId": "5a8c81f6-de68-4027-99fe-c9cc2a8889e5",
+        "productName": "无糖百事可乐易拉罐🍋‍🟩青柠口味",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "330毫升",
+        "reason": "",
+        "createdAt": "2026-10-19T13:41:58.210Z"
+      },
+      {
         "id": "824567ef-b17a-4162-b071-567d28efe6bf",
         "type": "in",
         "productId": "eac1deb4-0baf-4653-bc87-e09fc59701b0",
@@ -10937,11 +11043,11 @@
       "nameCleanMarketing": true,
       "nameCleanCustom": "",
       "nameCleanWhitelist": "",
-      "fontScale": "large",
+      "fontScale": "normal",
       "ocrEngine": "paddle",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu1udqqh6nbern:w7yh:580",
+    "upToId": "dev-mu15jd1y7fj2if:z74k:614",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -11794,7 +11900,9 @@
       "product:813a8920-e030-4ef1-9f86-6d75b371a61e",
       "record:ae4a2d9a-09df-4256-b33a-2de4f9e1ec7b",
       "product:1177d189-1d25-471c-b70a-ce94ac6182e3",
-      "record:f51b187c-7bef-4ea9-8b4d-6ee1b4230041"
+      "record:f51b187c-7bef-4ea9-8b4d-6ee1b4230041",
+      "product:5a8c81f6-de68-4027-99fe-c9cc2a8889e5",
+      "record:cdac6928-e0e6-462a-9b8b-78c88b3b6a79"
     ]
   },
   "barcodeCache": {
