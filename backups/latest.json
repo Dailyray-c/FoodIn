@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-10-26T14:41:17.354Z",
+  "syncedAt": "2026-10-27T15:57:18.777Z",
   "events": [
     {
       "id": "dev-mu0mi3qk6dij1g:ginc:1005",
@@ -406,6 +406,102 @@
         "netContent": "175克7袋",
         "reason": "",
         "createdAt": "2026-10-26T14:41:02.019Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:ginc:1031",
+      "ts": "2026-10-26T14:43:54.788Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "e9a6909c-394c-40e6-aec0-e8b60deed073",
+      "patch": {
+        "id": "e9a6909c-394c-40e6-aec0-e8b60deed073",
+        "name": "九阳羽衣甘蓝轻食豆花粉",
+        "barcode": "",
+        "location": "餐边柜",
+        "category": "零食饮料",
+        "stockInDate": "2026-10-26",
+        "productionDate": "2026-05-06",
+        "expiryDate": "2027-02-06",
+        "shelfLife": "9个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "182克7袋",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-26T14:43:54.766Z",
+        "updatedAt": "2026-10-26T14:43:54.766Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:ginc:1032",
+      "ts": "2026-10-26T14:43:54.790Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "497f7e23-27c4-42fe-a524-cbea7d84dd39",
+      "patch": {
+        "id": "497f7e23-27c4-42fe-a524-cbea7d84dd39",
+        "type": "in",
+        "productId": "e9a6909c-394c-40e6-aec0-e8b60deed073",
+        "productName": "九阳羽衣甘蓝轻食豆花粉",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "182克7袋",
+        "reason": "",
+        "createdAt": "2026-10-26T14:43:54.767Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:mh3p:1033",
+      "ts": "2026-10-27T07:59:28.343Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "389b6ccf-1f2d-4066-a532-3ffab002f514",
+      "patch": {
+        "id": "389b6ccf-1f2d-4066-a532-3ffab002f514",
+        "name": "红牛",
+        "barcode": "",
+        "location": "餐边柜",
+        "category": "零食饮料",
+        "stockInDate": "2026-10-27",
+        "productionDate": "2026-09-21",
+        "expiryDate": "2028-03-20",
+        "shelfLife": "546天",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "250毫升",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-27T07:59:28.321Z",
+        "updatedAt": "2026-10-27T07:59:28.321Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:mh3p:1034",
+      "ts": "2026-10-27T07:59:28.345Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "6622fcc6-dd47-456c-881b-7b33c4399aab",
+      "patch": {
+        "id": "6622fcc6-dd47-456c-881b-7b33c4399aab",
+        "type": "in",
+        "productId": "389b6ccf-1f2d-4066-a532-3ffab002f514",
+        "productName": "红牛",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "250毫升",
+        "reason": "",
+        "createdAt": "2026-10-27T07:59:28.322Z"
       }
     }
   ],
@@ -3709,6 +3805,48 @@
         "note": "",
         "createdAt": "2026-10-26T14:41:02.018Z",
         "updatedAt": "2026-10-26T14:41:02.018Z"
+      },
+      {
+        "id": "e9a6909c-394c-40e6-aec0-e8b60deed073",
+        "name": "九阳羽衣甘蓝轻食豆花粉",
+        "barcode": "",
+        "location": "餐边柜",
+        "category": "零食饮料",
+        "stockInDate": "2026-10-26",
+        "productionDate": "2026-05-06",
+        "expiryDate": "2027-02-06",
+        "shelfLife": "9个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "182克7袋",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-26T14:43:54.766Z",
+        "updatedAt": "2026-10-26T14:43:54.766Z"
+      },
+      {
+        "id": "389b6ccf-1f2d-4066-a532-3ffab002f514",
+        "name": "红牛",
+        "barcode": "",
+        "location": "餐边柜",
+        "category": "零食饮料",
+        "stockInDate": "2026-10-27",
+        "productionDate": "2026-09-21",
+        "expiryDate": "2028-03-20",
+        "shelfLife": "546天",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "250毫升",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-27T07:59:28.321Z",
+        "updatedAt": "2026-10-27T07:59:28.321Z"
       }
     ],
     "records": [
@@ -11212,6 +11350,32 @@
         "netContent": "175克7袋",
         "reason": "",
         "createdAt": "2026-10-26T14:41:02.019Z"
+      },
+      {
+        "id": "497f7e23-27c4-42fe-a524-cbea7d84dd39",
+        "type": "in",
+        "productId": "e9a6909c-394c-40e6-aec0-e8b60deed073",
+        "productName": "九阳羽衣甘蓝轻食豆花粉",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "182克7袋",
+        "reason": "",
+        "createdAt": "2026-10-26T14:43:54.767Z"
+      },
+      {
+        "id": "6622fcc6-dd47-456c-881b-7b33c4399aab",
+        "type": "in",
+        "productId": "389b6ccf-1f2d-4066-a532-3ffab002f514",
+        "productName": "红牛",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "250毫升",
+        "reason": "",
+        "createdAt": "2026-10-27T07:59:28.322Z"
       }
     ],
     "settings": {
@@ -11290,7 +11454,7 @@
       "ocrEngine": "tesseract",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu0mi3qk6dij1g:ginc:1030",
+    "upToId": "dev-mu0mi3qk6dij1g:mh3p:1034",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -12182,7 +12346,11 @@
       "product:8a7381df-c434-4357-9878-3ebfb80bdcc2",
       "record:b6f55971-1ec0-4457-9b08-82406ae19ca0",
       "product:698a0ed3-6582-4e0e-82bd-5473c671676d",
-      "record:c2ec97c0-5198-44d6-9226-58fe241b11b4"
+      "record:c2ec97c0-5198-44d6-9226-58fe241b11b4",
+      "product:e9a6909c-394c-40e6-aec0-e8b60deed073",
+      "record:497f7e23-27c4-42fe-a524-cbea7d84dd39",
+      "product:389b6ccf-1f2d-4066-a532-3ffab002f514",
+      "record:6622fcc6-dd47-456c-881b-7b33c4399aab"
     ]
   },
   "barcodeCache": {
