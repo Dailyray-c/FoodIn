@@ -1,220 +1,228 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-10-27T15:57:18.777Z",
+  "syncedAt": "2026-10-28T11:27:02.646Z",
   "events": [
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1005",
-      "ts": "2026-10-26T13:55:16.310Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "a227532e-23fe-41c9-9aa4-b02a98930b56",
-      "patch": {
-        "id": "a227532e-23fe-41c9-9aa4-b02a98930b56",
-        "type": "in",
-        "productId": "9740220c-8b5c-43dd-ac2e-0c9459684b8b",
-        "productName": "干货福建宁德古田县香菇",
-        "barcode": "",
-        "quantity": 1,
-        "detail": "新增入库 +1",
-        "unitPrice": 0,
-        "netContent": "250克",
-        "reason": "",
-        "createdAt": "2026-10-26T13:55:16.285Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1006",
-      "ts": "2026-10-26T13:55:34.882Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "e6d08476-77eb-4135-b854-aa3b90131712",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1007",
-      "ts": "2026-10-26T13:55:34.904Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1045",
+      "ts": "2026-10-28T10:55:34.137Z",
       "kind": "product",
       "op": "delete",
-      "key": "e6d08476-77eb-4135-b854-aa3b90131712",
+      "key": "5486b2fe-44a1-4692-84ba-9816cd2fa8cf",
       "patch": null
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1008",
-      "ts": "2026-10-26T13:55:34.906Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1046",
+      "ts": "2026-10-28T10:55:34.138Z",
       "kind": "record",
       "op": "upsert",
-      "key": "c6d6226c-7e7e-4bda-b13d-58a4836ec620",
+      "key": "dd73ec32-124e-4bbf-876f-a8fe919a5ec6",
       "patch": {
-        "id": "c6d6226c-7e7e-4bda-b13d-58a4836ec620",
+        "id": "dd73ec32-124e-4bbf-876f-a8fe919a5ec6",
         "type": "eat",
-        "productId": "e6d08476-77eb-4135-b854-aa3b90131712",
-        "productName": "炒熟黑豆",
+        "productId": "5486b2fe-44a1-4692-84ba-9816cd2fa8cf",
+        "productName": "洋一片贵州特产手工洋芋片 海苔味",
         "barcode": "",
         "quantity": -1,
         "detail": "正常吃完 -1",
         "unitPrice": 0,
         "netContent": "",
         "reason": "",
-        "createdAt": "2026-10-26T13:55:34.883Z"
+        "createdAt": "2026-10-28T10:55:34.117Z"
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1009",
-      "ts": "2026-10-26T13:56:07.190Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1047",
+      "ts": "2026-10-28T10:55:41.024Z",
       "kind": "product",
       "op": "delta",
-      "key": "1a8fca74-1c07-4514-a45a-2cf08a6929ab",
+      "key": "f71047fd-cf88-4910-993b-d162da3c63c9",
       "patch": {
         "delta": -1,
-        "quantity": 0
+        "quantity": 3
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1010",
-      "ts": "2026-10-26T13:56:07.215Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1048",
+      "ts": "2026-10-28T10:55:41.046Z",
       "kind": "product",
-      "op": "delete",
-      "key": "1a8fca74-1c07-4514-a45a-2cf08a6929ab",
-      "patch": null
+      "op": "upsert",
+      "key": "f71047fd-cf88-4910-993b-d162da3c63c9",
+      "patch": {
+        "updatedAt": "2026-10-28T10:55:41.024Z"
+      }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1011",
-      "ts": "2026-10-26T13:56:07.216Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1049",
+      "ts": "2026-10-28T10:55:41.048Z",
       "kind": "record",
       "op": "upsert",
-      "key": "ed61f636-731e-49bb-b940-481118c54a1d",
+      "key": "77ff056d-cb54-4fbf-8acf-502e299978a1",
       "patch": {
-        "id": "ed61f636-731e-49bb-b940-481118c54a1d",
+        "id": "77ff056d-cb54-4fbf-8acf-502e299978a1",
         "type": "eat",
-        "productId": "1a8fca74-1c07-4514-a45a-2cf08a6929ab",
-        "productName": "羊颈骨",
+        "productId": "f71047fd-cf88-4910-993b-d162da3c63c9",
+        "productName": "秋月梨",
         "barcode": "",
         "quantity": -1,
         "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "500g",
-        "reason": "",
-        "createdAt": "2026-10-26T13:56:07.191Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1012",
-      "ts": "2026-10-26T13:56:43.579Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "pmu9mfzcc528sdp",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1013",
-      "ts": "2026-10-26T13:56:51.924Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "53d0352a-8691-43f3-91be-0a0cab4f73bf",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1014",
-      "ts": "2026-10-26T13:56:51.949Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "53d0352a-8691-43f3-91be-0a0cab4f73bf",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1015",
-      "ts": "2026-10-26T13:56:51.950Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "b86cc7ed-44cb-4006-9746-5cd314b3fe0e",
-      "patch": {
-        "id": "b86cc7ed-44cb-4006-9746-5cd314b3fe0e",
-        "type": "eat",
-        "productId": "53d0352a-8691-43f3-91be-0a0cab4f73bf",
-        "productName": "日式鲜椰冰激凌豆腐",
-        "barcode": "6954463451449",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "340克",
-        "reason": "",
-        "createdAt": "2026-10-26T13:56:51.925Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1016",
-      "ts": "2026-10-26T13:56:56.860Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "8bd02f29-c4c7-424c-bf4f-9ef99bbd2263",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1017",
-      "ts": "2026-10-26T13:56:56.885Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "8bd02f29-c4c7-424c-bf4f-9ef99bbd2263",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1018",
-      "ts": "2026-10-26T13:56:56.886Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "dcc2ed8a-c9eb-4efe-af04-b71052dcf1e2",
-      "patch": {
-        "id": "dcc2ed8a-c9eb-4efe-af04-b71052dcf1e2",
-        "type": "eat",
-        "productId": "8bd02f29-c4c7-424c-bf4f-9ef99bbd2263",
-        "productName": "番茄肥牛",
-        "barcode": "",
-        "quantity": -1,
-        "detail": "吃完一份 -1",
         "unitPrice": 0,
         "netContent": "",
         "reason": "",
-        "createdAt": "2026-10-26T13:56:56.861Z"
+        "createdAt": "2026-10-28T10:55:41.025Z"
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1019",
-      "ts": "2026-10-26T13:57:08.897Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1050",
+      "ts": "2026-10-28T10:55:42.971Z",
       "kind": "product",
       "op": "delta",
-      "key": "e05cd8d6-d87f-43d7-a881-7ce41dcecf11",
+      "key": "f71047fd-cf88-4910-993b-d162da3c63c9",
+      "patch": {
+        "delta": -1,
+        "quantity": 2
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1051",
+      "ts": "2026-10-28T10:55:42.991Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "f71047fd-cf88-4910-993b-d162da3c63c9",
+      "patch": {
+        "updatedAt": "2026-10-28T10:55:42.971Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1052",
+      "ts": "2026-10-28T10:55:42.993Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "e61a6fb9-c7f5-45a6-b9b1-f4c64e1e80b2",
+      "patch": {
+        "id": "e61a6fb9-c7f5-45a6-b9b1-f4c64e1e80b2",
+        "type": "eat",
+        "productId": "f71047fd-cf88-4910-993b-d162da3c63c9",
+        "productName": "秋月梨",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:42.972Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1053",
+      "ts": "2026-10-28T10:55:44.688Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "f71047fd-cf88-4910-993b-d162da3c63c9",
+      "patch": {
+        "delta": -1,
+        "quantity": 1
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1054",
+      "ts": "2026-10-28T10:55:44.705Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "f71047fd-cf88-4910-993b-d162da3c63c9",
+      "patch": {
+        "updatedAt": "2026-10-28T10:55:44.688Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1055",
+      "ts": "2026-10-28T10:55:44.707Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "836c42af-7f43-4c52-bf31-d8f7ce54d455",
+      "patch": {
+        "id": "836c42af-7f43-4c52-bf31-d8f7ce54d455",
+        "type": "eat",
+        "productId": "f71047fd-cf88-4910-993b-d162da3c63c9",
+        "productName": "秋月梨",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:44.689Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1056",
+      "ts": "2026-10-28T10:55:46.322Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "f71047fd-cf88-4910-993b-d162da3c63c9",
       "patch": {
         "delta": -1,
         "quantity": 0
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1020",
-      "ts": "2026-10-26T13:57:08.923Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1057",
+      "ts": "2026-10-28T10:55:46.339Z",
       "kind": "product",
       "op": "delete",
-      "key": "e05cd8d6-d87f-43d7-a881-7ce41dcecf11",
+      "key": "f71047fd-cf88-4910-993b-d162da3c63c9",
       "patch": null
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1021",
-      "ts": "2026-10-26T13:57:08.924Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1058",
+      "ts": "2026-10-28T10:55:46.341Z",
       "kind": "record",
       "op": "upsert",
-      "key": "8cc98841-11f7-4c95-9416-b1fd8d235d0e",
+      "key": "48740813-9524-40d6-9c73-3c4a15ec70d6",
       "patch": {
-        "id": "8cc98841-11f7-4c95-9416-b1fd8d235d0e",
+        "id": "48740813-9524-40d6-9c73-3c4a15ec70d6",
         "type": "eat",
-        "productId": "e05cd8d6-d87f-43d7-a881-7ce41dcecf11",
+        "productId": "f71047fd-cf88-4910-993b-d162da3c63c9",
+        "productName": "秋月梨",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:46.322Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1059",
+      "ts": "2026-10-28T10:55:59.120Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "1edab6cc-b12c-46af-84a1-e351908d0732",
+      "patch": {
+        "delta": -1,
+        "quantity": 1
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1060",
+      "ts": "2026-10-28T10:55:59.141Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "1edab6cc-b12c-46af-84a1-e351908d0732",
+      "patch": {
+        "updatedAt": "2026-10-28T10:55:59.119Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1061",
+      "ts": "2026-10-28T10:55:59.143Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "4dc6fd70-eec9-4f96-b460-36e75ded9a2e",
+      "patch": {
+        "id": "4dc6fd70-eec9-4f96-b460-36e75ded9a2e",
+        "type": "eat",
+        "productId": "1edab6cc-b12c-46af-84a1-e351908d0732",
         "productName": "阿拉比卡咖啡拿铁",
         "barcode": "6975382535690",
         "quantity": -1,
@@ -222,286 +230,94 @@
         "unitPrice": 0,
         "netContent": "220ml",
         "reason": "",
-        "createdAt": "2026-10-26T13:57:08.897Z"
+        "createdAt": "2026-10-28T10:55:59.120Z"
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1022",
-      "ts": "2026-10-26T14:04:53.167Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1062",
+      "ts": "2026-10-28T10:56:00.815Z",
       "kind": "product",
       "op": "delta",
-      "key": "99bbedef-ab89-48cf-abe1-702d8c967c0a",
+      "key": "1edab6cc-b12c-46af-84a1-e351908d0732",
       "patch": {
         "delta": -1,
         "quantity": 0
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1023",
-      "ts": "2026-10-26T14:04:53.201Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1063",
+      "ts": "2026-10-28T10:56:00.833Z",
       "kind": "product",
       "op": "delete",
-      "key": "99bbedef-ab89-48cf-abe1-702d8c967c0a",
+      "key": "1edab6cc-b12c-46af-84a1-e351908d0732",
       "patch": null
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1024",
-      "ts": "2026-10-26T14:04:53.203Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1064",
+      "ts": "2026-10-28T10:56:00.834Z",
       "kind": "record",
       "op": "upsert",
-      "key": "ce446e41-4215-4972-aca2-b687a20205ec",
+      "key": "cee11c00-7a5c-428d-beba-dc59a249e0c6",
       "patch": {
-        "id": "ce446e41-4215-4972-aca2-b687a20205ec",
+        "id": "cee11c00-7a5c-428d-beba-dc59a249e0c6",
         "type": "eat",
-        "productId": "99bbedef-ab89-48cf-abe1-702d8c967c0a",
-        "productName": "洛吉央尊牦牛奶贝甜味210克",
-        "barcode": "6977834550091",
+        "productId": "1edab6cc-b12c-46af-84a1-e351908d0732",
+        "productName": "阿拉比卡咖啡拿铁",
+        "barcode": "6975382535690",
         "quantity": -1,
         "detail": "正常吃完 -1",
         "unitPrice": 0,
-        "netContent": "",
+        "netContent": "220ml",
         "reason": "",
-        "createdAt": "2026-10-26T14:04:53.184Z"
+        "createdAt": "2026-10-28T10:56:00.815Z"
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1025",
-      "ts": "2026-10-26T14:19:21.623Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1065",
+      "ts": "2026-10-28T11:26:47.330Z",
       "kind": "product",
       "op": "upsert",
-      "key": "1215dd41-cada-4981-878d-9d0de2753409",
+      "key": "d9bc4254-02c3-4255-a419-d56e059bb79a",
       "patch": {
-        "id": "1215dd41-cada-4981-878d-9d0de2753409",
-        "name": "🐟爱卿大烤鳕鱼片",
-        "barcode": "",
-        "location": "餐桌",
-        "category": "零食饮料",
-        "stockInDate": "2026-10-26",
-        "productionDate": "2026-08-13",
-        "expiryDate": "2027-02-13",
-        "shelfLife": "6个月",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "100克",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-10-26T14:19:21.602Z",
-        "updatedAt": "2026-10-26T14:19:21.602Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1026",
-      "ts": "2026-10-26T14:19:21.625Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "641dee8b-3c9a-4951-a720-9046ad13ea64",
-      "patch": {
-        "id": "641dee8b-3c9a-4951-a720-9046ad13ea64",
-        "type": "in",
-        "productId": "1215dd41-cada-4981-878d-9d0de2753409",
-        "productName": "🐟爱卿大烤鳕鱼片",
-        "barcode": "",
-        "quantity": 1,
-        "detail": "新增入库 +1",
-        "unitPrice": 0,
-        "netContent": "100克",
-        "reason": "",
-        "createdAt": "2026-10-26T14:19:21.603Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1027",
-      "ts": "2026-10-26T14:23:02.841Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "8a7381df-c434-4357-9878-3ebfb80bdcc2",
-      "patch": {
-        "id": "8a7381df-c434-4357-9878-3ebfb80bdcc2",
-        "name": "冠云平遥牛肉",
-        "barcode": "",
-        "location": "橱柜左3",
-        "category": "食品",
-        "stockInDate": "2026-10-26",
-        "productionDate": "2026-09-30",
-        "expiryDate": "2027-09-30",
-        "shelfLife": "1年",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "158克",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-10-26T14:23:02.819Z",
-        "updatedAt": "2026-10-26T14:23:02.819Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1028",
-      "ts": "2026-10-26T14:23:02.842Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "b6f55971-1ec0-4457-9b08-82406ae19ca0",
-      "patch": {
-        "id": "b6f55971-1ec0-4457-9b08-82406ae19ca0",
-        "type": "in",
-        "productId": "8a7381df-c434-4357-9878-3ebfb80bdcc2",
-        "productName": "冠云平遥牛肉",
-        "barcode": "",
-        "quantity": 1,
-        "detail": "新增入库 +1",
-        "unitPrice": 0,
-        "netContent": "158克",
-        "reason": "",
-        "createdAt": "2026-10-26T14:23:02.820Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1029",
-      "ts": "2026-10-26T14:41:02.039Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "698a0ed3-6582-4e0e-82bd-5473c671676d",
-      "patch": {
-        "id": "698a0ed3-6582-4e0e-82bd-5473c671676d",
-        "name": "九阳轻食豆花粉",
+        "id": "d9bc4254-02c3-4255-a419-d56e059bb79a",
+        "name": "天津什福来小粒黄冰糖",
         "barcode": "",
         "location": "餐边柜",
-        "category": "零食饮料",
-        "stockInDate": "2026-10-26",
-        "productionDate": "2026-05-12",
-        "expiryDate": "2027-02-12",
-        "shelfLife": "9个月",
-        "quantity": 2,
-        "brand": "",
-        "spec": "",
-        "netContent": "175克7袋",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-10-26T14:41:02.018Z",
-        "updatedAt": "2026-10-26T14:41:02.018Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1030",
-      "ts": "2026-10-26T14:41:02.041Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "c2ec97c0-5198-44d6-9226-58fe241b11b4",
-      "patch": {
-        "id": "c2ec97c0-5198-44d6-9226-58fe241b11b4",
-        "type": "in",
-        "productId": "698a0ed3-6582-4e0e-82bd-5473c671676d",
-        "productName": "九阳轻食豆花粉",
-        "barcode": "",
-        "quantity": 2,
-        "detail": "新增入库 +2",
-        "unitPrice": 0,
-        "netContent": "175克7袋",
-        "reason": "",
-        "createdAt": "2026-10-26T14:41:02.019Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1031",
-      "ts": "2026-10-26T14:43:54.788Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "e9a6909c-394c-40e6-aec0-e8b60deed073",
-      "patch": {
-        "id": "e9a6909c-394c-40e6-aec0-e8b60deed073",
-        "name": "九阳羽衣甘蓝轻食豆花粉",
-        "barcode": "",
-        "location": "餐边柜",
-        "category": "零食饮料",
-        "stockInDate": "2026-10-26",
-        "productionDate": "2026-05-06",
-        "expiryDate": "2027-02-06",
-        "shelfLife": "9个月",
+        "category": "调味品",
+        "stockInDate": "2026-10-28",
+        "productionDate": "2024-05-01",
+        "expiryDate": "2025-11-01",
+        "shelfLife": "18个月",
         "quantity": 1,
         "brand": "",
         "spec": "",
-        "netContent": "182克7袋",
+        "netContent": "300克",
         "manufacturer": "",
         "price": "",
         "imageUrl": "",
         "note": "",
-        "createdAt": "2026-10-26T14:43:54.766Z",
-        "updatedAt": "2026-10-26T14:43:54.766Z"
+        "createdAt": "2026-10-28T11:26:47.309Z",
+        "updatedAt": "2026-10-28T11:26:47.309Z"
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:ginc:1032",
-      "ts": "2026-10-26T14:43:54.790Z",
+      "id": "dev-mu0mi3qk6dij1g:h2ts:1066",
+      "ts": "2026-10-28T11:26:47.332Z",
       "kind": "record",
       "op": "upsert",
-      "key": "497f7e23-27c4-42fe-a524-cbea7d84dd39",
+      "key": "ccc43823-c25e-43eb-8960-acac9f10dc3b",
       "patch": {
-        "id": "497f7e23-27c4-42fe-a524-cbea7d84dd39",
+        "id": "ccc43823-c25e-43eb-8960-acac9f10dc3b",
         "type": "in",
-        "productId": "e9a6909c-394c-40e6-aec0-e8b60deed073",
-        "productName": "九阳羽衣甘蓝轻食豆花粉",
+        "productId": "d9bc4254-02c3-4255-a419-d56e059bb79a",
+        "productName": "天津什福来小粒黄冰糖",
         "barcode": "",
         "quantity": 1,
         "detail": "新增入库 +1",
         "unitPrice": 0,
-        "netContent": "182克7袋",
+        "netContent": "300克",
         "reason": "",
-        "createdAt": "2026-10-26T14:43:54.767Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:mh3p:1033",
-      "ts": "2026-10-27T07:59:28.343Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "389b6ccf-1f2d-4066-a532-3ffab002f514",
-      "patch": {
-        "id": "389b6ccf-1f2d-4066-a532-3ffab002f514",
-        "name": "红牛",
-        "barcode": "",
-        "location": "餐边柜",
-        "category": "零食饮料",
-        "stockInDate": "2026-10-27",
-        "productionDate": "2026-09-21",
-        "expiryDate": "2028-03-20",
-        "shelfLife": "546天",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "250毫升",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-10-27T07:59:28.321Z",
-        "updatedAt": "2026-10-27T07:59:28.321Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:mh3p:1034",
-      "ts": "2026-10-27T07:59:28.345Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "6622fcc6-dd47-456c-881b-7b33c4399aab",
-      "patch": {
-        "id": "6622fcc6-dd47-456c-881b-7b33c4399aab",
-        "type": "in",
-        "productId": "389b6ccf-1f2d-4066-a532-3ffab002f514",
-        "productName": "红牛",
-        "barcode": "",
-        "quantity": 1,
-        "detail": "新增入库 +1",
-        "unitPrice": 0,
-        "netContent": "250毫升",
-        "reason": "",
-        "createdAt": "2026-10-27T07:59:28.322Z"
+        "createdAt": "2026-10-28T11:26:47.309Z"
       }
     }
   ],
@@ -1076,20 +892,6 @@
         "price": ""
       },
       {
-        "id": "e5d76e65-1fb3-4b46-ae7f-0dfbbb812c8a",
-        "name": "洋一片贵州特产手工洋芋片 番茄味",
-        "barcode": "",
-        "location": "",
-        "category": "零食",
-        "stockInDate": "2026-08-24",
-        "productionDate": "2026-08-23",
-        "expiryDate": "2026-09-22",
-        "shelfLife": "30",
-        "quantity": 1,
-        "createdAt": "2026-08-24T02:53:51.052Z",
-        "updatedAt": "2026-08-24T02:55:11.300Z"
-      },
-      {
         "id": "bf034fc5-7d7d-4312-a565-4ab003391d2e",
         "name": "抹茶雪花酥",
         "barcode": "",
@@ -1102,20 +904,6 @@
         "quantity": 1,
         "createdAt": "2026-08-24T02:54:37.842Z",
         "updatedAt": "2026-08-24T02:54:37.842Z"
-      },
-      {
-        "id": "5486b2fe-44a1-4692-84ba-9816cd2fa8cf",
-        "name": "洋一片贵州特产手工洋芋片 海苔味",
-        "barcode": "",
-        "location": "",
-        "category": "零食",
-        "stockInDate": "2026-08-24",
-        "productionDate": "2026-08-23",
-        "expiryDate": "2026-09-22",
-        "shelfLife": "30",
-        "quantity": 1,
-        "createdAt": "2026-08-24T02:58:52.437Z",
-        "updatedAt": "2026-08-24T02:58:52.437Z"
       },
       {
         "id": "f5a3ca17-d850-4fa9-950a-58e0cd0dde92",
@@ -1621,27 +1409,6 @@
         "note": "",
         "createdAt": "2026-09-13T10:35:44.466Z",
         "updatedAt": "2026-09-13T10:35:44.466Z"
-      },
-      {
-        "id": "1edab6cc-b12c-46af-84a1-e351908d0732",
-        "name": "阿拉比卡咖啡拿铁",
-        "barcode": "6975382535690",
-        "location": "餐厅阳台",
-        "category": "乳品蛋类",
-        "stockInDate": "2026-09-13",
-        "productionDate": "2026-09-07",
-        "expiryDate": "2026-11-06",
-        "shelfLife": "",
-        "quantity": 2,
-        "brand": "海河乳品",
-        "spec": "",
-        "netContent": "220ml",
-        "manufacturer": "天津海河乳品有限公司",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-13T10:45:10.603Z",
-        "updatedAt": "2026-09-13T10:45:10.603Z"
       },
       {
         "id": "59fd6267-1709-4b56-bfb9-73eed9028938",
@@ -2482,27 +2249,6 @@
         "note": "",
         "createdAt": "2026-09-26T09:54:40.796Z",
         "updatedAt": "2026-09-26T09:54:40.796Z"
-      },
-      {
-        "id": "f71047fd-cf88-4910-993b-d162da3c63c9",
-        "name": "秋月梨",
-        "barcode": "",
-        "location": "餐厅阳台",
-        "category": "水果",
-        "stockInDate": "2026-09-26",
-        "productionDate": "2026-09-26",
-        "expiryDate": "2026-10-03",
-        "shelfLife": "7天",
-        "quantity": 4,
-        "brand": "",
-        "spec": "",
-        "netContent": "",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-26T09:54:58.822Z",
-        "updatedAt": "2026-09-26T09:54:58.822Z"
       },
       {
         "id": "2eafee8a-fa02-4ebd-ae4c-d163b3708576",
@@ -3847,6 +3593,90 @@
         "note": "",
         "createdAt": "2026-10-27T07:59:28.321Z",
         "updatedAt": "2026-10-27T07:59:28.321Z"
+      },
+      {
+        "id": "e8c5b4e6-e9c5-4ed3-a268-b551e16e9305",
+        "name": "干货福建宁德朵型银耳",
+        "barcode": "",
+        "location": "阳台调料区",
+        "category": "食品",
+        "stockInDate": "2026-10-27",
+        "productionDate": "2026-09-13",
+        "expiryDate": "2027-12-13",
+        "shelfLife": "15个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "100克",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-27T15:58:52.954Z",
+        "updatedAt": "2026-10-27T15:58:52.954Z"
+      },
+      {
+        "id": "a39faa5c-1e34-4d85-9bb8-35737f14d7d4",
+        "name": "盒马烟熏智利三文鱼切片",
+        "barcode": "",
+        "location": "冷冻海鲜抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-10-28",
+        "productionDate": "2026-07-07",
+        "expiryDate": "2028-07-07",
+        "shelfLife": "2年",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "100克",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-28T10:54:03.470Z",
+        "updatedAt": "2026-10-28T10:54:03.470Z"
+      },
+      {
+        "id": "bb32a53c-eb29-4784-b5f9-87b7d8ed9900",
+        "name": "盒马智利三文鱼扒",
+        "barcode": "",
+        "location": "冷冻海鲜抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-10-28",
+        "productionDate": "2026-09-05",
+        "expiryDate": "2028-03-04",
+        "shelfLife": "546天",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "300克",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-28T10:55:08.935Z",
+        "updatedAt": "2026-10-28T10:55:08.935Z"
+      },
+      {
+        "id": "d9bc4254-02c3-4255-a419-d56e059bb79a",
+        "name": "天津什福来小粒黄冰糖",
+        "barcode": "",
+        "location": "餐边柜",
+        "category": "调味品",
+        "stockInDate": "2026-10-28",
+        "productionDate": "2024-05-01",
+        "expiryDate": "2025-11-01",
+        "shelfLife": "18个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "300克",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-10-28T11:26:47.309Z",
+        "updatedAt": "2026-10-28T11:26:47.309Z"
       }
     ],
     "records": [
@@ -11376,6 +11206,162 @@
         "netContent": "250毫升",
         "reason": "",
         "createdAt": "2026-10-27T07:59:28.322Z"
+      },
+      {
+        "id": "08679f1b-3c9b-4bd5-9a60-06a26a3784e0",
+        "type": "in",
+        "productId": "e8c5b4e6-e9c5-4ed3-a268-b551e16e9305",
+        "productName": "干货福建宁德朵型银耳",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "100克",
+        "reason": "",
+        "createdAt": "2026-10-27T15:58:52.955Z"
+      },
+      {
+        "id": "c1521f3f-eb06-4b7e-ad8b-ad5f7f8b3693",
+        "type": "in",
+        "productId": "a39faa5c-1e34-4d85-9bb8-35737f14d7d4",
+        "productName": "盒马烟熏智利三文鱼切片",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "100克",
+        "reason": "",
+        "createdAt": "2026-10-28T10:54:03.471Z"
+      },
+      {
+        "id": "ddbb0746-df4d-4334-b773-fae5925f02aa",
+        "type": "in",
+        "productId": "bb32a53c-eb29-4784-b5f9-87b7d8ed9900",
+        "productName": "盒马智利三文鱼扒",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "300克",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:08.935Z"
+      },
+      {
+        "id": "29b8a2d8-e567-463a-ac38-3df8122d24bb",
+        "type": "eat",
+        "productId": "e5d76e65-1fb3-4b46-ae7f-0dfbbb812c8a",
+        "productName": "洋一片贵州特产手工洋芋片 番茄味",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:31.349Z"
+      },
+      {
+        "id": "dd73ec32-124e-4bbf-876f-a8fe919a5ec6",
+        "type": "eat",
+        "productId": "5486b2fe-44a1-4692-84ba-9816cd2fa8cf",
+        "productName": "洋一片贵州特产手工洋芋片 海苔味",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:34.117Z"
+      },
+      {
+        "id": "77ff056d-cb54-4fbf-8acf-502e299978a1",
+        "type": "eat",
+        "productId": "f71047fd-cf88-4910-993b-d162da3c63c9",
+        "productName": "秋月梨",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:41.025Z"
+      },
+      {
+        "id": "e61a6fb9-c7f5-45a6-b9b1-f4c64e1e80b2",
+        "type": "eat",
+        "productId": "f71047fd-cf88-4910-993b-d162da3c63c9",
+        "productName": "秋月梨",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:42.972Z"
+      },
+      {
+        "id": "836c42af-7f43-4c52-bf31-d8f7ce54d455",
+        "type": "eat",
+        "productId": "f71047fd-cf88-4910-993b-d162da3c63c9",
+        "productName": "秋月梨",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:44.689Z"
+      },
+      {
+        "id": "48740813-9524-40d6-9c73-3c4a15ec70d6",
+        "type": "eat",
+        "productId": "f71047fd-cf88-4910-993b-d162da3c63c9",
+        "productName": "秋月梨",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:46.322Z"
+      },
+      {
+        "id": "4dc6fd70-eec9-4f96-b460-36e75ded9a2e",
+        "type": "eat",
+        "productId": "1edab6cc-b12c-46af-84a1-e351908d0732",
+        "productName": "阿拉比卡咖啡拿铁",
+        "barcode": "6975382535690",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "220ml",
+        "reason": "",
+        "createdAt": "2026-10-28T10:55:59.120Z"
+      },
+      {
+        "id": "cee11c00-7a5c-428d-beba-dc59a249e0c6",
+        "type": "eat",
+        "productId": "1edab6cc-b12c-46af-84a1-e351908d0732",
+        "productName": "阿拉比卡咖啡拿铁",
+        "barcode": "6975382535690",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "220ml",
+        "reason": "",
+        "createdAt": "2026-10-28T10:56:00.815Z"
+      },
+      {
+        "id": "ccc43823-c25e-43eb-8960-acac9f10dc3b",
+        "type": "in",
+        "productId": "d9bc4254-02c3-4255-a419-d56e059bb79a",
+        "productName": "天津什福来小粒黄冰糖",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "300克",
+        "reason": "",
+        "createdAt": "2026-10-28T11:26:47.309Z"
       }
     ],
     "settings": {
@@ -11454,7 +11440,7 @@
       "ocrEngine": "tesseract",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu0mi3qk6dij1g:mh3p:1034",
+    "upToId": "dev-mu0mi3qk6dij1g:h2ts:1066",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -12350,7 +12336,23 @@
       "product:e9a6909c-394c-40e6-aec0-e8b60deed073",
       "record:497f7e23-27c4-42fe-a524-cbea7d84dd39",
       "product:389b6ccf-1f2d-4066-a532-3ffab002f514",
-      "record:6622fcc6-dd47-456c-881b-7b33c4399aab"
+      "record:6622fcc6-dd47-456c-881b-7b33c4399aab",
+      "product:e8c5b4e6-e9c5-4ed3-a268-b551e16e9305",
+      "record:08679f1b-3c9b-4bd5-9a60-06a26a3784e0",
+      "product:a39faa5c-1e34-4d85-9bb8-35737f14d7d4",
+      "record:c1521f3f-eb06-4b7e-ad8b-ad5f7f8b3693",
+      "product:bb32a53c-eb29-4784-b5f9-87b7d8ed9900",
+      "record:ddbb0746-df4d-4334-b773-fae5925f02aa",
+      "record:29b8a2d8-e567-463a-ac38-3df8122d24bb",
+      "record:dd73ec32-124e-4bbf-876f-a8fe919a5ec6",
+      "record:77ff056d-cb54-4fbf-8acf-502e299978a1",
+      "record:e61a6fb9-c7f5-45a6-b9b1-f4c64e1e80b2",
+      "record:836c42af-7f43-4c52-bf31-d8f7ce54d455",
+      "record:48740813-9524-40d6-9c73-3c4a15ec70d6",
+      "record:4dc6fd70-eec9-4f96-b460-36e75ded9a2e",
+      "record:cee11c00-7a5c-428d-beba-dc59a249e0c6",
+      "product:d9bc4254-02c3-4255-a419-d56e059bb79a",
+      "record:ccc43823-c25e-43eb-8960-acac9f10dc3b"
     ]
   },
   "barcodeCache": {
