@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-10-30T12:09:01.655Z",
+  "syncedAt": "2026-10-31T08:42:16.505Z",
   "events": [
     {
       "id": "dev-mu0mi3qk6dij1g:cb8m:1083",
@@ -378,6 +378,85 @@
         "reason": "",
         "createdAt": "2026-10-30T12:08:45.857Z"
       }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:hqmp:581",
+      "ts": "2026-10-31T05:00:29.946Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "fontScale",
+      "patch": "large"
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:hqmp:582",
+      "ts": "2026-10-31T05:00:29.947Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "ocrEngine",
+      "patch": "paddle"
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:hqmp:583",
+      "ts": "2026-10-31T05:00:41.078Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "3eab336a-7c26-449f-8cdb-889e89371c2c",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:hqmp:584",
+      "ts": "2026-10-31T05:00:41.113Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "3eab336a-7c26-449f-8cdb-889e89371c2c",
+      "patch": null
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:hqmp:585",
+      "ts": "2026-10-31T05:00:41.115Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "22553293-5c96-40fd-b84f-efd8aee3890e",
+      "patch": {
+        "id": "22553293-5c96-40fd-b84f-efd8aee3890e",
+        "type": "eat",
+        "productId": "3eab336a-7c26-449f-8cdb-889e89371c2c",
+        "productName": "盒马猪肉玉米水饺🥟",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "1000g/50只",
+        "reason": "",
+        "createdAt": "2026-10-31T05:00:41.079Z"
+      }
+    },
+    {
+      "id": "dev-mu15jd1y7fj2if:ci5f:615",
+      "ts": "2026-10-31T07:04:55.840Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "fontScale",
+      "patch": "normal"
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:6xqp:586",
+      "ts": "2026-10-31T08:41:52.443Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "fontScale",
+      "patch": "large"
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:6xqp:587",
+      "ts": "2026-10-31T08:42:01.028Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "fontScale",
+      "patch": "normal"
     }
   ],
   "snapshot": {
@@ -1806,27 +1885,6 @@
         "updatedAt": "2026-09-22T00:47:11.645Z"
       },
       {
-        "id": "3eab336a-7c26-449f-8cdb-889e89371c2c",
-        "name": "盒马猪肉玉米水饺🥟",
-        "barcode": "",
-        "location": "冷冻熟食抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-09-20",
-        "productionDate": "2025-11-25",
-        "expiryDate": "2026-11-25",
-        "shelfLife": "12个月",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "1000g/50只",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-20T04:00:39.030Z",
-        "updatedAt": "2026-09-20T04:00:39.030Z"
-      },
-      {
         "id": "4620ab71-4010-4f3e-b97f-51463adbeb30",
         "name": "盒马黑猪肉小笼包",
         "barcode": "",
@@ -3213,27 +3271,6 @@
         "updatedAt": "2026-10-21T13:56:06.180Z"
       },
       {
-        "id": "d15bacb7-bcdd-43db-8909-7ecd3137c402",
-        "name": "山海海胆飞鱼籽水饺",
-        "barcode": "6973823294397",
-        "location": "冷冻面食抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-10-21",
-        "productionDate": "2026-09-23",
-        "expiryDate": "2027-06-22",
-        "shelfLife": "272天",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-10-21T13:57:37.314Z",
-        "updatedAt": "2026-10-21T13:57:37.314Z"
-      },
-      {
         "id": "813a8920-e030-4ef1-9f86-6d75b371a61e",
         "name": "胡椒猪肚鸡",
         "barcode": "6950967313573",
@@ -3316,27 +3353,6 @@
         "note": "",
         "createdAt": "2026-10-25T04:14:56.420Z",
         "updatedAt": "2026-10-25T04:14:56.420Z"
-      },
-      {
-        "id": "4eb39a01-21c2-4f3a-a8ee-fc47bb6e60eb",
-        "name": "盒马海胆飞鱼籽水饺🥟",
-        "barcode": "",
-        "location": "冷冻熟食抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-10-25",
-        "productionDate": "2026-09-23",
-        "expiryDate": "2027-06-22",
-        "shelfLife": "272天",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "360克18只",
-        "manufacturer": "",
-        "price": 29.9,
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-10-25T04:17:43.615Z",
-        "updatedAt": "2026-10-25T04:17:43.615Z"
       },
       {
         "id": "0c7c8c07-b4cd-4ff8-bba4-d44580db0921",
@@ -11813,6 +11829,45 @@
         "netContent": "30克",
         "reason": "",
         "createdAt": "2026-10-30T12:08:22.780Z"
+      },
+      {
+        "id": "3e29811f-a593-497b-84c5-d10bfe33142a",
+        "type": "eat",
+        "productId": "d15bacb7-bcdd-43db-8909-7ecd3137c402",
+        "productName": "山海海胆飞鱼籽水饺",
+        "barcode": "6973823294397",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-10-30T12:08:43.453Z"
+      },
+      {
+        "id": "8613547b-69f1-4d8c-845a-c00b1d58c031",
+        "type": "eat",
+        "productId": "4eb39a01-21c2-4f3a-a8ee-fc47bb6e60eb",
+        "productName": "盒马海胆飞鱼籽水饺🥟",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "360克18只",
+        "reason": "",
+        "createdAt": "2026-10-30T12:08:45.857Z"
+      },
+      {
+        "id": "22553293-5c96-40fd-b84f-efd8aee3890e",
+        "type": "eat",
+        "productId": "3eab336a-7c26-449f-8cdb-889e89371c2c",
+        "productName": "盒马猪肉玉米水饺🥟",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "1000g/50只",
+        "reason": "",
+        "createdAt": "2026-10-31T05:00:41.079Z"
       }
     ],
     "settings": {
@@ -11888,10 +11943,10 @@
       "nameCleanCustom": "",
       "nameCleanWhitelist": "",
       "fontScale": "normal",
-      "ocrEngine": "tesseract",
+      "ocrEngine": "paddle",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu0mi3qk6dij1g:cb8m:1082",
+    "upToId": "dev-mu1udqqh6nbern:6xqp:587",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -12829,7 +12884,10 @@
       "record:77e842b7-5a13-45dc-b101-e703689d8a47",
       "product:a482ea33-002c-4244-a2f8-d514a9c2fe3e",
       "record:d78634ee-9039-4b18-94a8-bbfc95fd0b36",
-      "record:7eb403a4-d53c-4df6-8c12-bf5e1f4289dc"
+      "record:7eb403a4-d53c-4df6-8c12-bf5e1f4289dc",
+      "record:3e29811f-a593-497b-84c5-d10bfe33142a",
+      "record:8613547b-69f1-4d8c-845a-c00b1d58c031",
+      "record:22553293-5c96-40fd-b84f-efd8aee3890e"
     ]
   },
   "barcodeCache": {
