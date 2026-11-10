@@ -1,470 +1,304 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-08T14:35:37.375Z",
+  "syncedAt": "2026-11-09T13:21:57.712Z",
   "events": [
     {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1212",
-      "ts": "2026-11-08T12:39:40.100Z",
+      "id": "dev-mu0mi3qk6dij1g:ugps:1250",
+      "ts": "2026-11-09T10:22:11.612Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "a708f9c7-e391-4d31-ae72-aee2650d5fff",
+      "patch": {
+        "name": "乐吧迷你奥草莓味夹心饼干🍪",
+        "updatedAt": "2026-11-09T10:22:11.585Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:ugps:1251",
+      "ts": "2026-11-09T10:22:11.613Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "9be8dd9b-2bb7-417f-b12d-f03d30c8779a",
+      "patch": {
+        "id": "9be8dd9b-2bb7-417f-b12d-f03d30c8779a",
+        "type": "adjust",
+        "productId": "a708f9c7-e391-4d31-ae72-aee2650d5fff",
+        "productName": "乐吧迷你奥草莓味夹心饼干🍪",
+        "barcode": "",
+        "quantity": 0,
+        "detail": "名称：迷你奥草莓味夹心饼干🍪 → 乐吧迷你奥草莓味夹心饼干🍪",
+        "unitPrice": 0,
+        "netContent": "114克",
+        "reason": "",
+        "createdAt": "2026-11-09T10:22:11.586Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:ugps:1252",
+      "ts": "2026-11-09T10:22:24.415Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "7bb1ea54-883b-49a3-986f-d586d0665797",
+      "patch": {
+        "name": "乐吧迷你奥阳光柠檬味夹心饼干🍪",
+        "updatedAt": "2026-11-09T10:22:24.390Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:ugps:1253",
+      "ts": "2026-11-09T10:22:24.417Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "49e4c05e-5da1-4fe1-9e13-88b9eebc98c3",
+      "patch": {
+        "id": "49e4c05e-5da1-4fe1-9e13-88b9eebc98c3",
+        "type": "adjust",
+        "productId": "7bb1ea54-883b-49a3-986f-d586d0665797",
+        "productName": "乐吧迷你奥阳光柠檬味夹心饼干🍪",
+        "barcode": "",
+        "quantity": 0,
+        "detail": "名称：乐吧迷你奥阳光柠檬味夹心饼干 → 乐吧迷你奥阳光柠檬味夹心饼干🍪",
+        "unitPrice": 0,
+        "netContent": "114克共3包",
+        "reason": "",
+        "createdAt": "2026-11-09T10:22:24.390Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:ugps:1254",
+      "ts": "2026-11-09T10:23:06.828Z",
       "kind": "product",
       "op": "delta",
-      "key": "df7b32b1-f948-4926-a2a4-deb757dc52f1",
+      "key": "1745a5d6-ab4f-4021-8e77-85b61e8ecfd8",
       "patch": {
         "delta": -1,
         "quantity": 0
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1213",
-      "ts": "2026-11-08T12:39:40.130Z",
+      "id": "dev-mu0mi3qk6dij1g:ugps:1255",
+      "ts": "2026-11-09T10:23:06.857Z",
       "kind": "product",
       "op": "delete",
-      "key": "df7b32b1-f948-4926-a2a4-deb757dc52f1",
+      "key": "1745a5d6-ab4f-4021-8e77-85b61e8ecfd8",
       "patch": null
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1214",
-      "ts": "2026-11-08T12:39:40.132Z",
+      "id": "dev-mu0mi3qk6dij1g:ugps:1256",
+      "ts": "2026-11-09T10:23:06.858Z",
       "kind": "record",
       "op": "upsert",
-      "key": "72e7481a-0383-46c8-9e4f-7d547b4fcc9e",
+      "key": "52b8df80-4398-4404-893f-668fa56d33bf",
       "patch": {
-        "id": "72e7481a-0383-46c8-9e4f-7d547b4fcc9e",
+        "id": "52b8df80-4398-4404-893f-668fa56d33bf",
         "type": "eat",
-        "productId": "df7b32b1-f948-4926-a2a4-deb757dc52f1",
-        "productName": "好巧荔枝低糖汽水🥤",
+        "productId": "1745a5d6-ab4f-4021-8e77-85b61e8ecfd8",
+        "productName": "正大美味黑胡椒鸡块🐔",
         "barcode": "",
         "quantity": -1,
         "detail": "正常吃完 -1",
         "unitPrice": 0,
-        "netContent": "330毫升",
+        "netContent": "300g",
         "reason": "",
-        "createdAt": "2026-11-08T12:39:40.102Z"
+        "createdAt": "2026-11-09T10:23:06.829Z"
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1215",
-      "ts": "2026-11-08T12:53:09.838Z",
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1257",
+      "ts": "2026-11-09T11:31:24.257Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1258",
+      "ts": "2026-11-09T11:31:24.284Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1259",
+      "ts": "2026-11-09T11:31:24.285Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "40dc18dc-023c-4657-9238-f110afe79e4b",
+      "patch": {
+        "id": "40dc18dc-023c-4657-9238-f110afe79e4b",
+        "type": "eat",
+        "productId": "d5e515ef-03c2-4725-998e-be1ee1615398",
+        "productName": "冷冻带头带壳生南美白虾1盒",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "30-45只",
+        "reason": "",
+        "createdAt": "2026-11-09T11:31:24.258Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1260",
+      "ts": "2026-11-09T11:32:08.414Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1261",
+      "ts": "2026-11-09T11:32:08.442Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1262",
+      "ts": "2026-11-09T11:32:08.444Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "cc08d838-7af7-4676-8738-b08d06e2c485",
+      "patch": {
+        "id": "cc08d838-7af7-4676-8738-b08d06e2c485",
+        "type": "eat",
+        "productId": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
+        "productName": "盒马南美洲白虾仁🦐",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "150g",
+        "reason": "",
+        "createdAt": "2026-11-09T11:32:08.415Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1263",
+      "ts": "2026-11-09T11:34:12.031Z",
       "kind": "product",
       "op": "upsert",
-      "key": "8d0cafda-f4b0-40cc-984d-6de1bd23c838",
+      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
       "patch": {
-        "id": "8d0cafda-f4b0-40cc-984d-6de1bd23c838",
-        "name": "盒马无蔗糖酸奶",
+        "id": "d5e515ef-03c2-4725-998e-be1ee1615398",
+        "name": "冷冻带头带壳生南美白虾1盒",
         "barcode": "",
-        "location": "冷藏",
-        "category": "零食饮料",
-        "stockInDate": "2026-11-08",
-        "productionDate": "2026-10-28",
-        "expiryDate": "2026-11-22",
-        "shelfLife": "25天",
-        "quantity": 5,
+        "location": "冷冻海鲜抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-09-24",
+        "productionDate": "2026-01-20",
+        "expiryDate": "2028-01-20",
+        "shelfLife": "2年",
+        "quantity": 1,
         "brand": "",
         "spec": "",
-        "netContent": "150克",
+        "netContent": "30-45只",
+        "manufacturer": "",
+        "price": 90,
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-09-24T11:43:57.718Z",
+        "updatedAt": "2026-11-09T11:34:11.999Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1264",
+      "ts": "2026-11-09T11:34:12.033Z",
+      "kind": "record",
+      "op": "delete",
+      "key": "40dc18dc-023c-4657-9238-f110afe79e4b",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1265",
+      "ts": "2026-11-09T11:34:38.307Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
+      "patch": {
+        "id": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
+        "name": "盒马南美洲白虾仁🦐",
+        "barcode": "",
+        "location": "冷冻海鲜抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-09-20",
+        "productionDate": "2026-08-11",
+        "expiryDate": "2028-02-11",
+        "shelfLife": "18个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "150g",
         "manufacturer": "",
         "price": "",
         "imageUrl": "",
         "note": "",
-        "createdAt": "2026-11-08T12:53:09.815Z",
-        "updatedAt": "2026-11-08T12:53:09.815Z"
+        "createdAt": "2026-09-20T03:23:59.883Z",
+        "updatedAt": "2026-11-09T11:34:38.277Z"
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1216",
-      "ts": "2026-11-08T12:53:09.840Z",
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1266",
+      "ts": "2026-11-09T11:34:38.309Z",
+      "kind": "record",
+      "op": "delete",
+      "key": "cc08d838-7af7-4676-8738-b08d06e2c485",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1267",
+      "ts": "2026-11-09T11:34:49.266Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1268",
+      "ts": "2026-11-09T11:34:49.293Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:2l7l:1269",
+      "ts": "2026-11-09T11:34:49.295Z",
       "kind": "record",
       "op": "upsert",
-      "key": "66670484-cddc-4493-9f0d-b87e992d8c86",
+      "key": "cf33bca0-a313-44a9-8cc7-133f70168aa4",
       "patch": {
-        "id": "66670484-cddc-4493-9f0d-b87e992d8c86",
-        "type": "in",
-        "productId": "8d0cafda-f4b0-40cc-984d-6de1bd23c838",
-        "productName": "盒马无蔗糖酸奶",
+        "id": "cf33bca0-a313-44a9-8cc7-133f70168aa4",
+        "type": "eat",
+        "productId": "d5e515ef-03c2-4725-998e-be1ee1615398",
+        "productName": "冷冻带头带壳生南美白虾1盒",
         "barcode": "",
-        "quantity": 5,
-        "detail": "新增入库 +5",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
         "unitPrice": 0,
-        "netContent": "150克",
+        "netContent": "30-45只",
         "reason": "",
-        "createdAt": "2026-11-08T12:53:09.816Z"
+        "createdAt": "2026-11-09T11:34:49.267Z"
       }
     },
     {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1217",
-      "ts": "2026-11-08T14:22:00.510Z",
+      "id": "dev-mu5ocmscszpwzu:3d86:135",
+      "ts": "2026-11-09T13:21:56.865Z",
       "kind": "setting",
       "op": "upsert",
-      "key": "places",
-      "patch": [
-        {
-          "name": "厨房",
-          "zones": [
-            "橱柜左3",
-            "阳台调料区"
-          ],
-          "partitioned": true,
-          "layout": ""
-        },
-        {
-          "name": "冰箱",
-          "zones": [
-            "冷藏",
-            "冷冻海鲜抽屉",
-            "冷冻熟食抽屉",
-            "冷冻面食抽屉",
-            "冷冻生肉抽屉",
-            "冷冻右上层"
-          ],
-          "partitioned": true,
-          "layout": ""
-        },
-        {
-          "name": "餐厅阳台",
-          "zones": [],
-          "partitioned": false,
-          "layout": ""
-        },
-        {
-          "name": "餐桌",
-          "zones": [],
-          "partitioned": false,
-          "layout": ""
-        },
-        {
-          "name": "餐边柜",
-          "zones": [],
-          "partitioned": false,
-          "layout": ""
-        },
-        {
-          "name": "书房储藏架",
-          "zones": [],
-          "partitioned": true,
-          "layout": ""
-        }
-      ]
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1218",
-      "ts": "2026-11-08T14:22:03.712Z",
-      "kind": "setting",
-      "op": "upsert",
-      "key": "places",
-      "patch": [
-        {
-          "name": "厨房",
-          "zones": [
-            "橱柜左3",
-            "阳台调料区"
-          ],
-          "partitioned": true,
-          "layout": ""
-        },
-        {
-          "name": "冰箱",
-          "zones": [
-            "冷藏",
-            "冷冻海鲜抽屉",
-            "冷冻熟食抽屉",
-            "冷冻面食抽屉",
-            "冷冻生肉抽屉",
-            "冷冻右上层"
-          ],
-          "partitioned": true,
-          "layout": ""
-        },
-        {
-          "name": "餐厅阳台",
-          "zones": [],
-          "partitioned": false,
-          "layout": ""
-        },
-        {
-          "name": "餐桌",
-          "zones": [],
-          "partitioned": false,
-          "layout": ""
-        },
-        {
-          "name": "餐边柜",
-          "zones": [],
-          "partitioned": false,
-          "layout": ""
-        },
-        {
-          "name": "书房储藏架",
-          "zones": [],
-          "partitioned": false,
-          "layout": ""
-        }
-      ]
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1219",
-      "ts": "2026-11-08T14:23:15.855Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "c8135f0e-a50f-4326-83d5-99e3ddbd09ad",
-      "patch": {
-        "id": "c8135f0e-a50f-4326-83d5-99e3ddbd09ad",
-        "name": "空刻经典番茄肉酱烩意大利面🍝",
-        "barcode": "",
-        "location": "书房储藏架",
-        "category": "面食",
-        "stockInDate": "2026-11-08",
-        "productionDate": "2026-01-15",
-        "expiryDate": "2026-10-15",
-        "shelfLife": "9个月",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "230克",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-11-08T14:23:15.833Z",
-        "updatedAt": "2026-11-08T14:23:15.833Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1220",
-      "ts": "2026-11-08T14:23:15.857Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "ddb88387-0589-4495-918e-a761d53cfc74",
-      "patch": {
-        "id": "ddb88387-0589-4495-918e-a761d53cfc74",
-        "type": "in",
-        "productId": "c8135f0e-a50f-4326-83d5-99e3ddbd09ad",
-        "productName": "空刻经典番茄肉酱烩意大利面🍝",
-        "barcode": "",
-        "quantity": 1,
-        "detail": "新增入库 +1",
-        "unitPrice": 0,
-        "netContent": "230克",
-        "reason": "",
-        "createdAt": "2026-11-08T14:23:15.834Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1221",
-      "ts": "2026-11-08T14:24:35.262Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "60327c93-26ce-44f8-b6ce-87ad198ad3da",
-      "patch": {
-        "id": "60327c93-26ce-44f8-b6ce-87ad198ad3da",
-        "name": "海底捞番茄🍅鸡蛋面🍜",
-        "barcode": "",
-        "location": "书房储藏架",
-        "category": "",
-        "stockInDate": "2026-11-08",
-        "productionDate": "2026-10-15",
-        "expiryDate": "2027-04-14",
-        "shelfLife": "181天",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "250克",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-11-08T14:24:35.240Z",
-        "updatedAt": "2026-11-08T14:24:35.240Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1222",
-      "ts": "2026-11-08T14:24:35.264Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "f5699d44-24b0-4710-9dcc-39e6c467cdc4",
-      "patch": {
-        "id": "f5699d44-24b0-4710-9dcc-39e6c467cdc4",
-        "type": "in",
-        "productId": "60327c93-26ce-44f8-b6ce-87ad198ad3da",
-        "productName": "海底捞番茄🍅鸡蛋面🍜",
-        "barcode": "",
-        "quantity": 1,
-        "detail": "新增入库 +1",
-        "unitPrice": 0,
-        "netContent": "250克",
-        "reason": "",
-        "createdAt": "2026-11-08T14:24:35.240Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1223",
-      "ts": "2026-11-08T14:30:52.269Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-      "patch": {
-        "delta": -1,
-        "quantity": 3
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1224",
-      "ts": "2026-11-08T14:30:52.297Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-      "patch": {
-        "updatedAt": "2026-11-08T14:30:52.268Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1225",
-      "ts": "2026-11-08T14:30:52.299Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "9a041bd4-83a7-499b-ad8f-8303f06fa62b",
-      "patch": {
-        "id": "9a041bd4-83a7-499b-ad8f-8303f06fa62b",
-        "type": "eat",
-        "productId": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-        "productName": "合味道标准杯猪骨浓汤风味杯面",
-        "barcode": "6917935002297",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "77克",
-        "reason": "",
-        "createdAt": "2026-11-08T14:30:52.270Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1226",
-      "ts": "2026-11-08T14:30:53.820Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-      "patch": {
-        "delta": -1,
-        "quantity": 2
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1227",
-      "ts": "2026-11-08T14:30:53.846Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-      "patch": {
-        "updatedAt": "2026-11-08T14:30:53.820Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1228",
-      "ts": "2026-11-08T14:30:53.848Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "2c66290d-96b5-4aa3-b85d-0099fac08e0f",
-      "patch": {
-        "id": "2c66290d-96b5-4aa3-b85d-0099fac08e0f",
-        "type": "eat",
-        "productId": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-        "productName": "合味道标准杯猪骨浓汤风味杯面",
-        "barcode": "6917935002297",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "77克",
-        "reason": "",
-        "createdAt": "2026-11-08T14:30:53.820Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1229",
-      "ts": "2026-11-08T14:30:55.402Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-      "patch": {
-        "delta": -1,
-        "quantity": 1
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1230",
-      "ts": "2026-11-08T14:30:55.430Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-      "patch": {
-        "updatedAt": "2026-11-08T14:30:55.402Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1231",
-      "ts": "2026-11-08T14:30:55.432Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "d31d5f8b-9df6-4e51-95e0-c50d9379b242",
-      "patch": {
-        "id": "d31d5f8b-9df6-4e51-95e0-c50d9379b242",
-        "type": "eat",
-        "productId": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-        "productName": "合味道标准杯猪骨浓汤风味杯面",
-        "barcode": "6917935002297",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "77克",
-        "reason": "",
-        "createdAt": "2026-11-08T14:30:55.403Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1232",
-      "ts": "2026-11-08T14:35:21.401Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "a524ed94-021e-45e3-b922-00c459e6bad9",
-      "patch": {
-        "id": "a524ed94-021e-45e3-b922-00c459e6bad9",
-        "name": "合味道海鲜杯面",
-        "barcode": "",
-        "location": "书房储藏架",
-        "category": "面食",
-        "stockInDate": "2026-11-08",
-        "productionDate": "",
-        "expiryDate": "2026-11-21",
-        "shelfLife": "6个月",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "136克",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-11-08T14:35:21.391Z",
-        "updatedAt": "2026-11-08T14:35:21.391Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:alvh:1233",
-      "ts": "2026-11-08T14:35:21.402Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "1b03019e-a599-4b38-a862-6261b4de520c",
-      "patch": {
-        "id": "1b03019e-a599-4b38-a862-6261b4de520c",
-        "type": "in",
-        "productId": "a524ed94-021e-45e3-b922-00c459e6bad9",
-        "productName": "合味道海鲜杯面",
-        "barcode": "",
-        "quantity": 1,
-        "detail": "新增入库 +1",
-        "unitPrice": 0,
-        "netContent": "136克",
-        "reason": "",
-        "createdAt": "2026-11-08T14:35:21.391Z"
-      }
+      "key": "ocrEngine",
+      "patch": "paddle"
     }
   ],
   "snapshot": {
@@ -1536,27 +1370,6 @@
         "updatedAt": "2026-09-15T14:52:03.743Z"
       },
       {
-        "id": "57cefc18-6c8d-41f9-9045-d06b97c288e6",
-        "name": "合味道标准杯猪骨浓汤风味杯面",
-        "barcode": "6917935002297",
-        "location": "",
-        "category": "粮油米面",
-        "stockInDate": "2026-09-16",
-        "productionDate": "2026-09-01",
-        "expiryDate": "2027-02-28",
-        "shelfLife": "180天",
-        "quantity": 1,
-        "brand": "合味道",
-        "spec": "77克",
-        "netContent": "77克",
-        "manufacturer": "广东顺德日清食品有限公司",
-        "price": "",
-        "imageUrl": "https://www.gds.org.cn/userfile/2021930/971933839.png",
-        "note": "",
-        "createdAt": "2026-09-16T14:59:43.642Z",
-        "updatedAt": "2026-11-08T14:30:55.402Z"
-      },
-      {
         "id": "204d067d-5762-47d4-ad99-f7dc911b3c8c",
         "name": "乐事环球臻选马铃薯片 意式番茄罗勒味",
         "barcode": "6924743935358",
@@ -1597,27 +1410,6 @@
         "note": "",
         "createdAt": "2026-09-17T15:34:30.804Z",
         "updatedAt": "2026-09-17T15:34:30.804Z"
-      },
-      {
-        "id": "1745a5d6-ab4f-4021-8e77-85b61e8ecfd8",
-        "name": "正大美味黑胡椒鸡块🐔",
-        "barcode": "",
-        "location": "冷冻生肉抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-09-20",
-        "productionDate": "2025-08-28",
-        "expiryDate": "2026-08-28",
-        "shelfLife": "12个月",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "300g",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-20T03:05:17.299Z",
-        "updatedAt": "2026-09-20T04:54:37.681Z"
       },
       {
         "id": "a39ccda5-71e5-4bb9-83a1-5d067d7cb5a4",
@@ -1681,27 +1473,6 @@
         "note": "",
         "createdAt": "2026-09-20T03:22:33.976Z",
         "updatedAt": "2026-09-20T04:23:29.517Z"
-      },
-      {
-        "id": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
-        "name": "盒马南美洲白虾仁🦐",
-        "barcode": "",
-        "location": "冷冻海鲜抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-09-20",
-        "productionDate": "2026-08-11",
-        "expiryDate": "2028-02-11",
-        "shelfLife": "18个月",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "150g",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-20T03:23:59.883Z",
-        "updatedAt": "2026-09-20T03:23:59.883Z"
       },
       {
         "id": "575c7ed8-3acc-4b03-b652-30d13875d104",
@@ -2206,27 +1977,6 @@
         "note": "",
         "createdAt": "2026-09-23T13:02:20.741Z",
         "updatedAt": "2026-09-23T13:02:20.741Z"
-      },
-      {
-        "id": "d5e515ef-03c2-4725-998e-be1ee1615398",
-        "name": "冷冻带头带壳生南美白虾1盒",
-        "barcode": "",
-        "location": "冷冻海鲜抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-09-24",
-        "productionDate": "2026-01-20",
-        "expiryDate": "2028-01-20",
-        "shelfLife": "2年",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "30-45只",
-        "manufacturer": "",
-        "price": 90,
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-24T11:43:57.718Z",
-        "updatedAt": "2026-09-24T11:43:57.718Z"
       },
       {
         "id": "73e58af7-f705-456b-974b-d2b607db8431",
@@ -3784,7 +3534,7 @@
       },
       {
         "id": "7bb1ea54-883b-49a3-986f-d586d0665797",
-        "name": "乐吧迷你奥阳光柠檬味夹心饼干",
+        "name": "乐吧迷你奥阳光柠檬味夹心饼干🍪",
         "barcode": "",
         "location": "餐边柜",
         "category": "零食饮料",
@@ -3801,7 +3551,7 @@
         "imageUrl": "",
         "note": "",
         "createdAt": "2026-10-30T09:40:16.049Z",
-        "updatedAt": "2026-10-30T09:40:16.049Z"
+        "updatedAt": "2026-11-09T10:22:24.390Z"
       },
       {
         "id": "ff4388c1-8544-4119-8f54-727e22c28dde",
@@ -3813,7 +3563,7 @@
         "productionDate": "2026-04-09",
         "expiryDate": "2027-04-09",
         "shelfLife": "1年",
-        "quantity": 2,
+        "quantity": 8,
         "brand": "",
         "spec": "",
         "netContent": "114克共3包",
@@ -3822,7 +3572,7 @@
         "imageUrl": "",
         "note": "",
         "createdAt": "2026-10-30T09:41:57.827Z",
-        "updatedAt": "2026-10-30T09:41:57.827Z"
+        "updatedAt": "2026-11-09T10:18:26.288Z"
       },
       {
         "id": "a482ea33-002c-4244-a2f8-d514a9c2fe3e",
@@ -4306,6 +4056,69 @@
         "note": "",
         "createdAt": "2026-11-08T14:35:21.391Z",
         "updatedAt": "2026-11-08T14:35:21.391Z"
+      },
+      {
+        "id": "00fb8192-43bb-47de-a633-ad959cb42286",
+        "name": "合味道冬阴功风味杯面🍜",
+        "barcode": "",
+        "location": "书房储藏架",
+        "category": "面食",
+        "stockInDate": "2026-11-08",
+        "productionDate": "",
+        "expiryDate": "2026-11-28",
+        "shelfLife": "6个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "136克",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-08T14:36:16.977Z",
+        "updatedAt": "2026-11-08T14:36:16.977Z"
+      },
+      {
+        "id": "a708f9c7-e391-4d31-ae72-aee2650d5fff",
+        "name": "乐吧迷你奥草莓味夹心饼干🍪",
+        "barcode": "",
+        "location": "餐边柜",
+        "category": "零食饮料",
+        "stockInDate": "2026-11-09",
+        "productionDate": "2026-04-06",
+        "expiryDate": "2027-04-06",
+        "shelfLife": "1年",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "114克",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-09T10:21:16.178Z",
+        "updatedAt": "2026-11-09T10:22:11.585Z"
+      },
+      {
+        "id": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
+        "name": "盒马南美洲白虾仁🦐",
+        "barcode": "",
+        "location": "冷冻海鲜抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-09-20",
+        "productionDate": "2026-08-11",
+        "expiryDate": "2028-02-11",
+        "shelfLife": "18个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "150g",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-09-20T03:23:59.883Z",
+        "updatedAt": "2026-11-09T11:34:38.277Z"
       }
     ],
     "records": [
@@ -12940,6 +12753,123 @@
         "netContent": "136克",
         "reason": "",
         "createdAt": "2026-11-08T14:35:21.391Z"
+      },
+      {
+        "id": "b4adbe4e-17d4-4204-b2bf-e1e08d44c5ef",
+        "type": "in",
+        "productId": "00fb8192-43bb-47de-a633-ad959cb42286",
+        "productName": "合味道冬阴功风味杯面🍜",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "136克",
+        "reason": "",
+        "createdAt": "2026-11-08T14:36:16.977Z"
+      },
+      {
+        "id": "90aaa35f-cb02-4bf1-82aa-f7c3fcf6c304",
+        "type": "in",
+        "productId": "ff4388c1-8544-4119-8f54-727e22c28dde",
+        "productName": "乐吧迷你奥巧克力味夹心饼干🍪",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "入库 +1",
+        "unitPrice": 0,
+        "netContent": "114克共3包",
+        "reason": "",
+        "createdAt": "2026-11-09T10:18:24.931Z"
+      },
+      {
+        "id": "fe4a595e-aebd-4b39-937a-2490ff968b55",
+        "type": "in",
+        "productId": "ff4388c1-8544-4119-8f54-727e22c28dde",
+        "productName": "乐吧迷你奥巧克力味夹心饼干🍪",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "入库 +1",
+        "unitPrice": 0,
+        "netContent": "114克共3包",
+        "reason": "",
+        "createdAt": "2026-11-09T10:18:26.289Z"
+      },
+      {
+        "id": "c4a3a88d-38df-44d9-8231-8869ef0de4fe",
+        "type": "in",
+        "productId": "a708f9c7-e391-4d31-ae72-aee2650d5fff",
+        "productName": "迷你奥草莓味夹心饼干🍪",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "114克",
+        "reason": "",
+        "createdAt": "2026-11-09T10:21:16.178Z"
+      },
+      {
+        "id": "7431305b-4305-45e9-8c42-fdbd505fbf2e",
+        "type": "adjust",
+        "productId": "a708f9c7-e391-4d31-ae72-aee2650d5fff",
+        "productName": "迷你奥草莓味夹心饼干🍪",
+        "barcode": "",
+        "quantity": 0,
+        "detail": "生产日期：2025-04-06 → 2026-04-06 · 到期日期：2026-04-06 → 2027-04-06",
+        "unitPrice": 0,
+        "netContent": "114克",
+        "reason": "",
+        "createdAt": "2026-11-09T10:21:36.752Z"
+      },
+      {
+        "id": "9be8dd9b-2bb7-417f-b12d-f03d30c8779a",
+        "type": "adjust",
+        "productId": "a708f9c7-e391-4d31-ae72-aee2650d5fff",
+        "productName": "乐吧迷你奥草莓味夹心饼干🍪",
+        "barcode": "",
+        "quantity": 0,
+        "detail": "名称：迷你奥草莓味夹心饼干🍪 → 乐吧迷你奥草莓味夹心饼干🍪",
+        "unitPrice": 0,
+        "netContent": "114克",
+        "reason": "",
+        "createdAt": "2026-11-09T10:22:11.586Z"
+      },
+      {
+        "id": "49e4c05e-5da1-4fe1-9e13-88b9eebc98c3",
+        "type": "adjust",
+        "productId": "7bb1ea54-883b-49a3-986f-d586d0665797",
+        "productName": "乐吧迷你奥阳光柠檬味夹心饼干🍪",
+        "barcode": "",
+        "quantity": 0,
+        "detail": "名称：乐吧迷你奥阳光柠檬味夹心饼干 → 乐吧迷你奥阳光柠檬味夹心饼干🍪",
+        "unitPrice": 0,
+        "netContent": "114克共3包",
+        "reason": "",
+        "createdAt": "2026-11-09T10:22:24.390Z"
+      },
+      {
+        "id": "52b8df80-4398-4404-893f-668fa56d33bf",
+        "type": "eat",
+        "productId": "1745a5d6-ab4f-4021-8e77-85b61e8ecfd8",
+        "productName": "正大美味黑胡椒鸡块🐔",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "300g",
+        "reason": "",
+        "createdAt": "2026-11-09T10:23:06.829Z"
+      },
+      {
+        "id": "cf33bca0-a313-44a9-8cc7-133f70168aa4",
+        "type": "eat",
+        "productId": "d5e515ef-03c2-4725-998e-be1ee1615398",
+        "productName": "冷冻带头带壳生南美白虾1盒",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "30-45只",
+        "reason": "",
+        "createdAt": "2026-11-09T11:34:49.267Z"
       }
     ],
     "settings": {
@@ -13021,10 +12951,10 @@
       "nameCleanCustom": "",
       "nameCleanWhitelist": "",
       "fontScale": "normal",
-      "ocrEngine": "tesseract",
+      "ocrEngine": "paddle",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu0mi3qk6dij1g:alvh:1233",
+    "upToId": "dev-mu5ocmscszpwzu:3d86:135",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -14046,7 +13976,20 @@
       "record:2c66290d-96b5-4aa3-b85d-0099fac08e0f",
       "record:d31d5f8b-9df6-4e51-95e0-c50d9379b242",
       "product:a524ed94-021e-45e3-b922-00c459e6bad9",
-      "record:1b03019e-a599-4b38-a862-6261b4de520c"
+      "record:1b03019e-a599-4b38-a862-6261b4de520c",
+      "product:00fb8192-43bb-47de-a633-ad959cb42286",
+      "record:b4adbe4e-17d4-4204-b2bf-e1e08d44c5ef",
+      "record:90aaa35f-cb02-4bf1-82aa-f7c3fcf6c304",
+      "record:fe4a595e-aebd-4b39-937a-2490ff968b55",
+      "product:a708f9c7-e391-4d31-ae72-aee2650d5fff",
+      "record:c4a3a88d-38df-44d9-8231-8869ef0de4fe",
+      "record:7431305b-4305-45e9-8c42-fdbd505fbf2e",
+      "record:9be8dd9b-2bb7-417f-b12d-f03d30c8779a",
+      "record:49e4c05e-5da1-4fe1-9e13-88b9eebc98c3",
+      "record:52b8df80-4398-4404-893f-668fa56d33bf",
+      "record:40dc18dc-023c-4657-9238-f110afe79e4b",
+      "record:cc08d838-7af7-4676-8738-b08d06e2c485",
+      "record:cf33bca0-a313-44a9-8cc7-133f70168aa4"
     ]
   },
   "barcodeCache": {
