@@ -1,158 +1,7 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-09T13:21:57.712Z",
+  "syncedAt": "2026-11-11T12:06:26.908Z",
   "events": [
-    {
-      "id": "dev-mu0mi3qk6dij1g:ugps:1250",
-      "ts": "2026-11-09T10:22:11.612Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "a708f9c7-e391-4d31-ae72-aee2650d5fff",
-      "patch": {
-        "name": "乐吧迷你奥草莓味夹心饼干🍪",
-        "updatedAt": "2026-11-09T10:22:11.585Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ugps:1251",
-      "ts": "2026-11-09T10:22:11.613Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "9be8dd9b-2bb7-417f-b12d-f03d30c8779a",
-      "patch": {
-        "id": "9be8dd9b-2bb7-417f-b12d-f03d30c8779a",
-        "type": "adjust",
-        "productId": "a708f9c7-e391-4d31-ae72-aee2650d5fff",
-        "productName": "乐吧迷你奥草莓味夹心饼干🍪",
-        "barcode": "",
-        "quantity": 0,
-        "detail": "名称：迷你奥草莓味夹心饼干🍪 → 乐吧迷你奥草莓味夹心饼干🍪",
-        "unitPrice": 0,
-        "netContent": "114克",
-        "reason": "",
-        "createdAt": "2026-11-09T10:22:11.586Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ugps:1252",
-      "ts": "2026-11-09T10:22:24.415Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "7bb1ea54-883b-49a3-986f-d586d0665797",
-      "patch": {
-        "name": "乐吧迷你奥阳光柠檬味夹心饼干🍪",
-        "updatedAt": "2026-11-09T10:22:24.390Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ugps:1253",
-      "ts": "2026-11-09T10:22:24.417Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "49e4c05e-5da1-4fe1-9e13-88b9eebc98c3",
-      "patch": {
-        "id": "49e4c05e-5da1-4fe1-9e13-88b9eebc98c3",
-        "type": "adjust",
-        "productId": "7bb1ea54-883b-49a3-986f-d586d0665797",
-        "productName": "乐吧迷你奥阳光柠檬味夹心饼干🍪",
-        "barcode": "",
-        "quantity": 0,
-        "detail": "名称：乐吧迷你奥阳光柠檬味夹心饼干 → 乐吧迷你奥阳光柠檬味夹心饼干🍪",
-        "unitPrice": 0,
-        "netContent": "114克共3包",
-        "reason": "",
-        "createdAt": "2026-11-09T10:22:24.390Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ugps:1254",
-      "ts": "2026-11-09T10:23:06.828Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "1745a5d6-ab4f-4021-8e77-85b61e8ecfd8",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ugps:1255",
-      "ts": "2026-11-09T10:23:06.857Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "1745a5d6-ab4f-4021-8e77-85b61e8ecfd8",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:ugps:1256",
-      "ts": "2026-11-09T10:23:06.858Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "52b8df80-4398-4404-893f-668fa56d33bf",
-      "patch": {
-        "id": "52b8df80-4398-4404-893f-668fa56d33bf",
-        "type": "eat",
-        "productId": "1745a5d6-ab4f-4021-8e77-85b61e8ecfd8",
-        "productName": "正大美味黑胡椒鸡块🐔",
-        "barcode": "",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "300g",
-        "reason": "",
-        "createdAt": "2026-11-09T10:23:06.829Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1257",
-      "ts": "2026-11-09T11:31:24.257Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1258",
-      "ts": "2026-11-09T11:31:24.284Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1259",
-      "ts": "2026-11-09T11:31:24.285Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "40dc18dc-023c-4657-9238-f110afe79e4b",
-      "patch": {
-        "id": "40dc18dc-023c-4657-9238-f110afe79e4b",
-        "type": "eat",
-        "productId": "d5e515ef-03c2-4725-998e-be1ee1615398",
-        "productName": "冷冻带头带壳生南美白虾1盒",
-        "barcode": "",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "30-45只",
-        "reason": "",
-        "createdAt": "2026-11-09T11:31:24.258Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1260",
-      "ts": "2026-11-09T11:32:08.414Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
     {
       "id": "dev-mu0mi3qk6dij1g:2l7l:1261",
       "ts": "2026-11-09T11:32:08.442Z",
@@ -299,6 +148,246 @@
       "op": "upsert",
       "key": "ocrEngine",
       "patch": "paddle"
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:5p5z:605",
+      "ts": "2026-11-11T11:27:17.723Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+      "patch": {
+        "id": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+        "name": "火腿芝士土豆泥薄饼",
+        "barcode": "6972693302140",
+        "location": "冷冻面食抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-09-29",
+        "expiryDate": "2027-09-28",
+        "shelfLife": "364天",
+        "quantity": 1,
+        "brand": "盒马",
+        "spec": "220克（110克×2）",
+        "netContent": "220克（110克×2）",
+        "manufacturer": "凡凡食品(上海)有限公司",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:27:17.686Z",
+        "updatedAt": "2026-11-11T11:27:17.686Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:5p5z:606",
+      "ts": "2026-11-11T11:27:17.724Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "95ee2576-176e-4da5-99ad-d498b27352e3",
+      "patch": {
+        "id": "95ee2576-176e-4da5-99ad-d498b27352e3",
+        "type": "in",
+        "productId": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+        "productName": "火腿芝士土豆泥薄饼",
+        "barcode": "6972693302140",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "220克（110克×2）",
+        "reason": "",
+        "createdAt": "2026-11-11T11:27:17.687Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:5p5z:607",
+      "ts": "2026-11-11T11:28:06.121Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "3d2407ea-fbba-4df7-a43e-b42c258a33cf",
+      "patch": {
+        "id": "3d2407ea-fbba-4df7-a43e-b42c258a33cf",
+        "name": "澳洲和牛M8-9雪花肥牛片",
+        "barcode": "6970036431519",
+        "location": "冷冻生肉抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-10-20",
+        "expiryDate": "2027-10-19",
+        "shelfLife": "364天",
+        "quantity": 1,
+        "brand": "帝皇鲜",
+        "spec": "",
+        "netContent": "",
+        "manufacturer": "上海正澳食品有限公司",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:28:06.085Z",
+        "updatedAt": "2026-11-11T11:28:06.085Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:5p5z:608",
+      "ts": "2026-11-11T11:28:06.123Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "0bd8087c-22b4-4123-b629-151f0bc22c47",
+      "patch": {
+        "id": "0bd8087c-22b4-4123-b629-151f0bc22c47",
+        "type": "in",
+        "productId": "3d2407ea-fbba-4df7-a43e-b42c258a33cf",
+        "productName": "澳洲和牛M8-9雪花肥牛片",
+        "barcode": "6970036431519",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-11-11T11:28:06.086Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:5p5z:609",
+      "ts": "2026-11-11T11:29:03.620Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "eb7f1965-cc3a-49d5-a204-4ec9206f2c22",
+      "patch": {
+        "id": "eb7f1965-cc3a-49d5-a204-4ec9206f2c22",
+        "name": "盒马酸奶油",
+        "barcode": "6927321722852",
+        "location": "冷藏",
+        "category": "零食饮料",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-11-04",
+        "expiryDate": "2026-12-02",
+        "shelfLife": "28天",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:29:03.587Z",
+        "updatedAt": "2026-11-11T11:29:03.587Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:5p5z:610",
+      "ts": "2026-11-11T11:29:03.622Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "286a1994-3f15-4197-88ec-e1ef22384375",
+      "patch": {
+        "id": "286a1994-3f15-4197-88ec-e1ef22384375",
+        "type": "in",
+        "productId": "eb7f1965-cc3a-49d5-a204-4ec9206f2c22",
+        "productName": "盒马酸奶油",
+        "barcode": "6927321722852",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-11-11T11:29:03.587Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:ujdh:611",
+      "ts": "2026-11-11T11:30:43.498Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "16a258e1-1f5d-4c11-9813-35ce286f7488",
+      "patch": {
+        "id": "16a258e1-1f5d-4c11-9813-35ce286f7488",
+        "name": "孝感原味酒酿",
+        "barcode": "",
+        "location": "冷藏",
+        "category": "调味品",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-09-29",
+        "expiryDate": "2027-06-28",
+        "shelfLife": "272天",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "400",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:30:43.468Z",
+        "updatedAt": "2026-11-11T11:30:43.469Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:ujdh:612",
+      "ts": "2026-11-11T11:30:43.500Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "014a9c48-20f7-422c-9138-7b606d1194c4",
+      "patch": {
+        "id": "014a9c48-20f7-422c-9138-7b606d1194c4",
+        "type": "in",
+        "productId": "16a258e1-1f5d-4c11-9813-35ce286f7488",
+        "productName": "孝感原味酒酿",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "400",
+        "reason": "",
+        "createdAt": "2026-11-11T11:30:43.469Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:ujdh:613",
+      "ts": "2026-11-11T11:37:25.853Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "09cab49a-e007-4ef1-9205-b631670e2863",
+      "patch": {
+        "id": "09cab49a-e007-4ef1-9205-b631670e2863",
+        "name": "日式寿喜烧调味汁",
+        "barcode": "6970270020388",
+        "location": "冷藏",
+        "category": "调味品",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-10-14",
+        "expiryDate": "2028-04-14",
+        "shelfLife": "18个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "583",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:37:25.819Z",
+        "updatedAt": "2026-11-11T11:37:25.819Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:ujdh:614",
+      "ts": "2026-11-11T11:37:25.856Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "c9846c0c-f925-40c4-a33f-7b3381628941",
+      "patch": {
+        "id": "c9846c0c-f925-40c4-a33f-7b3381628941",
+        "type": "in",
+        "productId": "09cab49a-e007-4ef1-9205-b631670e2863",
+        "productName": "日式寿喜烧调味汁",
+        "barcode": "6970270020388",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "583",
+        "reason": "",
+        "createdAt": "2026-11-11T11:37:25.820Z"
+      }
     }
   ],
   "snapshot": {
@@ -4109,7 +4198,7 @@
         "productionDate": "2026-08-11",
         "expiryDate": "2028-02-11",
         "shelfLife": "18个月",
-        "quantity": 1,
+        "quantity": 0,
         "brand": "",
         "spec": "",
         "netContent": "150g",
@@ -4119,6 +4208,90 @@
         "note": "",
         "createdAt": "2026-09-20T03:23:59.883Z",
         "updatedAt": "2026-11-09T11:34:38.277Z"
+      },
+      {
+        "id": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+        "name": "火腿芝士土豆泥薄饼",
+        "barcode": "6972693302140",
+        "location": "冷冻面食抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-09-29",
+        "expiryDate": "2027-09-28",
+        "shelfLife": "364天",
+        "quantity": 1,
+        "brand": "盒马",
+        "spec": "220克（110克×2）",
+        "netContent": "220克（110克×2）",
+        "manufacturer": "凡凡食品(上海)有限公司",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:27:17.686Z",
+        "updatedAt": "2026-11-11T11:27:17.686Z"
+      },
+      {
+        "id": "3d2407ea-fbba-4df7-a43e-b42c258a33cf",
+        "name": "澳洲和牛M8-9雪花肥牛片",
+        "barcode": "6970036431519",
+        "location": "冷冻生肉抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-10-20",
+        "expiryDate": "2027-10-19",
+        "shelfLife": "364天",
+        "quantity": 1,
+        "brand": "帝皇鲜",
+        "spec": "",
+        "netContent": "",
+        "manufacturer": "上海正澳食品有限公司",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:28:06.085Z",
+        "updatedAt": "2026-11-11T11:28:06.085Z"
+      },
+      {
+        "id": "eb7f1965-cc3a-49d5-a204-4ec9206f2c22",
+        "name": "盒马酸奶油",
+        "barcode": "6927321722852",
+        "location": "冷藏",
+        "category": "零食饮料",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-11-04",
+        "expiryDate": "2026-12-02",
+        "shelfLife": "28天",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:29:03.587Z",
+        "updatedAt": "2026-11-11T11:29:03.587Z"
+      },
+      {
+        "id": "16a258e1-1f5d-4c11-9813-35ce286f7488",
+        "name": "孝感原味酒酿",
+        "barcode": "",
+        "location": "冷藏",
+        "category": "调味品",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-09-29",
+        "expiryDate": "2027-06-28",
+        "shelfLife": "272天",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "400",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:30:43.468Z",
+        "updatedAt": "2026-11-11T11:30:43.469Z"
       }
     ],
     "records": [
@@ -12859,6 +13032,19 @@
         "createdAt": "2026-11-09T10:23:06.829Z"
       },
       {
+        "id": "40dc18dc-023c-4657-9238-f110afe79e4b",
+        "type": "eat",
+        "productId": "d5e515ef-03c2-4725-998e-be1ee1615398",
+        "productName": "冷冻带头带壳生南美白虾1盒",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "30-45只",
+        "reason": "",
+        "createdAt": "2026-11-09T11:31:24.258Z"
+      },
+      {
         "id": "cf33bca0-a313-44a9-8cc7-133f70168aa4",
         "type": "eat",
         "productId": "d5e515ef-03c2-4725-998e-be1ee1615398",
@@ -12870,6 +13056,58 @@
         "netContent": "30-45只",
         "reason": "",
         "createdAt": "2026-11-09T11:34:49.267Z"
+      },
+      {
+        "id": "95ee2576-176e-4da5-99ad-d498b27352e3",
+        "type": "in",
+        "productId": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+        "productName": "火腿芝士土豆泥薄饼",
+        "barcode": "6972693302140",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "220克（110克×2）",
+        "reason": "",
+        "createdAt": "2026-11-11T11:27:17.687Z"
+      },
+      {
+        "id": "0bd8087c-22b4-4123-b629-151f0bc22c47",
+        "type": "in",
+        "productId": "3d2407ea-fbba-4df7-a43e-b42c258a33cf",
+        "productName": "澳洲和牛M8-9雪花肥牛片",
+        "barcode": "6970036431519",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-11-11T11:28:06.086Z"
+      },
+      {
+        "id": "286a1994-3f15-4197-88ec-e1ef22384375",
+        "type": "in",
+        "productId": "eb7f1965-cc3a-49d5-a204-4ec9206f2c22",
+        "productName": "盒马酸奶油",
+        "barcode": "6927321722852",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-11-11T11:29:03.587Z"
+      },
+      {
+        "id": "014a9c48-20f7-422c-9138-7b606d1194c4",
+        "type": "in",
+        "productId": "16a258e1-1f5d-4c11-9813-35ce286f7488",
+        "productName": "孝感原味酒酿",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "400",
+        "reason": "",
+        "createdAt": "2026-11-11T11:30:43.469Z"
       }
     ],
     "settings": {
@@ -12954,7 +13192,7 @@
       "ocrEngine": "paddle",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu5ocmscszpwzu:3d86:135",
+    "upToId": "dev-mu0mi3qk6dij1g:2l7l:1260",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -13989,10 +14227,58 @@
       "record:52b8df80-4398-4404-893f-668fa56d33bf",
       "record:40dc18dc-023c-4657-9238-f110afe79e4b",
       "record:cc08d838-7af7-4676-8738-b08d06e2c485",
-      "record:cf33bca0-a313-44a9-8cc7-133f70168aa4"
+      "record:cf33bca0-a313-44a9-8cc7-133f70168aa4",
+      "product:da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+      "record:95ee2576-176e-4da5-99ad-d498b27352e3",
+      "product:3d2407ea-fbba-4df7-a43e-b42c258a33cf",
+      "record:0bd8087c-22b4-4123-b629-151f0bc22c47",
+      "product:eb7f1965-cc3a-49d5-a204-4ec9206f2c22",
+      "record:286a1994-3f15-4197-88ec-e1ef22384375",
+      "product:16a258e1-1f5d-4c11-9813-35ce286f7488",
+      "record:014a9c48-20f7-422c-9138-7b606d1194c4"
     ]
   },
   "barcodeCache": {
+    "6970270020388": {
+      "name": "日式寿喜烧调味汁",
+      "shelfLife": "18个月",
+      "brand": "",
+      "spec": "",
+      "netContent": "583",
+      "manufacturer": "",
+      "imageUrl": "",
+      "updatedAt": "2026-11-11T11:37:25.820Z"
+    },
+    "6927321722852": {
+      "name": "盒马酸奶油",
+      "shelfLife": "28天",
+      "brand": "",
+      "spec": "",
+      "netContent": "",
+      "manufacturer": "",
+      "imageUrl": "",
+      "updatedAt": "2026-11-11T11:29:03.587Z"
+    },
+    "6970036431519": {
+      "name": "澳洲和牛M8-9雪花肥牛片",
+      "shelfLife": "364天",
+      "brand": "帝皇鲜",
+      "spec": "",
+      "netContent": "",
+      "manufacturer": "上海正澳食品有限公司",
+      "imageUrl": "",
+      "updatedAt": "2026-11-11T11:28:06.086Z"
+    },
+    "6972693302140": {
+      "name": "火腿芝士土豆泥薄饼",
+      "shelfLife": "364天",
+      "brand": "盒马",
+      "spec": "220克（110克×2）",
+      "netContent": "220克（110克×2）",
+      "manufacturer": "凡凡食品(上海)有限公司",
+      "imageUrl": "",
+      "updatedAt": "2026-11-11T11:27:17.687Z"
+    },
     "6930527708100": {
       "name": "马大姐厨坊雪豆腐350克",
       "shelfLife": "14天",
