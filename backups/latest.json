@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-11T12:06:26.908Z",
+  "syncedAt": "2026-11-14T06:41:49.533Z",
   "events": [
     {
       "id": "dev-mu0mi3qk6dij1g:2l7l:1261",
@@ -4189,27 +4189,6 @@
         "updatedAt": "2026-11-09T10:22:11.585Z"
       },
       {
-        "id": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
-        "name": "盒马南美洲白虾仁🦐",
-        "barcode": "",
-        "location": "冷冻海鲜抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-09-20",
-        "productionDate": "2026-08-11",
-        "expiryDate": "2028-02-11",
-        "shelfLife": "18个月",
-        "quantity": 0,
-        "brand": "",
-        "spec": "",
-        "netContent": "150g",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-20T03:23:59.883Z",
-        "updatedAt": "2026-11-09T11:34:38.277Z"
-      },
-      {
         "id": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
         "name": "火腿芝士土豆泥薄饼",
         "barcode": "6972693302140",
@@ -4292,6 +4271,48 @@
         "note": "",
         "createdAt": "2026-11-11T11:30:43.468Z",
         "updatedAt": "2026-11-11T11:30:43.469Z"
+      },
+      {
+        "id": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
+        "name": "盒马南美洲白虾仁🦐",
+        "barcode": "",
+        "location": "冷冻海鲜抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-09-20",
+        "productionDate": "2026-08-11",
+        "expiryDate": "2028-02-11",
+        "shelfLife": "18个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "150g",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-09-20T03:23:59.883Z",
+        "updatedAt": "2026-11-09T11:34:38.277Z"
+      },
+      {
+        "id": "09cab49a-e007-4ef1-9205-b631670e2863",
+        "name": "日式寿喜烧调味汁",
+        "barcode": "6970270020388",
+        "location": "冷藏",
+        "category": "调味品",
+        "stockInDate": "2026-11-11",
+        "productionDate": "2026-10-14",
+        "expiryDate": "2028-04-14",
+        "shelfLife": "18个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "583",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-11T11:37:25.819Z",
+        "updatedAt": "2026-11-11T11:37:25.819Z"
       }
     ],
     "records": [
@@ -13032,19 +13053,6 @@
         "createdAt": "2026-11-09T10:23:06.829Z"
       },
       {
-        "id": "40dc18dc-023c-4657-9238-f110afe79e4b",
-        "type": "eat",
-        "productId": "d5e515ef-03c2-4725-998e-be1ee1615398",
-        "productName": "冷冻带头带壳生南美白虾1盒",
-        "barcode": "",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "30-45只",
-        "reason": "",
-        "createdAt": "2026-11-09T11:31:24.258Z"
-      },
-      {
         "id": "cf33bca0-a313-44a9-8cc7-133f70168aa4",
         "type": "eat",
         "productId": "d5e515ef-03c2-4725-998e-be1ee1615398",
@@ -13108,6 +13116,19 @@
         "netContent": "400",
         "reason": "",
         "createdAt": "2026-11-11T11:30:43.469Z"
+      },
+      {
+        "id": "c9846c0c-f925-40c4-a33f-7b3381628941",
+        "type": "in",
+        "productId": "09cab49a-e007-4ef1-9205-b631670e2863",
+        "productName": "日式寿喜烧调味汁",
+        "barcode": "6970270020388",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "583",
+        "reason": "",
+        "createdAt": "2026-11-11T11:37:25.820Z"
       }
     ],
     "settings": {
@@ -13192,7 +13213,7 @@
       "ocrEngine": "paddle",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu0mi3qk6dij1g:2l7l:1260",
+    "upToId": "dev-mu1udqqh6nbern:ujdh:614",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -14235,7 +14256,9 @@
       "product:eb7f1965-cc3a-49d5-a204-4ec9206f2c22",
       "record:286a1994-3f15-4197-88ec-e1ef22384375",
       "product:16a258e1-1f5d-4c11-9813-35ce286f7488",
-      "record:014a9c48-20f7-422c-9138-7b606d1194c4"
+      "record:014a9c48-20f7-422c-9138-7b606d1194c4",
+      "product:09cab49a-e007-4ef1-9205-b631670e2863",
+      "record:c9846c0c-f925-40c4-a33f-7b3381628941"
     ]
   },
   "barcodeCache": {
