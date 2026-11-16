@@ -1,250 +1,7 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-14T06:41:49.533Z",
+  "syncedAt": "2026-11-15T10:17:53.790Z",
   "events": [
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1261",
-      "ts": "2026-11-09T11:32:08.442Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1262",
-      "ts": "2026-11-09T11:32:08.444Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "cc08d838-7af7-4676-8738-b08d06e2c485",
-      "patch": {
-        "id": "cc08d838-7af7-4676-8738-b08d06e2c485",
-        "type": "eat",
-        "productId": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
-        "productName": "盒马南美洲白虾仁🦐",
-        "barcode": "",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "150g",
-        "reason": "",
-        "createdAt": "2026-11-09T11:32:08.415Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1263",
-      "ts": "2026-11-09T11:34:12.031Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
-      "patch": {
-        "id": "d5e515ef-03c2-4725-998e-be1ee1615398",
-        "name": "冷冻带头带壳生南美白虾1盒",
-        "barcode": "",
-        "location": "冷冻海鲜抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-09-24",
-        "productionDate": "2026-01-20",
-        "expiryDate": "2028-01-20",
-        "shelfLife": "2年",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "30-45只",
-        "manufacturer": "",
-        "price": 90,
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-24T11:43:57.718Z",
-        "updatedAt": "2026-11-09T11:34:11.999Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1264",
-      "ts": "2026-11-09T11:34:12.033Z",
-      "kind": "record",
-      "op": "delete",
-      "key": "40dc18dc-023c-4657-9238-f110afe79e4b",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1265",
-      "ts": "2026-11-09T11:34:38.307Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
-      "patch": {
-        "id": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
-        "name": "盒马南美洲白虾仁🦐",
-        "barcode": "",
-        "location": "冷冻海鲜抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-09-20",
-        "productionDate": "2026-08-11",
-        "expiryDate": "2028-02-11",
-        "shelfLife": "18个月",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "150g",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-20T03:23:59.883Z",
-        "updatedAt": "2026-11-09T11:34:38.277Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1266",
-      "ts": "2026-11-09T11:34:38.309Z",
-      "kind": "record",
-      "op": "delete",
-      "key": "cc08d838-7af7-4676-8738-b08d06e2c485",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1267",
-      "ts": "2026-11-09T11:34:49.266Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1268",
-      "ts": "2026-11-09T11:34:49.293Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "d5e515ef-03c2-4725-998e-be1ee1615398",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:2l7l:1269",
-      "ts": "2026-11-09T11:34:49.295Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "cf33bca0-a313-44a9-8cc7-133f70168aa4",
-      "patch": {
-        "id": "cf33bca0-a313-44a9-8cc7-133f70168aa4",
-        "type": "eat",
-        "productId": "d5e515ef-03c2-4725-998e-be1ee1615398",
-        "productName": "冷冻带头带壳生南美白虾1盒",
-        "barcode": "",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "30-45只",
-        "reason": "",
-        "createdAt": "2026-11-09T11:34:49.267Z"
-      }
-    },
-    {
-      "id": "dev-mu5ocmscszpwzu:3d86:135",
-      "ts": "2026-11-09T13:21:56.865Z",
-      "kind": "setting",
-      "op": "upsert",
-      "key": "ocrEngine",
-      "patch": "paddle"
-    },
-    {
-      "id": "dev-mu1udqqh6nbern:5p5z:605",
-      "ts": "2026-11-11T11:27:17.723Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
-      "patch": {
-        "id": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
-        "name": "火腿芝士土豆泥薄饼",
-        "barcode": "6972693302140",
-        "location": "冷冻面食抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-11-11",
-        "productionDate": "2026-09-29",
-        "expiryDate": "2027-09-28",
-        "shelfLife": "364天",
-        "quantity": 1,
-        "brand": "盒马",
-        "spec": "220克（110克×2）",
-        "netContent": "220克（110克×2）",
-        "manufacturer": "凡凡食品(上海)有限公司",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-11-11T11:27:17.686Z",
-        "updatedAt": "2026-11-11T11:27:17.686Z"
-      }
-    },
-    {
-      "id": "dev-mu1udqqh6nbern:5p5z:606",
-      "ts": "2026-11-11T11:27:17.724Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "95ee2576-176e-4da5-99ad-d498b27352e3",
-      "patch": {
-        "id": "95ee2576-176e-4da5-99ad-d498b27352e3",
-        "type": "in",
-        "productId": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
-        "productName": "火腿芝士土豆泥薄饼",
-        "barcode": "6972693302140",
-        "quantity": 1,
-        "detail": "新增入库 +1",
-        "unitPrice": 0,
-        "netContent": "220克（110克×2）",
-        "reason": "",
-        "createdAt": "2026-11-11T11:27:17.687Z"
-      }
-    },
-    {
-      "id": "dev-mu1udqqh6nbern:5p5z:607",
-      "ts": "2026-11-11T11:28:06.121Z",
-      "kind": "product",
-      "op": "upsert",
-      "key": "3d2407ea-fbba-4df7-a43e-b42c258a33cf",
-      "patch": {
-        "id": "3d2407ea-fbba-4df7-a43e-b42c258a33cf",
-        "name": "澳洲和牛M8-9雪花肥牛片",
-        "barcode": "6970036431519",
-        "location": "冷冻生肉抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-11-11",
-        "productionDate": "2026-10-20",
-        "expiryDate": "2027-10-19",
-        "shelfLife": "364天",
-        "quantity": 1,
-        "brand": "帝皇鲜",
-        "spec": "",
-        "netContent": "",
-        "manufacturer": "上海正澳食品有限公司",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-11-11T11:28:06.085Z",
-        "updatedAt": "2026-11-11T11:28:06.085Z"
-      }
-    },
-    {
-      "id": "dev-mu1udqqh6nbern:5p5z:608",
-      "ts": "2026-11-11T11:28:06.123Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "0bd8087c-22b4-4123-b629-151f0bc22c47",
-      "patch": {
-        "id": "0bd8087c-22b4-4123-b629-151f0bc22c47",
-        "type": "in",
-        "productId": "3d2407ea-fbba-4df7-a43e-b42c258a33cf",
-        "productName": "澳洲和牛M8-9雪花肥牛片",
-        "barcode": "6970036431519",
-        "quantity": 1,
-        "detail": "新增入库 +1",
-        "unitPrice": 0,
-        "netContent": "",
-        "reason": "",
-        "createdAt": "2026-11-11T11:28:06.086Z"
-      }
-    },
     {
       "id": "dev-mu1udqqh6nbern:5p5z:609",
       "ts": "2026-11-11T11:29:03.620Z",
@@ -387,6 +144,315 @@
         "netContent": "583",
         "reason": "",
         "createdAt": "2026-11-11T11:37:25.820Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:lwiw:615",
+      "ts": "2026-11-14T06:41:58.331Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "50c2a916-4fa0-4bbd-8c7d-e566b4e169cc",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:lwiw:616",
+      "ts": "2026-11-14T06:41:58.356Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "50c2a916-4fa0-4bbd-8c7d-e566b4e169cc",
+      "patch": null
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:lwiw:617",
+      "ts": "2026-11-14T06:41:58.357Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "e4228fd9-4066-4833-a1e4-e9222502b2de",
+      "patch": {
+        "id": "e4228fd9-4066-4833-a1e4-e9222502b2de",
+        "type": "eat",
+        "productId": "50c2a916-4fa0-4bbd-8c7d-e566b4e169cc",
+        "productName": "盒马超盒算猪肉小馄饨",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "126克",
+        "reason": "",
+        "createdAt": "2026-11-14T06:41:58.333Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1270",
+      "ts": "2026-11-15T02:06:24.198Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "ocrEngine",
+      "patch": "tesseract"
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1271",
+      "ts": "2026-11-15T02:06:51.034Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "db1ae78d-3680-4846-a1ba-bac0f4fc9f80",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1272",
+      "ts": "2026-11-15T02:06:51.062Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "db1ae78d-3680-4846-a1ba-bac0f4fc9f80",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1273",
+      "ts": "2026-11-15T02:06:51.064Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "c8115946-36b2-4c5a-a456-d00239de3ff7",
+      "patch": {
+        "id": "c8115946-36b2-4c5a-a456-d00239de3ff7",
+        "type": "eat",
+        "productId": "db1ae78d-3680-4846-a1ba-bac0f4fc9f80",
+        "productName": "孝感原味酒酿",
+        "barcode": "6937491383159",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "400克",
+        "reason": "",
+        "createdAt": "2026-11-15T02:06:51.036Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1274",
+      "ts": "2026-11-15T02:06:53.866Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "1177d189-1d25-471c-b70a-ce94ac6182e3",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1275",
+      "ts": "2026-11-15T02:06:53.894Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "1177d189-1d25-471c-b70a-ce94ac6182e3",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1276",
+      "ts": "2026-11-15T02:06:53.895Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "fcdb3fa6-0b1a-49a5-8ca5-1b0fe5d35c46",
+      "patch": {
+        "id": "fcdb3fa6-0b1a-49a5-8ca5-1b0fe5d35c46",
+        "type": "eat",
+        "productId": "1177d189-1d25-471c-b70a-ce94ac6182e3",
+        "productName": "盒马烘焙低糖龙井冰淇淋绿豆糕饼290克",
+        "barcode": "6977000278699",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-11-15T02:06:53.866Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1277",
+      "ts": "2026-11-15T02:06:57.149Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "a482ea33-002c-4244-a2f8-d514a9c2fe3e",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1278",
+      "ts": "2026-11-15T02:06:57.177Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "a482ea33-002c-4244-a2f8-d514a9c2fe3e",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1279",
+      "ts": "2026-11-15T02:06:57.179Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "f7e8df0b-0702-401d-af97-58cb8659f247",
+      "patch": {
+        "id": "f7e8df0b-0702-401d-af97-58cb8659f247",
+        "type": "eat",
+        "productId": "a482ea33-002c-4244-a2f8-d514a9c2fe3e",
+        "productName": "盒马云南鸡枞菌拌米线",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "321克",
+        "reason": "",
+        "createdAt": "2026-11-15T02:06:57.150Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1283",
+      "ts": "2026-11-15T02:07:17.803Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "b37bf841-3a1b-4700-8b2a-78901a02955a",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1284",
+      "ts": "2026-11-15T02:07:17.832Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "b37bf841-3a1b-4700-8b2a-78901a02955a",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1285",
+      "ts": "2026-11-15T02:07:17.834Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "dac9d480-f1e5-440a-b603-c3f17158eb20",
+      "patch": {
+        "id": "dac9d480-f1e5-440a-b603-c3f17158eb20",
+        "type": "eat",
+        "productId": "b37bf841-3a1b-4700-8b2a-78901a02955a",
+        "productName": "耶加雪菲美式咖啡",
+        "barcode": "6959657013045",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "950mL",
+        "reason": "",
+        "createdAt": "2026-11-15T02:07:17.804Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:v2v8:1286",
+      "ts": "2026-11-15T02:07:33.125Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "a3bbc3cc-6847-4392-a842-48ecd6330160",
+      "patch": {
+        "id": "a3bbc3cc-6847-4392-a842-48ecd6330160",
+        "type": "eat",
+        "productId": "955ef255-587b-44c7-9d83-09ebe5585841",
+        "productName": "盒马安格斯牛肉芝士🧀卷",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "180g",
+        "reason": "",
+        "createdAt": "2026-11-15T02:07:13.021Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:gs49:618",
+      "ts": "2026-11-15T10:17:03.608Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "ocrEngine",
+      "patch": "paddle"
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:jpff:619",
+      "ts": "2026-11-15T10:17:36.771Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "eac1deb4-0baf-4653-bc87-e09fc59701b0",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:jpff:620",
+      "ts": "2026-11-15T10:17:36.812Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "eac1deb4-0baf-4653-bc87-e09fc59701b0",
+      "patch": null
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:jpff:621",
+      "ts": "2026-11-15T10:17:36.815Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "aee26aa8-4d62-4538-9504-28a8b5236c69",
+      "patch": {
+        "id": "aee26aa8-4d62-4538-9504-28a8b5236c69",
+        "type": "eat",
+        "productId": "eac1deb4-0baf-4653-bc87-e09fc59701b0",
+        "productName": "盒马牛肉芝士薄饼200克",
+        "barcode": "6972693301952",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "100克/袋*2",
+        "reason": "",
+        "createdAt": "2026-11-15T10:17:36.773Z"
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:jpff:622",
+      "ts": "2026-11-15T10:17:37.971Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:jpff:623",
+      "ts": "2026-11-15T10:17:38.010Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+      "patch": null
+    },
+    {
+      "id": "dev-mu1udqqh6nbern:jpff:624",
+      "ts": "2026-11-15T10:17:38.012Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "93928a5d-2763-45c9-9bb2-2e47999384b0",
+      "patch": {
+        "id": "93928a5d-2763-45c9-9bb2-2e47999384b0",
+        "type": "eat",
+        "productId": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+        "productName": "火腿芝士土豆泥薄饼",
+        "barcode": "6972693302140",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "220克（110克×2）",
+        "reason": "",
+        "createdAt": "2026-11-15T10:17:37.972Z"
       }
     }
   ],
@@ -1108,27 +1174,6 @@
         "note": ""
       },
       {
-        "id": "b37bf841-3a1b-4700-8b2a-78901a02955a",
-        "name": "耶加雪菲美式咖啡",
-        "barcode": "6959657013045",
-        "location": "冷藏",
-        "category": "饮料",
-        "stockInDate": "2026-08-28",
-        "productionDate": "2026-07-21",
-        "expiryDate": "2027-07-20",
-        "shelfLife": "364天个月",
-        "quantity": 1,
-        "brand": "盒马",
-        "spec": "950mL",
-        "netContent": "950mL",
-        "manufacturer": "佛山市烁可力食品有限公司",
-        "price": "",
-        "imageUrl": "https://oss.gds.org.cn/userfile2/Product/Images/20250910160936668.png",
-        "createdAt": "2026-08-28T04:51:17.995Z",
-        "updatedAt": "2026-09-12T03:25:30.024Z",
-        "note": ""
-      },
-      {
         "id": "22ea93d1-cc23-4ad5-8751-e65078bf1345",
         "name": "冠利苹果醋",
         "barcode": "",
@@ -1248,27 +1293,6 @@
         "imageUrl": "",
         "createdAt": "2026-09-01T01:13:16.436Z",
         "updatedAt": "2026-09-01T01:13:16.437Z"
-      },
-      {
-        "id": "db1ae78d-3680-4846-a1ba-bac0f4fc9f80",
-        "name": "孝感原味酒酿",
-        "barcode": "6937491383159",
-        "location": "冷藏",
-        "category": "",
-        "stockInDate": "2026-09-02",
-        "productionDate": "2026-01-19",
-        "expiryDate": "2026-10-18",
-        "shelfLife": "",
-        "quantity": 1,
-        "brand": "盒马",
-        "spec": "400克",
-        "netContent": "400克",
-        "manufacturer": "湖北米婆婆生物科技股份有限公司",
-        "price": "",
-        "imageUrl": "https://www.gds.org.cn/userfile1/wechat/2024525025629311050.jpg",
-        "createdAt": "2026-09-02T11:18:24.265Z",
-        "updatedAt": "2026-09-12T03:25:19.249Z",
-        "note": ""
       },
       {
         "id": "90813746-e874-413e-a47a-487586bf5f21",
@@ -2971,27 +2995,6 @@
         "updatedAt": "2026-10-19T12:28:21.682Z"
       },
       {
-        "id": "eac1deb4-0baf-4653-bc87-e09fc59701b0",
-        "name": "盒马牛肉芝士薄饼200克",
-        "barcode": "6972693301952",
-        "location": "冷冻面食抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-10-21",
-        "productionDate": "2026-09-16",
-        "expiryDate": "2027-09-15",
-        "shelfLife": "364天",
-        "quantity": 1,
-        "brand": "盒马",
-        "spec": "100克/袋*2",
-        "netContent": "100克/袋*2",
-        "manufacturer": "凡凡食品(上海)有限公司",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-10-21T13:55:00.745Z",
-        "updatedAt": "2026-10-21T13:55:00.745Z"
-      },
-      {
         "id": "e8e08f83-073a-4686-bd2b-5ed247464c4a",
         "name": "低糖蛋黄风味沙拉酱",
         "barcode": "6970791962099",
@@ -3032,27 +3035,6 @@
         "note": "",
         "createdAt": "2026-10-21T13:58:44.161Z",
         "updatedAt": "2026-10-21T13:58:44.161Z"
-      },
-      {
-        "id": "1177d189-1d25-471c-b70a-ce94ac6182e3",
-        "name": "盒马烘焙低糖龙井冰淇淋绿豆糕饼290克",
-        "barcode": "6977000278699",
-        "location": "冷藏",
-        "category": "食品",
-        "stockInDate": "2026-10-22",
-        "productionDate": "2026-10-18",
-        "expiryDate": "2026-11-01",
-        "shelfLife": "14天",
-        "quantity": 1,
-        "brand": "盒马烘焙",
-        "spec": "",
-        "netContent": "",
-        "manufacturer": "莆田市加一食品有限公司",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-10-22T10:44:37.615Z",
-        "updatedAt": "2026-10-22T10:44:37.615Z"
       },
       {
         "id": "5a8c81f6-de68-4027-99fe-c9cc2a8889e5",
@@ -3664,27 +3646,6 @@
         "updatedAt": "2026-11-09T10:18:26.288Z"
       },
       {
-        "id": "a482ea33-002c-4244-a2f8-d514a9c2fe3e",
-        "name": "盒马云南鸡枞菌拌米线",
-        "barcode": "",
-        "location": "橱柜左3",
-        "category": "食品",
-        "stockInDate": "2026-10-30",
-        "productionDate": "2026-10-09",
-        "expiryDate": "2026-11-22",
-        "shelfLife": "44天",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "321克",
-        "manufacturer": "",
-        "price": 15.9,
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-10-30T09:50:35.079Z",
-        "updatedAt": "2026-10-30T09:50:35.079Z"
-      },
-      {
         "id": "bb4d889d-af30-48df-a051-6d5cd3347590",
         "name": "铁真酸梅汤",
         "barcode": "",
@@ -3958,27 +3919,6 @@
         "updatedAt": "2026-11-08T12:25:54.189Z"
       },
       {
-        "id": "50c2a916-4fa0-4bbd-8c7d-e566b4e169cc",
-        "name": "盒马超盒算猪肉小馄饨",
-        "barcode": "",
-        "location": "冷冻熟食抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-11-08",
-        "productionDate": "2026-09-27",
-        "expiryDate": "2027-09-27",
-        "shelfLife": "1年",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "126克",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-11-08T12:27:15.743Z",
-        "updatedAt": "2026-11-08T12:27:15.743Z"
-      },
-      {
         "id": "42ad3f1f-6947-471f-ad16-c49e75c96634",
         "name": "宜家瑞典🇸🇪肉丸",
         "barcode": "",
@@ -4189,27 +4129,6 @@
         "updatedAt": "2026-11-09T10:22:11.585Z"
       },
       {
-        "id": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
-        "name": "火腿芝士土豆泥薄饼",
-        "barcode": "6972693302140",
-        "location": "冷冻面食抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-11-11",
-        "productionDate": "2026-09-29",
-        "expiryDate": "2027-09-28",
-        "shelfLife": "364天",
-        "quantity": 1,
-        "brand": "盒马",
-        "spec": "220克（110克×2）",
-        "netContent": "220克（110克×2）",
-        "manufacturer": "凡凡食品(上海)有限公司",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-11-11T11:27:17.686Z",
-        "updatedAt": "2026-11-11T11:27:17.686Z"
-      },
-      {
         "id": "3d2407ea-fbba-4df7-a43e-b42c258a33cf",
         "name": "澳洲和牛M8-9雪花肥牛片",
         "barcode": "6970036431519",
@@ -4273,27 +4192,6 @@
         "updatedAt": "2026-11-11T11:30:43.469Z"
       },
       {
-        "id": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
-        "name": "盒马南美洲白虾仁🦐",
-        "barcode": "",
-        "location": "冷冻海鲜抽屉",
-        "category": "冷冻食品",
-        "stockInDate": "2026-09-20",
-        "productionDate": "2026-08-11",
-        "expiryDate": "2028-02-11",
-        "shelfLife": "18个月",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "150g",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-20T03:23:59.883Z",
-        "updatedAt": "2026-11-09T11:34:38.277Z"
-      },
-      {
         "id": "09cab49a-e007-4ef1-9205-b631670e2863",
         "name": "日式寿喜烧调味汁",
         "barcode": "6970270020388",
@@ -4313,6 +4211,27 @@
         "note": "",
         "createdAt": "2026-11-11T11:37:25.819Z",
         "updatedAt": "2026-11-11T11:37:25.819Z"
+      },
+      {
+        "id": "ab890235-be1c-4319-bd6e-cafe0fbf65af",
+        "name": "盒马南美洲白虾仁🦐",
+        "barcode": "",
+        "location": "冷冻海鲜抽屉",
+        "category": "冷冻食品",
+        "stockInDate": "2026-09-20",
+        "productionDate": "2026-08-11",
+        "expiryDate": "2028-02-11",
+        "shelfLife": "18个月",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "150g",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-09-20T03:23:59.883Z",
+        "updatedAt": "2026-11-09T11:34:38.277Z"
       }
     ],
     "records": [
@@ -13129,6 +13048,110 @@
         "netContent": "583",
         "reason": "",
         "createdAt": "2026-11-11T11:37:25.820Z"
+      },
+      {
+        "id": "e4228fd9-4066-4833-a1e4-e9222502b2de",
+        "type": "eat",
+        "productId": "50c2a916-4fa0-4bbd-8c7d-e566b4e169cc",
+        "productName": "盒马超盒算猪肉小馄饨",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "126克",
+        "reason": "",
+        "createdAt": "2026-11-14T06:41:58.333Z"
+      },
+      {
+        "id": "c8115946-36b2-4c5a-a456-d00239de3ff7",
+        "type": "eat",
+        "productId": "db1ae78d-3680-4846-a1ba-bac0f4fc9f80",
+        "productName": "孝感原味酒酿",
+        "barcode": "6937491383159",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "400克",
+        "reason": "",
+        "createdAt": "2026-11-15T02:06:51.036Z"
+      },
+      {
+        "id": "fcdb3fa6-0b1a-49a5-8ca5-1b0fe5d35c46",
+        "type": "eat",
+        "productId": "1177d189-1d25-471c-b70a-ce94ac6182e3",
+        "productName": "盒马烘焙低糖龙井冰淇淋绿豆糕饼290克",
+        "barcode": "6977000278699",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "",
+        "reason": "",
+        "createdAt": "2026-11-15T02:06:53.866Z"
+      },
+      {
+        "id": "f7e8df0b-0702-401d-af97-58cb8659f247",
+        "type": "eat",
+        "productId": "a482ea33-002c-4244-a2f8-d514a9c2fe3e",
+        "productName": "盒马云南鸡枞菌拌米线",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "321克",
+        "reason": "",
+        "createdAt": "2026-11-15T02:06:57.150Z"
+      },
+      {
+        "id": "a3bbc3cc-6847-4392-a842-48ecd6330160",
+        "type": "eat",
+        "productId": "955ef255-587b-44c7-9d83-09ebe5585841",
+        "productName": "盒马安格斯牛肉芝士🧀卷",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "180g",
+        "reason": "",
+        "createdAt": "2026-11-15T02:07:13.021Z"
+      },
+      {
+        "id": "dac9d480-f1e5-440a-b603-c3f17158eb20",
+        "type": "eat",
+        "productId": "b37bf841-3a1b-4700-8b2a-78901a02955a",
+        "productName": "耶加雪菲美式咖啡",
+        "barcode": "6959657013045",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "950mL",
+        "reason": "",
+        "createdAt": "2026-11-15T02:07:17.804Z"
+      },
+      {
+        "id": "aee26aa8-4d62-4538-9504-28a8b5236c69",
+        "type": "eat",
+        "productId": "eac1deb4-0baf-4653-bc87-e09fc59701b0",
+        "productName": "盒马牛肉芝士薄饼200克",
+        "barcode": "6972693301952",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "100克/袋*2",
+        "reason": "",
+        "createdAt": "2026-11-15T10:17:36.773Z"
+      },
+      {
+        "id": "93928a5d-2763-45c9-9bb2-2e47999384b0",
+        "type": "eat",
+        "productId": "da7d85fa-2a3f-4918-99fd-f8b062fabe97",
+        "productName": "火腿芝士土豆泥薄饼",
+        "barcode": "6972693302140",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "220克（110克×2）",
+        "reason": "",
+        "createdAt": "2026-11-15T10:17:37.972Z"
       }
     ],
     "settings": {
@@ -13213,7 +13236,7 @@
       "ocrEngine": "paddle",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu1udqqh6nbern:ujdh:614",
+    "upToId": "dev-mu1udqqh6nbern:jpff:624",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -14258,7 +14281,15 @@
       "product:16a258e1-1f5d-4c11-9813-35ce286f7488",
       "record:014a9c48-20f7-422c-9138-7b606d1194c4",
       "product:09cab49a-e007-4ef1-9205-b631670e2863",
-      "record:c9846c0c-f925-40c4-a33f-7b3381628941"
+      "record:c9846c0c-f925-40c4-a33f-7b3381628941",
+      "record:c8115946-36b2-4c5a-a456-d00239de3ff7",
+      "record:fcdb3fa6-0b1a-49a5-8ca5-1b0fe5d35c46",
+      "record:f7e8df0b-0702-401d-af97-58cb8659f247",
+      "record:e4228fd9-4066-4833-a1e4-e9222502b2de",
+      "record:dac9d480-f1e5-440a-b603-c3f17158eb20",
+      "record:a3bbc3cc-6847-4392-a842-48ecd6330160",
+      "record:aee26aa8-4d62-4538-9504-28a8b5236c69",
+      "record:93928a5d-2763-45c9-9bb2-2e47999384b0"
     ]
   },
   "barcodeCache": {
