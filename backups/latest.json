@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-18T13:14:24.348Z",
+  "syncedAt": "2026-11-19T10:08:25.412Z",
   "events": [
     {
       "id": "dev-mu0mi3qk6dij1g:v2v8:1284",
@@ -355,6 +355,93 @@
         "netContent": "590克",
         "reason": "",
         "createdAt": "2026-11-18T13:14:09.005Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:e82m:1303",
+      "ts": "2026-11-18T13:15:23.446Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "fa01d3b1-aa94-41c6-8175-228fa09ffe89",
+      "patch": {
+        "id": "fa01d3b1-aa94-41c6-8175-228fa09ffe89",
+        "name": "乐事甜辣酸奶油味薯片",
+        "barcode": "",
+        "location": "餐边柜",
+        "category": "零食饮料",
+        "stockInDate": "2026-11-18",
+        "productionDate": "2026-07-27",
+        "expiryDate": "2027-04-23",
+        "shelfLife": "270天",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "100克",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-18T13:15:23.426Z",
+        "updatedAt": "2026-11-18T13:15:23.426Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:e82m:1304",
+      "ts": "2026-11-18T13:15:23.449Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "254987f9-16bb-48fd-bb08-f450ff78fb6f",
+      "patch": {
+        "id": "254987f9-16bb-48fd-bb08-f450ff78fb6f",
+        "type": "in",
+        "productId": "fa01d3b1-aa94-41c6-8175-228fa09ffe89",
+        "productName": "乐事甜辣酸奶油味薯片",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "100克",
+        "reason": "",
+        "createdAt": "2026-11-18T13:15:23.426Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:nje6:1305",
+      "ts": "2026-11-19T10:08:10.048Z",
+      "kind": "product",
+      "op": "delta",
+      "key": "ee5a359b-b690-4730-a42b-290628d25ded",
+      "patch": {
+        "delta": -1,
+        "quantity": 0
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:nje6:1306",
+      "ts": "2026-11-19T10:08:10.075Z",
+      "kind": "product",
+      "op": "delete",
+      "key": "ee5a359b-b690-4730-a42b-290628d25ded",
+      "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:nje6:1307",
+      "ts": "2026-11-19T10:08:10.077Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "9729fad2-af10-468c-a28e-9e2ae80d3943",
+      "patch": {
+        "id": "9729fad2-af10-468c-a28e-9e2ae80d3943",
+        "type": "eat",
+        "productId": "ee5a359b-b690-4730-a42b-290628d25ded",
+        "productName": "火锅🍲魔芋丝结",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "200克",
+        "reason": "",
+        "createdAt": "2026-11-19T10:08:10.049Z"
       }
     }
   ],
@@ -2372,27 +2459,6 @@
         "updatedAt": "2026-09-26T10:56:22.145Z"
       },
       {
-        "id": "ee5a359b-b690-4730-a42b-290628d25ded",
-        "name": "火锅🍲魔芋丝结",
-        "barcode": "",
-        "location": "冷藏",
-        "category": "调味品",
-        "stockInDate": "2026-09-26",
-        "productionDate": "2026-01-29",
-        "expiryDate": "2027-01-29",
-        "shelfLife": "12个月",
-        "quantity": 1,
-        "brand": "",
-        "spec": "",
-        "netContent": "200克",
-        "manufacturer": "",
-        "price": "",
-        "imageUrl": "",
-        "note": "",
-        "createdAt": "2026-09-26T11:33:54.341Z",
-        "updatedAt": "2026-09-26T11:33:54.341Z"
-      },
-      {
         "id": "589f7181-006c-4d7d-b3bf-5e99c295126d",
         "name": "火锅🍲果蔬面皮",
         "barcode": "6977474460002",
@@ -4155,6 +4221,27 @@
         "note": "",
         "createdAt": "2026-11-18T13:14:09.004Z",
         "updatedAt": "2026-11-18T13:14:09.005Z"
+      },
+      {
+        "id": "fa01d3b1-aa94-41c6-8175-228fa09ffe89",
+        "name": "乐事甜辣酸奶油味薯片",
+        "barcode": "",
+        "location": "餐边柜",
+        "category": "零食饮料",
+        "stockInDate": "2026-11-18",
+        "productionDate": "2026-07-27",
+        "expiryDate": "2027-04-23",
+        "shelfLife": "270天",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "100克",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-18T13:15:23.426Z",
+        "updatedAt": "2026-11-18T13:15:23.426Z"
       }
     ],
     "records": [
@@ -13140,6 +13227,32 @@
         "netContent": "590克",
         "reason": "",
         "createdAt": "2026-11-18T13:14:09.005Z"
+      },
+      {
+        "id": "254987f9-16bb-48fd-bb08-f450ff78fb6f",
+        "type": "in",
+        "productId": "fa01d3b1-aa94-41c6-8175-228fa09ffe89",
+        "productName": "乐事甜辣酸奶油味薯片",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "100克",
+        "reason": "",
+        "createdAt": "2026-11-18T13:15:23.426Z"
+      },
+      {
+        "id": "9729fad2-af10-468c-a28e-9e2ae80d3943",
+        "type": "eat",
+        "productId": "ee5a359b-b690-4730-a42b-290628d25ded",
+        "productName": "火锅🍲魔芋丝结",
+        "barcode": "",
+        "quantity": -1,
+        "detail": "正常吃完 -1",
+        "unitPrice": 0,
+        "netContent": "200克",
+        "reason": "",
+        "createdAt": "2026-11-19T10:08:10.049Z"
       }
     ],
     "settings": {
@@ -13224,7 +13337,7 @@
       "ocrEngine": "tesseract",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu0mi3qk6dij1g:e82m:1302",
+    "upToId": "dev-mu0mi3qk6dij1g:nje6:1307",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -14284,7 +14397,10 @@
       "product:b97f9e35-f4bc-42d8-abe7-bb8b0865f358",
       "record:69fd54fc-30d3-4835-9f52-b302e137c5d7",
       "product:f5c93479-890f-4490-a16b-faab4ed96597",
-      "record:4846a111-a25b-491e-aa9b-b2614820ceed"
+      "record:4846a111-a25b-491e-aa9b-b2614820ceed",
+      "product:fa01d3b1-aa94-41c6-8175-228fa09ffe89",
+      "record:254987f9-16bb-48fd-bb08-f450ff78fb6f",
+      "record:9729fad2-af10-468c-a28e-9e2ae80d3943"
     ]
   },
   "barcodeCache": {
