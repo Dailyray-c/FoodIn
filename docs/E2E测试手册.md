@@ -1,7 +1,7 @@
 # FoodIn E2E 测试手册
 
 > 本文件收纳「跑截图/验收脚本」的完整操作细节。`.workbuddy/memory/MEMORY.md` 只保留结论级提醒，细则看这里。
-> 最后更新：2026-09-19（v2.34.12）
+> 最后更新：2026-11-22（v2.37.0：新增 `shot_expiry`；补「只跑受影响」影响映射；订正 node 路径与浏览器启动方式）
 
 ---
 
@@ -12,23 +12,31 @@
 
 ```powershell
 $ErrorActionPreference = 'Continue'
-$root = 'C:\Users\Administrator\WorkBuddy\2026-08-08-19-09-36'
+$root = 'D:\DS Harness\FoodIn'
 $py   = 'C:\Users\Administrator\.workbuddy\binaries\python\versions\3.13.12\python.exe'
-$node = 'C:\Users\Administrator\.workbuddy\binaries\node\versions\22.22.2-3\node.exe'
+$node = 'C:\Users\Administrator\.workbuddy\binaries\node\versions\22.22.2-6\node.exe'
 Set-Location $root
 $srv = Start-Process -FilePath $py -ArgumentList '-m','http.server','8777','--bind','127.0.0.1' `
        -WorkingDirectory $root -PassThru -WindowStyle Hidden
 try {
   Start-Sleep -Seconds 2
-  & $node "tools/e2e/shot_xxx.js" 2>&1 | Out-File "_shot_xxx.log" -Encoding utf8
+  & $node "_run_e2e.js" "tools/e2e/shot_xxx.js" 2>&1 | Out-File "_shot_xxx.log" -Encoding utf8
   "NODE_EXIT=$LASTEXITCODE"
 } finally {
   Stop-Process -Id $srv.Id -Force -ErrorAction SilentlyContinue
 }
 ```
 
-### ❗ 地址必须用 localhost
-Playwright 访问 `http://127.0.0.1:8777` 会 **refused**，必须 `http://localhost:8777`。
+### ❗ 浏览器：本机没有 Playwright 自带 Chromium
+`ms-playwright` 目录为空，`chromium.launch()` 会直接失败；`playwright install chromium` 在本机网络下会卡死。
+用项目根的 `_run_e2e.js` 启动器（它把 `chromium.launch` 兜底成系统 Edge 通道），**不要为了跑测试去改 `tools/e2e/` 里的正式脚本**：
+
+```powershell
+& $node "_run_e2e.js" "tools/e2e/shot_expiry.js"
+```
+
+### 地址
+`http://127.0.0.1:8777` 与 `http://localhost:8777` 现均可访问（v2.37.0 实测）；脚本内统一写 `127.0.0.1`。
 
 ### ❗ 用 PowerShell 调 node，不用 bash
 bash 里跑 node 会以退出码 23 结束且**无任何输出**。长输出一律 `Out-File` 重定向到文件再读。
@@ -139,13 +147,36 @@ await ctx.route('**/upstash.io/**', async route => {
 
 | 脚本 | 断言数 | 覆盖 |
 |---|---|---|
-| `tools/e2e/shot_2360.js` | 92 | v2.36.0 全量 UI |
+| `tools/e2e/shot_2360.js` | 92 | v2.36.0 全量 UI（首页 4 统计卡 / 记录筛选 / 多选 / 色彩 / 无 JS 错误） |
 | `tools/e2e/shot_dup.js` | 25 | 重复 id / 幽灵商品 / 确定性 id / 同名不迁移 / 幂等 / 导入撞车 / 事件流 |
-| `tools/e2e/shot_2351.js` | 22 | v2.35.1 |
-| `tools/e2e/shot_fontbtn.js` | 15 | 字号三档按钮 |
-| `tools/e2e/shot_tip_all.js` | 30 | 10 类说明弹窗 |
+| `tools/e2e/shot_2351.js` | 22 | v2.35.1 高级设置页四张配置卡 |
+| `tools/e2e/shot_fontbtn.js` | 15 | 字号三档按钮几何 |
+| `tools/e2e/shot_tip_all.js` | 30 | 10 类说明弹窗（`showTip`） |
+| `tools/e2e/shot_expiry.js` | 49 | **v2.37.0 过期提醒**：分组顺序 / 两侧排序 / 逐项折叠与恢复 / 折叠持久化 / 折叠自动失效 / 字号三档 / 桌面 |
 
 单轮验收脚本命名：`tools/e2e/shot_v<版本>.js` → 产物 `_shots_v<版本>/`。
+
+### ❗ 日常只跑「受影响」的套件，不必全套
+
+全套 233 条只在 **跨区域改动 / 大版本收口 / 发布前无把握** 时跑。常规改动按区域取最小集：
+
+| 改动区域 | 必跑 | 建议加跑 |
+|---|---|---|
+| 首页（统计卡、顶栏、铃铛、位置浮层） | `shot_2360` | 本区域专用套件 |
+| **过期提醒弹窗**（分组 / 排序 / 折叠） | `shot_expiry` | `shot_2360` |
+| 记录页（类型筛选、流水渲染） | `shot_2360` | — |
+| 商品增删改 / 重复 id / 导入导出 | `shot_dup` | `shot_2360` |
+| 高级设置页（云同步、地点、分类） | `shot_2351` | — |
+| 说明弹窗 / `showTip` / toast 文案 | `shot_tip_all` | — |
+| 字号三档（`fontScale` 或组件类字号） | `shot_fontbtn` | 受影响区域的套件 |
+| 只改 `<style>` 内联块 / 纯文案 | 受影响区域专用套件 | — |
+| **Tailwind utility 新增** | 受影响区域专用套件 | 必须重编译 `styles.css` |
+
+两条配套规则：
+
+1. **判定依据是「DOM 或状态是否被触碰」**，不是「文件是否被改」。只改 `index.html` 里某一段模板 → 只有覆盖该段的套件才算受影响。
+2. **新增功能应自带套件**，并入上表；没有套件的新区域下次改动就无回归可跑。若一次性验证脚本证明了价值，就把它升为 `tools/e2e/` 常驻套件（带 `check()` 断言 + 失败退出码），而不是留在根目录。
+
 
 ---
 

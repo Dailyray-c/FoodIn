@@ -786,12 +786,12 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button v-if="currentPage === 'home'" @click="showExpiryReminder = true; showLocationPanel = false" title="过期提醒"
+        <button v-if="currentPage === 'home'" @click="showExpiryReminder = true; showFoldedExpiry = false; showLocationPanel = false" title="过期提醒"
           class="relative w-9 h-9 flex items-center justify-center rounded-full bg-orange-50 text-orange-600 border border-orange-200 active:scale-90 transition-all">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span v-if="expiringProducts.length + expiredProducts.length > 0"
+          <span v-if="expiringVisibleProducts.length + expiredProducts.length > 0"
             class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white fi-fs-11 rounded-full flex items-center justify-center">
-            {{ expiringProducts.length + expiredProducts.length }}
+            {{ expiringVisibleProducts.length + expiredProducts.length }}
           </span>
         </button>
         <!-- v2.23.0 冰箱钮：存放位置总览（地点→分区/剪影），与铃铛（时间维度）对称 -->
@@ -3586,12 +3586,62 @@
             </button>
           </div>
 
-          <div v-if="expiredProducts.length === 0 && expiringProducts.length === 0" class="py-8 text-center text-gray-400">
+          <div v-if="expiringVisibleProducts.length === 0 && expiredProducts.length === 0 && foldedExpiringProducts.length === 0" class="py-8 text-center text-gray-400">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             <p class="mt-2 text-sm">暂无过期食品</p>
           </div>
 
-          <div v-if="expiredProducts.length > 0" class="mb-4">
+          <!-- v2.37.0：即将过期在前（内部顺序不变：到期日由近到远），已过期在后 -->
+          <div v-if="expiringVisibleProducts.length > 0" class="mb-4">
+            <h4 class="text-xs font-semibold text-amber-600 mb-2 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              即将过期 ({{ expiringVisibleProducts.length }})
+            </h4>
+            <div class="space-y-1.5">
+              <div v-for="p in expiringVisibleProducts" :key="p.id" class="flex items-start gap-3 bg-white rounded-xl border border-gray-100 border-l-4 border-l-amber-500 px-3 py-3">
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium text-gray-800 break-words leading-snug">{{ p.name }}</div>
+                  <div class="text-xs text-gray-400 mt-1.5 break-words">到期 {{ p.expiryDate || '—' }}</div>
+                </div>
+                <div class="flex flex-col items-end flex-shrink-0">
+                  <div class="flex items-baseline pt-0.5">
+                    <span class="text-[26px] font-medium text-amber-600 leading-none">{{ expiryDays(p) }}</span>
+                    <span class="text-xs text-amber-500 ml-1">天</span>
+                  </div>
+                  <button @click="foldExpiringProduct(p)" class="fi-chip-sm mt-1 text-gray-500">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><polyline points="6 15 12 9 18 15"/></svg>折叠
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- v2.37.0：已折叠分组（收起态一行，展开后可见并逐项恢复） -->
+          <div v-if="foldedExpiringProducts.length > 0" class="mb-4">
+            <button @click="showFoldedExpiry = !showFoldedExpiry" class="w-full flex items-center justify-between py-0.5">
+              <span class="fi-fs-11 text-gray-400">已折叠 {{ foldedExpiringProducts.length }} 项</span>
+              <span class="fi-fs-11 text-gray-400">{{ showFoldedExpiry ? '收起 ▴' : '展开 ▾' }}</span>
+            </button>
+            <p v-if="!showFoldedExpiry" class="fi-hint mt-1">折叠后不再提醒，可随时展开恢复</p>
+            <div v-else class="space-y-1.5 mt-2">
+              <div v-for="p in foldedExpiringProducts" :key="p.id" class="flex items-start gap-3 bg-gray-50 rounded-xl border border-gray-200 px-3 py-3">
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium text-gray-500 break-words leading-snug">{{ p.name }}</div>
+                  <div class="text-xs text-gray-400 mt-1.5 break-words">到期 {{ p.expiryDate || '—' }}</div>
+                </div>
+                <div class="flex flex-col items-end flex-shrink-0">
+                  <div class="flex items-baseline pt-0.5">
+                    <span class="text-[26px] font-medium text-gray-400 leading-none">{{ expiryDays(p) }}</span>
+                    <span class="text-xs text-gray-400 ml-1">天</span>
+                  </div>
+                  <button @click="unfoldExpiringProduct(p)" class="fi-chip-sm mt-1 text-teal-600">恢复</button>
+                </div>
+              </div>
+              <button @click="unfoldAllExpiring" class="fi-fs-11 text-teal-600 active:opacity-70 pt-1">全部恢复</button>
+            </div>
+          </div>
+
+          <div v-if="expiredProducts.length > 0">
             <h4 class="text-xs font-semibold text-red-600 mb-2 flex items-center gap-1">
               <span class="w-2 h-2 rounded-full bg-red-500"></span>
               已过期 ({{ expiredProducts.length }})
@@ -3605,25 +3655,6 @@
                 <div class="flex items-baseline flex-shrink-0 pt-0.5">
                   <span class="text-[26px] font-medium text-red-600 leading-none">{{ expiryDays(p) }}</span>
                   <span class="text-xs text-red-500 ml-1">天</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="expiringProducts.length > 0">
-            <h4 class="text-xs font-semibold text-amber-600 mb-2 flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-              即将过期 ({{ expiringProducts.length }})
-            </h4>
-            <div class="space-y-1.5">
-              <div v-for="p in expiringProducts" :key="p.id" class="flex items-start gap-3 bg-white rounded-xl border border-gray-100 border-l-4 border-l-amber-500 px-3 py-3">
-                <div class="flex-1 min-w-0">
-                  <div class="text-sm font-medium text-gray-800 break-words leading-snug">{{ p.name }}</div>
-                  <div class="text-xs text-gray-400 mt-1.5 break-words">到期 {{ p.expiryDate || '—' }}</div>
-                </div>
-                <div class="flex items-baseline flex-shrink-0 pt-0.5">
-                  <span class="text-[26px] font-medium text-amber-600 leading-none">{{ expiryDays(p) }}</span>
-                  <span class="text-xs text-amber-500 ml-1">天</span>
                 </div>
               </div>
             </div>
@@ -4331,7 +4362,7 @@ const app = createApp({
     const products = ref([]);
     const records = ref([]);
     const barcodeCache = ref({});  // { barcode: { name, shelfLife, category, updatedAt } } — 离线条码库+保质期记忆
-    const CURRENT_VERSION = '2.36.3';   // v2.36.3：重复 id 自愈改确定性 id + 修同名流水误迁移 + 自愈改到同步引擎就绪后（结果可上云）+ 修备份导入同 id 撞车静默丢商品；v2.36.2：本地读取逐键隔离 + 损坏隔离（修数据丢失风险）+ 清理死代码与冗余别名 + 77 处手写字号收敛为 .fi-hint/.fi-fs-11；v2.36.1：位置/分类统一归一化并保证导入、云同步的 location/category 字段传播；删除分区/地点不再留下不可筛选的幽灵位置；多标签删除/重命名、空值统计、空 places 同步、带空格搜索 token 修复；地点/分区/分类名称分隔符校验；SW v120 → v121
+    const CURRENT_VERSION = '2.37.0';   // v2.37.0：首页过期提醒改为即将过期优先 + 已过期按过期时长短→长 + 逐项折叠（可恢复、本机持久化、改期或转为过期自动失效）；v2.36.3：重复 id 自愈改确定性 id + 修同名流水误迁移 + 自愈改到同步引擎就绪后（结果可上云）+ 修备份导入同 id 撞车静默丢商品；v2.36.2：本地读取逐键隔离 + 损坏隔离（修数据丢失风险）+ 清理死代码与冗余别名 + 77 处手写字号收敛为 .fi-hint/.fi-fs-11；v2.36.1：位置/分类统一归一化并保证导入、云同步的 location/category 字段传播；删除分区/地点不再留下不可筛选的幽灵位置；多标签删除/重命名、空值统计、空 places 同步、带空格搜索 token 修复；地点/分区/分类名称分隔符校验；SW v120 → v121
     const settings = reactive({ version: CURRENT_VERSION, expiringDays: 7, cloudApiKey: '', cloudBinId: '', cloudSyncEnabled: false, cloudLastSync: '', localModified: '', barcodeApiKey: '', barcodeLookupEnabled: false, ocrEngine: 'paddle', ocrEnabled: true, baiduApiKey: '', baiduSecretKey: '', ocrProxyUrl: '', categories: ['粮油米面', '调味品', '零食饮料', '生鲜果蔬', '冷冻食品', '乳品蛋类', '其他'], autoSaveInterval: 0, ocrGroupMode: true, ocrImageEnhance: true, nameCleanEnabled: true, nameCleanCase: 'smart', nameCleanMarketing: true, nameCleanCustom: '', nameCleanWhitelist: '', places: [], builtinCategories: ['剩菜剩饭'], leftoverDefaultDays: 3, simpleMode: false, fontScale: 'normal', tourDone: false });   // v2.28.4：+tourDone 首次实景导览是否已完成（仅本机，同 simpleMode 不进云同步 schema——否则云端旧快照会把「已完成」覆盖回来）；v2.25.0：+simpleMode 简洁模式（大字号 + 精简功能，默认关）+fontScale 字号档位（normal 标准 / large 大 / xlarge 超大，独立于简洁模式，切换即时生效、跨设备同步，默认 large 即大字号）；v2.21.16：+ocrGroupMode 批量 OCR 智能分组开关（持久化，默认 true，首次加载迁移）+ocrImageEnhance 识别前图像增强开关（灰度+OTSU 二值化，Tesseract 路径生效，默认 true）；v2.22.0：+nameClean* 名称清洗规则库（默认开：去营销词 / 大小写 smart / 全半角）；v2.22.2：+ocrEnabled 文字识别总开关（默认 true；关闭后所有 OCR 入口按钮变灰并提示）
 
     // v2.26.0：location/category 统一「数组 ↔ 字符串」转换（商品模型落库为逗号字符串，表单态为数组）
@@ -4822,6 +4853,12 @@ const app = createApp({
 
     const showDeleteConfirm = ref(false);
     const showExpiryReminder = ref(false);
+    // v2.37.0：过期提醒「折叠」——逐项折叠即将过期商品，折叠后不再占提醒位，可随时展开恢复。
+    //   映射 { [productId]: expiryDate }：日期一并存，商品改期后旧折叠自动失效（不会误把改期商品藏掉）。
+    //   仅本机保存（与撤销快照同性质），不进云同步 schema —— 它是「这台设备的显示偏好」，不跨设备。
+    const FOLDED_EXPIRY_KEY = 'food_inventory_expiry_folded';
+    const foldedExpiry = ref({});
+    const showFoldedExpiry = ref(false);   // 「已折叠」分组展开态（每次打开弹窗重置为收起）
     const showEditModal = ref(false);
     const showChangelog = ref(false);
     const showClearConfirm = ref(false);
@@ -5374,6 +5411,17 @@ const app = createApp({
     const changelog = [
       // 近期版本：保留完整条目
       {
+        version: "2.37.0",
+        date: "2026-11-22",
+        items: [
+          "首页「过期提醒」改为**即将过期在前、已过期在后**；已过期部分按过期时长**由短到长**排列（刚过期的排最上，过期越久越靠下），即将过期部分仍按到期日由近到远",
+          "即将过期商品支持**逐项折叠**：卡片右下角轻点「折叠」即从提醒中收起，不再出现在即将过期列表、也不再计入铃铛角标；列表下方出现「已折叠 N 项」，随时可展开查看、单条「恢复」或「全部恢复」",
+          "折叠状态保存在本机，刷新与重开应用后依然保持。若商品**改了到期日**或**已转为过期**，折叠自动失效并重新出现 —— 折叠不会把该提醒的东西永久藏起来",
+          "折叠只作用于提醒本身：首页「临期 N 件」与统计页仍按全部临期商品计数，不因折叠而减少",
+          "过期提醒弹窗新增回归套件（`tools/e2e/shot_expiry.js`，49 条断言），覆盖分组顺序、两侧排序、折叠/恢复、持久化、自动失效与字号三档；SW 缓存 v123 → v124"
+        ]
+      },
+      {
         version: "2.36.3",
         date: "2026-10-09",
         items: [
@@ -5702,10 +5750,74 @@ const app = createApp({
         .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
     });
 
+    // v2.37.0：提醒视图 = 即将过期 − 已折叠。统计口径（首页临期件数 / 简洁模式 / 统计页）仍用 expiringProducts，
+    //   折叠只影响「提醒类」展示：弹窗列表、铃铛角标、自动弹出。
+    const expiringVisibleProducts = computed(() => expiringProducts.value.filter(p => !isExpiryFolded(p)));
+    const foldedExpiringProducts = computed(() => expiringProducts.value.filter(p => isExpiryFolded(p)));
+
     const expiredProducts = computed(() => {
+      // v2.37.0：已过期按「过期时长由短到长」= 到期日由近到远（刚过期的在最上面）
       return products.value.filter(p => getExpiryStatus(p.expiryDate).status === 'expired')
-        .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+        .sort((a, b) => new Date(b.expiryDate) - new Date(a.expiryDate));
     });
+
+    // ===== v2.37.0 过期提醒折叠（本机状态，不进云） =====
+    // 有效条件三合一：条目存在 → 到期日未变 → 仍处于「即将过期」。任一不满足即视为未折叠，
+    // 因此商品改期 / 已转为过期 / 被删除时，折叠会自动失效，不会把该提醒的商品永久藏起来。
+    function isExpiryFolded(p) {
+      if (!p || !p.id) return false;
+      const kept = foldedExpiry.value[p.id];
+      if (!kept || kept !== p.expiryDate) return false;
+      return getExpiryStatus(p.expiryDate).status === 'expiring';
+    }
+
+    function persistFoldedExpiry() {
+      try { localStorage.setItem(FOLDED_EXPIRY_KEY, JSON.stringify(foldedExpiry.value)); } catch (e) { /* 配额满：仅内存生效 */ }
+    }
+
+    function loadFoldedExpiry() {
+      let obj = {};
+      try {
+        const raw = localStorage.getItem(FOLDED_EXPIRY_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) obj = parsed;
+      } catch (e) { obj = {}; }
+      foldedExpiry.value = obj;
+      pruneFoldedExpiry();
+    }
+
+    // 清理失效条目（商品已删 / 已改期 / 已转过期），避免映射无限膨胀
+    function pruneFoldedExpiry() {
+      const next = {};
+      products.value.forEach(p => {
+        const kept = foldedExpiry.value[p.id];
+        if (kept && kept === p.expiryDate && getExpiryStatus(p.expiryDate).status === 'expiring') next[p.id] = kept;
+      });
+      if (Object.keys(next).length !== Object.keys(foldedExpiry.value).length) {
+        foldedExpiry.value = next;
+        persistFoldedExpiry();
+      }
+    }
+
+    function foldExpiringProduct(p) {
+      if (!p || !p.id) return;
+      foldedExpiry.value = Object.assign({}, foldedExpiry.value, { [p.id]: p.expiryDate });
+      persistFoldedExpiry();
+    }
+
+    function unfoldExpiringProduct(p) {
+      if (!p || !p.id) return;
+      const next = Object.assign({}, foldedExpiry.value);
+      delete next[p.id];
+      foldedExpiry.value = next;
+      persistFoldedExpiry();
+    }
+
+    function unfoldAllExpiring() {
+      if (!Object.keys(foldedExpiry.value).length) return;
+      foldedExpiry.value = {};
+      persistFoldedExpiry();
+    }
 
     const filteredRecords = computed(() => {
       let result = records.value;
@@ -6540,6 +6652,9 @@ const app = createApp({
           if (typeof p.partitioned !== 'boolean') p.partitioned = p.zones.length > 0;
         });
       } catch (e) { console.error('Load normalize/migrate failed:', e); }
+
+      // v2.37.0：恢复本机「过期提醒折叠」状态，并按当前商品与到期日清理失效条目
+      loadFoldedExpiry();
 
       // 有键损坏时明确告知用户：数据已被隔离（未丢失），而不是静默变成空库
       if (corrupt.length) toastErr('读取本地数据', '部分数据损坏，已隔离备份');
@@ -11445,8 +11560,9 @@ const app = createApp({
         if (!lastSyncMs || Date.now() - lastSyncMs >= 2 * 60 * 1000) cloudSync(false);
       });
       if (!sessionStorage.getItem('expiryReminderShown')) {
-        if (expiredProducts.value.length > 0 || expiringProducts.value.length > 0) {
+        if (expiredProducts.value.length > 0 || expiringVisibleProducts.value.length > 0) {
           showExpiryReminder.value = true;
+          showFoldedExpiry.value = false;
         }
         sessionStorage.setItem('expiryReminderShown', 'true');
       }
@@ -11456,7 +11572,7 @@ const app = createApp({
     });
 
     // 调试/自动化测试钩子（不影响正常运行）
-    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, applyImportPayload, loadTesseract, loadPaddleOcr, ensureScanLib, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, dedupeProductIds, deterministicProductId, fnv1a32, findProduct, removeProduct, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, pickShelfLifeUnit, calcShelfLifeParts, calcExpiryDateFromParts, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, cloudAutoHint, cloudAutoText, cloudAutoSet, cloudSyncButtonVisible, CLOUD_SYNC_PAGES, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT,       showTip, closeTip, tipModal, tipOcrOff, runTipAction,      startRename, confirmRename, cancelRename, renaming, removeCategory, newPlaceInput, verifyBaiduProxy, confirmRevoke, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
+    window.__foodin = { products, records, settings, syncState, saveData, cloudSync, applyStockDelta, executeRevoke, revokingRecord, clearAllData, applyImportPayload, loadTesseract, loadPaddleOcr, ensureScanLib, tesseractHost: () => tesseractHost, preloadPaddleModel, testPaddle, cancelPaddleOcr, paddleOcrReady: () => paddleOcrReady, paddleStatus, setPaddleModelUrls, resetPaddleState, runOcr, ocr, batchItems, addBatchItem, addBatchItemAndScroll, removeBatchItem, submitAllBatch, batchAlbumRef, batchCameraRef, batchOcrFromFile, clusterBoxesToLines, groupOcrLines, addGroupToBatch, splitGroupUi, toggleBatchGroupMode, ungroupedLineIndices, useBatchOcrSingleLine, useBatchOcrLine, useBatchOcrBarcode, cleanProductName, exportStockCsv, exportRecordsCsv, exportStatsCsv, WASTE_REASONS, wasteReviewMonth, handleConfigCodeText, openConfigQr, confirmDelete, executeWasteDeleteWithReason, decrementStock, currentPage, navigateTo, scanMode: () => scanMode.value, setScanMode: (v) => { scanMode.value = v; }, showScanModal: () => showScanModal.value, setShowScanModal: (v) => { showScanModal.value = v; }, showFilterModal: () => showFilterModal.value, setShowFilterModal: (v) => { showFilterModal.value = v; }, searchQuery, scanForm, editForm, foldedExpiry, foldExpiringProduct, unfoldExpiringProduct, unfoldAllExpiring, showFoldedExpiry: () => showFoldedExpiry.value, showLocationPanel, locPanelExpanded, placeAlertCount, displayLocation, locPickPlace, locPickZone, locPickTag, locClear, focusPlaceByName, focusZoneByName, focusLooseTag, looseLocationTags, placesWithZones, placesWithZonesView, placesNoZonesView, placesOrderedView, isPlaceZoned, migrateLooseLocationsToPlaces, purgeGhostProducts, dedupeProductIds, deterministicProductId, fnv1a32, findProduct, removeProduct, undoCache, UNDO_CACHE_KEY, loadUndoCache, saveUndoSnapshot, getUndoSnapshot, getUndoChanged, undoChangedFromDetail, dropUndoSnapshot, pruneUndoCache, cloneProduct, undoFieldDiff, undoFillEmpty, splitShelfLifeValue, setShelfLifeFromText, composeShelfLifeText, initEditShelfLife, backfillShelfLifeByDays, pickShelfLifeUnit, calcShelfLifeParts, calcExpiryDateFromParts, revokePreview, placeProducts, placeStatus, openEditModal, addPlace, removePlace, togglePlaceZones, addZoneToPlace, removeZoneFromPlace, setPlaceLayout, isLeftoverCategory, getReheatCount, isLeftoverUrgent, toggleCategoryWithLeftover, saveLeftoverDays, leftoverStats, ensureBuiltinCategories, replayState, lookupBarcode, apiMessage: () => apiMessage.value, apiSuccess: () => apiSuccess.value, apiLoading: () => apiLoading.value, cachedMode: () => cachedMode.value, cloudAutoHint, cloudAutoText, cloudAutoSet, cloudSyncButtonVisible, CLOUD_SYNC_PAGES, toastDone, toastFail, toastGuide, toastErr, toastDup, toastOcrOff, OCR_OFF_HINT,       showTip, closeTip, tipModal, tipOcrOff, runTipAction,      startRename, confirmRename, cancelRename, renaming, removeCategory, newPlaceInput, verifyBaiduProxy, confirmRevoke, tourActive: () => tourActive.value, tourStep: () => tourStep.value, TOUR_STEPS, startTour, endTour, startTourFromModule, nextTourStep, prevTourStep, tourDemoOwned: () => tourDemoOwned.value, seedDemoData, clearDemoData, tourFree: () => tourFree.value, tourBarTop: () => tourBarTop.value, tourRect: () => tourRect.value, enterTourFree, tourPrimary };   // v2.29.1：+tourBarTop getter（悬浮条贴边方向，供 E2E 验证）；v2.29.0：+tourFree getter + enterTourFree/tourPrimary（两阶段导览状态与主按钮行为，供 E2E 验证）；v2.28.5：+tourDemoOwned getter + seedDemoData/clearDemoData（示例数据注入与收回，供 E2E 验证）；v2.28.4：+tourActive/tourStep getter + TOUR_STEPS/startTour/endTour/startTourFromModule/nextTourStep/prevTourStep（导览状态取值/从模块开采/步进，供 E2E 验证；与模板 return 注册的同一批）；v2.21.5+：POC 入口（preloadPaddleModel/testPaddle）用于先评估 Paddle 准确率再做镜像决策；v2.21.7：+paddleStatus/setPaddleModelUrls/resetPaddleState 排查「45% 卡住切 Tesseract」与开关手动引入本地模型；v2.21.16：+ocr/batchItems/groupOcrLines 等暴露给 E2E 测试钩子；v2.21.16b：+clusterBoxesToLines Paddle bbox Y 聚类重组行；v2.22.3：+scanMode getter/setter + showScanModal getter/setter 让外部测试可触发扫码弹层并切换扫码模式；v2.23.0：+searchQuery/scanForm/editForm/位置浮层与两级位置 helpers（displayLocation/locPick* / focus*Place）；v2.23.4：+showFilterModal/setShowFilterModal 让外部测试可触发筛选弹层；+placesWithZones 仅渲染有分区的 place；v2.23.4⑨：+placesWithZonesView/placesNoZonesView/isPlaceZoned/migrateLooseLocationsToPlaces 设置页分组渲染 + 跨组拖拽约束 + 一次性迁移 independent tags → places
 
     return {
       // v2.26.1 修复（P0-01）：设置页 5 个开关的 @update:model-value 处理器直接调用 saveData() / showToast()，
@@ -11490,7 +11606,7 @@ const app = createApp({
       pages, changelog, cameFromGuide, navigateTo, enterGuide, exitGuide, jumpTo, openGuideSection, guideOpen, toggleGuideDetail, revokingRecord, revokePreview, confirmRevoke, executeRevoke,
       TOUR_STEPS, tourActive, tourStep, tourRect, tourCardStyle, tourCurrent, startTour, startTourFromModule, nextTourStep, prevTourStep, endTour, tourDemoOwned,
       tourFree, tourPrimary, tourPrimaryLabel, tourNavRects, tourFreeHint, tourBarTop, tourDimClip,   // v2.29.0/2.29.1/2.29.3：两阶段导览 + clip-path 挖洞——❗必须在这份「模板可见」清单里，漏了不会报错只会静默失效（tourHitClick 已于 v2.29.1 删除）
-      pageTitle, pageTitleMobile, cloudSyncButtonVisible, sortedProducts, expiringProducts, expiredProducts, filteredRecords, recordGroups, stats, statsPage,
+      pageTitle, pageTitleMobile, cloudSyncButtonVisible, sortedProducts, expiringProducts, expiringVisibleProducts, foldedExpiringProducts, expiredProducts, showFoldedExpiry, foldExpiringProduct, unfoldExpiringProduct, unfoldAllExpiring, filteredRecords, recordGroups, stats, statsPage,
       recordTypeFilter, recordTypeOptions, hasTypeFilter, isTypeSelected, toggleTypeFilter, clearTypeFilter, isCardSelected, applyCardFilter, recordCards, filteredRecordsQty, findProduct, dedupeProductIds, showRecordFilterModal, statsRange, statsRangeOptions, statsDateStart, statsDateEnd, hasStatsCustom, setStatsRangePreset, clearStatsCustom, goToHomeWithFilter, goHomeWithStatus, goCategory, goLocation,
       recordBadgeClass, recordNumberClass, recordTypeLabel, recordBarColor, recordQuantityLabel, recordMetaLabel, recordTimeLabel, expiryBadgeClass, expiryLabel, expiryDays, statusColor, formatDateTime,
       incrementStock, decrementStock, confirmDelete, executeDelete, executeDeleteDirect,
