@@ -1,152 +1,7 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-19T10:08:25.412Z",
+  "syncedAt": "2026-11-21T12:20:22.544Z",
   "events": [
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1284",
-      "ts": "2026-11-15T02:07:17.832Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "b37bf841-3a1b-4700-8b2a-78901a02955a",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1285",
-      "ts": "2026-11-15T02:07:17.834Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "dac9d480-f1e5-440a-b603-c3f17158eb20",
-      "patch": {
-        "id": "dac9d480-f1e5-440a-b603-c3f17158eb20",
-        "type": "eat",
-        "productId": "b37bf841-3a1b-4700-8b2a-78901a02955a",
-        "productName": "耶加雪菲美式咖啡",
-        "barcode": "6959657013045",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "950mL",
-        "reason": "",
-        "createdAt": "2026-11-15T02:07:17.804Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1286",
-      "ts": "2026-11-15T02:07:33.125Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "a3bbc3cc-6847-4392-a842-48ecd6330160",
-      "patch": {
-        "id": "a3bbc3cc-6847-4392-a842-48ecd6330160",
-        "type": "eat",
-        "productId": "955ef255-587b-44c7-9d83-09ebe5585841",
-        "productName": "盒马安格斯牛肉芝士🧀卷",
-        "barcode": "",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "180g",
-        "reason": "",
-        "createdAt": "2026-11-15T02:07:13.021Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1289",
-      "ts": "2026-11-15T02:07:40.012Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "4846c6d5-cad1-44c1-83e9-733b681dfc25",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1290",
-      "ts": "2026-11-15T02:07:40.039Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "4846c6d5-cad1-44c1-83e9-733b681dfc25",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1291",
-      "ts": "2026-11-15T02:07:40.040Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "02e9320f-44c0-404b-86a0-f536459989e7",
-      "patch": {
-        "id": "02e9320f-44c0-404b-86a0-f536459989e7",
-        "type": "eat",
-        "productId": "4846c6d5-cad1-44c1-83e9-733b681dfc25",
-        "productName": "盒马孜香小小羊肉串",
-        "barcode": "6975964830519",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "188g",
-        "reason": "",
-        "createdAt": "2026-11-15T02:07:40.013Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1292",
-      "ts": "2026-11-15T02:07:49.198Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "eac1deb4-0baf-4653-bc87-e09fc59701b0",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1293",
-      "ts": "2026-11-15T02:07:49.227Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "eac1deb4-0baf-4653-bc87-e09fc59701b0",
-      "patch": null
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1294",
-      "ts": "2026-11-15T02:07:49.229Z",
-      "kind": "record",
-      "op": "upsert",
-      "key": "d78bd64d-a92d-4749-a89d-dbeb65adb7c2",
-      "patch": {
-        "id": "d78bd64d-a92d-4749-a89d-dbeb65adb7c2",
-        "type": "eat",
-        "productId": "eac1deb4-0baf-4653-bc87-e09fc59701b0",
-        "productName": "盒马牛肉芝士薄饼200克",
-        "barcode": "6972693301952",
-        "quantity": -1,
-        "detail": "正常吃完 -1",
-        "unitPrice": 0,
-        "netContent": "100克/袋*2",
-        "reason": "",
-        "createdAt": "2026-11-15T02:07:49.199Z"
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1295",
-      "ts": "2026-11-15T02:07:55.367Z",
-      "kind": "product",
-      "op": "delta",
-      "key": "50c2a916-4fa0-4bbd-8c7d-e566b4e169cc",
-      "patch": {
-        "delta": -1,
-        "quantity": 0
-      }
-    },
-    {
-      "id": "dev-mu0mi3qk6dij1g:v2v8:1296",
-      "ts": "2026-11-15T02:07:55.397Z",
-      "kind": "product",
-      "op": "delete",
-      "key": "50c2a916-4fa0-4bbd-8c7d-e566b4e169cc",
-      "patch": null
-    },
     {
       "id": "dev-mu0mi3qk6dij1g:v2v8:1297",
       "ts": "2026-11-15T02:07:55.399Z",
@@ -442,6 +297,54 @@
         "netContent": "200克",
         "reason": "",
         "createdAt": "2026-11-19T10:08:10.049Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:fnkf:1308",
+      "ts": "2026-11-21T12:20:07.332Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "7b0e68bd-bcfa-4795-a8ef-693ee503abad",
+      "patch": {
+        "id": "7b0e68bd-bcfa-4795-a8ef-693ee503abad",
+        "name": "乐吧鸡肉味薯片",
+        "barcode": "",
+        "location": "餐边柜",
+        "category": "零食饮料",
+        "stockInDate": "2026-11-21",
+        "productionDate": "2026-11-09",
+        "expiryDate": "2027-11-09",
+        "shelfLife": "1年",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "50克",
+        "manufacturer": "",
+        "price": "",
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-21T12:20:07.306Z",
+        "updatedAt": "2026-11-21T12:20:07.306Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:fnkf:1309",
+      "ts": "2026-11-21T12:20:07.334Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "3a9c62b0-50bd-45d1-a240-7908e2324417",
+      "patch": {
+        "id": "3a9c62b0-50bd-45d1-a240-7908e2324417",
+        "type": "in",
+        "productId": "7b0e68bd-bcfa-4795-a8ef-693ee503abad",
+        "productName": "乐吧鸡肉味薯片",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 0,
+        "netContent": "50克",
+        "reason": "",
+        "createdAt": "2026-11-21T12:20:07.307Z"
       }
     }
   ],
@@ -13337,7 +13240,7 @@
       "ocrEngine": "tesseract",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu0mi3qk6dij1g:nje6:1307",
+    "upToId": "dev-mu0mi3qk6dij1g:v2v8:1296",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
