@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-22T13:28:05.442Z",
+  "syncedAt": "2026-11-23T10:49:20.852Z",
   "events": [
     {
       "id": "dev-mu0mi3qk6dij1g:hbim:1329",
@@ -484,6 +484,110 @@
       "op": "delete",
       "key": "8d0cafda-f4b0-40cc-984d-6de1bd23c838",
       "patch": null
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:4ads:1348",
+      "ts": "2026-11-23T10:44:38.615Z",
+      "kind": "setting",
+      "op": "upsert",
+      "key": "ocrEngine",
+      "patch": "tesseract"
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:4ads:1349",
+      "ts": "2026-11-23T10:46:36.151Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "69a375e1-fbf0-4c5c-9767-4e8412dde759",
+      "patch": {
+        "id": "69a375e1-fbf0-4c5c-9767-4e8412dde759",
+        "name": "火锅🍲呷哺番茄底料",
+        "barcode": "",
+        "location": "橱柜左3",
+        "category": "调味品",
+        "stockInDate": "2026-11-23",
+        "productionDate": "2026-09-15",
+        "expiryDate": "2027-09-15",
+        "shelfLife": "1年",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "150克",
+        "manufacturer": "",
+        "price": 9.5,
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-23T10:46:36.138Z",
+        "updatedAt": "2026-11-23T10:46:36.138Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:4ads:1350",
+      "ts": "2026-11-23T10:46:36.152Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "7c60926c-93b1-477c-916e-2402166b387c",
+      "patch": {
+        "id": "7c60926c-93b1-477c-916e-2402166b387c",
+        "type": "in",
+        "productId": "69a375e1-fbf0-4c5c-9767-4e8412dde759",
+        "productName": "火锅🍲呷哺番茄底料",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 9.5,
+        "netContent": "150克",
+        "reason": "",
+        "createdAt": "2026-11-23T10:46:36.139Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:4ads:1351",
+      "ts": "2026-11-23T10:49:05.457Z",
+      "kind": "product",
+      "op": "upsert",
+      "key": "55b88964-91bc-4e62-9bec-47d229618bfb",
+      "patch": {
+        "id": "55b88964-91bc-4e62-9bec-47d229618bfb",
+        "name": "圆糯米",
+        "barcode": "",
+        "location": "橱柜左3",
+        "category": "其他",
+        "stockInDate": "2026-11-23",
+        "productionDate": "2026-11-23",
+        "expiryDate": "2027-11-23",
+        "shelfLife": "1年",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "700克",
+        "manufacturer": "",
+        "price": 6,
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-23T10:49:05.431Z",
+        "updatedAt": "2026-11-23T10:49:05.431Z"
+      }
+    },
+    {
+      "id": "dev-mu0mi3qk6dij1g:4ads:1352",
+      "ts": "2026-11-23T10:49:05.459Z",
+      "kind": "record",
+      "op": "upsert",
+      "key": "7b61a236-4991-4c5f-80e2-b6313c663873",
+      "patch": {
+        "id": "7b61a236-4991-4c5f-80e2-b6313c663873",
+        "type": "in",
+        "productId": "55b88964-91bc-4e62-9bec-47d229618bfb",
+        "productName": "圆糯米",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 6,
+        "netContent": "700克",
+        "reason": "",
+        "createdAt": "2026-11-23T10:49:05.432Z"
+      }
     }
   ],
   "snapshot": {
@@ -4430,6 +4534,48 @@
         "note": "",
         "createdAt": "2026-11-22T05:24:26.509Z",
         "updatedAt": "2026-11-22T05:24:26.509Z"
+      },
+      {
+        "id": "69a375e1-fbf0-4c5c-9767-4e8412dde759",
+        "name": "火锅🍲呷哺番茄底料",
+        "barcode": "",
+        "location": "橱柜左3",
+        "category": "调味品",
+        "stockInDate": "2026-11-23",
+        "productionDate": "2026-09-15",
+        "expiryDate": "2027-09-15",
+        "shelfLife": "1年",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "150克",
+        "manufacturer": "",
+        "price": 9.5,
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-23T10:46:36.138Z",
+        "updatedAt": "2026-11-23T10:46:36.138Z"
+      },
+      {
+        "id": "55b88964-91bc-4e62-9bec-47d229618bfb",
+        "name": "圆糯米",
+        "barcode": "",
+        "location": "橱柜左3",
+        "category": "其他",
+        "stockInDate": "2026-11-23",
+        "productionDate": "2026-11-23",
+        "expiryDate": "2027-11-23",
+        "shelfLife": "1年",
+        "quantity": 1,
+        "brand": "",
+        "spec": "",
+        "netContent": "700克",
+        "manufacturer": "",
+        "price": 6,
+        "imageUrl": "",
+        "note": "",
+        "createdAt": "2026-11-23T10:49:05.431Z",
+        "updatedAt": "2026-11-23T10:49:05.431Z"
       }
     ],
     "records": [
@@ -13662,6 +13808,32 @@
         "netContent": "100克",
         "reason": "",
         "createdAt": "2026-11-22T05:24:26.509Z"
+      },
+      {
+        "id": "7c60926c-93b1-477c-916e-2402166b387c",
+        "type": "in",
+        "productId": "69a375e1-fbf0-4c5c-9767-4e8412dde759",
+        "productName": "火锅🍲呷哺番茄底料",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 9.5,
+        "netContent": "150克",
+        "reason": "",
+        "createdAt": "2026-11-23T10:46:36.139Z"
+      },
+      {
+        "id": "7b61a236-4991-4c5f-80e2-b6313c663873",
+        "type": "in",
+        "productId": "55b88964-91bc-4e62-9bec-47d229618bfb",
+        "productName": "圆糯米",
+        "barcode": "",
+        "quantity": 1,
+        "detail": "新增入库 +1",
+        "unitPrice": 6,
+        "netContent": "700克",
+        "reason": "",
+        "createdAt": "2026-11-23T10:49:05.432Z"
       }
     ],
     "settings": {
@@ -13732,10 +13904,10 @@
       "nameCleanCustom": "",
       "nameCleanWhitelist": "",
       "fontScale": "normal",
-      "ocrEngine": "paddle",
+      "ocrEngine": "tesseract",
       "ocrProxyUrl": ""
     },
-    "upToId": "dev-mu15jd1y7fj2if:o0cp:617",
+    "upToId": "dev-mu0mi3qk6dij1g:4ads:1352",
     "knownIds": [
       "product:f80968ca-87ed-42f4-8046-5246bb145e15",
       "product:6023e525-0436-4fb9-8fdb-5e29db3790ae",
@@ -14826,7 +14998,11 @@
       "product:5cf090a3-b207-4d4c-8949-c5e196942fab",
       "record:c3df5959-65b1-441f-a519-b40560974599",
       "product:81f0f529-4832-4262-ae6c-41a8f3eb566e",
-      "record:f235adf4-f2f4-4d30-bf9f-92245a276601"
+      "record:f235adf4-f2f4-4d30-bf9f-92245a276601",
+      "product:69a375e1-fbf0-4c5c-9767-4e8412dde759",
+      "record:7c60926c-93b1-477c-916e-2402166b387c",
+      "product:55b88964-91bc-4e62-9bec-47d229618bfb",
+      "record:7b61a236-4991-4c5f-80e2-b6313c663873"
     ]
   },
   "barcodeCache": {
